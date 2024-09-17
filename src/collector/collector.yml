@@ -1,0 +1,47 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+  postgresql:
+    endpoint: postgresql:5432
+    transport: tcp
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    databases:
+      - trades
+    collection_interval: 10s
+    tls:
+      insecure: true
+      insecure_skip_verify: true
+
+processors:
+  batch:
+
+exporters:
+  logging:
+    verbosity: detailed
+
+  otlp/elastic: 
+    endpoint: "${ELASTIC_APM_SERVER_ENDPOINT}"
+    tls:
+      insecure: true
+    headers:
+      # Elastic APM Server secret token
+      Authorization: "Bearer ${ELASTIC_APM_SERVER_SECRET}"
+
+service:
+  pipelines:
+    traces:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ otlp/elastic ]
+    metrics:
+      receivers: [ otlp, postgresql]
+      processors: [ batch ]
+      exporters: [ otlp/elastic ]
+    logs:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ otlp/elastic ]

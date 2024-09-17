@@ -1,0 +1,76 @@
+services:
+
+  decider:
+    build:
+      context: ./src/decider/
+    restart: on-failure
+    ports:
+      - "9001:9001"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_SERVICE_NAME: "decider"
+      OTEL_RESOURCE_ATTRIBUTES: "service.version=1.0"
+      OTEL_PYTHON_LOG_LEVEL: "info"
+      OTEL_PYTHON_LOG_CORRELATION: "true"
+      OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
+
+      TRADER_HOST: "trader"
+    command: ["opentelemetry-instrument", "--logs_exporter", "otlp", "flask", "run", "--host=0.0.0.0", "-p", "9001"]
+    depends_on:
+      trader:
+        condition: service_started
+      collector:
+        condition: service_started
+
+  trader:
+    build:
+      context: ./src/trader/
+    restart: on-failure
+    ports:
+      - "9000:9000"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_SERVICE_NAME: "trader"
+      OTEL_RESOURCE_ATTRIBUTES: "service.version=1.0"
+      OTEL_PYTHON_LOG_LEVEL: "info"
+      OTEL_PYTHON_LOG_CORRELATION: "true"
+      OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
+
+      POSTGRES_HOST: "postgresql"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_USER: "admin"
+    command: ["opentelemetry-instrument", "--logs_exporter", "otlp", "flask", "run", "--host=0.0.0.0", "-p", "9000"]
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      collector:
+        condition: service_started
+
+  postgresql:
+    image: postgres:latest
+    restart: on-failure
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "trades"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_USER: "admin"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "trades", "-U", "admin" ]
+      interval : 5s
+      timeout : 5s
+      retries : 5
+
+  collector:
+    image: otel/opentelemetry-collector-contrib
+    restart: on-failure
+    ports:
+      - "4317:4317"
+    volumes:
+      - ./src/collector/collector.yml:/collector.yml
+    command: ["--config=/collector.yml"]
+    environment:
+      ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}
+      ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "password"
