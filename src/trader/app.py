@@ -46,7 +46,3 @@ def trade():
             result = {'result': 'committed', 'id': trade_id}
             app.logger.info(result)
             return result
-
-if __name__ == '__main__':
-    
-    app.run(host="0.0.0.0", port=9000)

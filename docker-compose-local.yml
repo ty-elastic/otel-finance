@@ -1,0 +1,28 @@
+services:
+
+  postgresql:
+    image: postgres:latest
+    restart: on-failure
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "trades"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_USER: "admin"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "trades", "-U", "admin" ]
+      interval : 5s
+      timeout : 5s
+      retries : 5
+
+  collector:
+    image: otel/opentelemetry-collector-contrib
+    restart: on-failure
+    ports:
+      - "4317:4317"
+    volumes:
+      - ./src/collector/collector.yml:/collector.yml
+    command: ["--config=/collector.yml"]
+    environment:
+      ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}
+      ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
