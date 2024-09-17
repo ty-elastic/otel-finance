@@ -59,16 +59,16 @@ def sim_market_data(*, symbol, day_of_week):
     if symbol not in market_data:
         share_price = market_data_seed[initial_idx]
         market_data[symbol] = StreamingMovingAverage(window_size=10)
-        app.logger.info(f"initial share price: {symbol}={share_price}, idx={initial_idx}")
+        app.logger.info(f"initial share price for {symbol}: {share_price}, idx={initial_idx}")
     else:
         current_share_price = market_data[symbol].get()
         share_price = current_share_price + (current_share_price * (float(pr_volume) / 100.0))
         if share_price < 1:
             share_price = market_data_seed[initial_idx] * abs(pr_volume / 100)
-            app.logger.info(f"reset market share price: {symbol}={share_price}")
+            app.logger.info(f"reset market share price for{symbol}: {share_price}")
     
     smoothed_share_price = market_data[symbol].process(share_price)
-    app.logger.info(f"current market share price: {symbol}={share_price},{smoothed_share_price}")
+    app.logger.info(f"current market share price for {symbol}: {share_price}=>{smoothed_share_price}")
 
     return pr_volume, smoothed_share_price
 

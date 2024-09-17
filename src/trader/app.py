@@ -44,5 +44,5 @@ def trade():
             conn.commit()
 
             result = {'result': 'committed', 'id': trade_id}
-            app.logger.info(result)
+            app.logger.info(result, extra={'trade_id': trade_id})
             return result

@@ -50,7 +50,7 @@ def decide():
     current_span.set_attribute("err.error_model", error_model)
     current_span.set_attribute("err.error_db", error_db)
      
-    action, shares, share_price = decide_model(day_of_week=day_of_week, symbol=symbol, error=error_model, latency=latency_model)
+    action, shares, share_price = decide_model(trade_id=trade_id, day_of_week=day_of_week, symbol=symbol, error=error_model, latency=latency_model)
 
     response = {}
     response['id'] = trade_id
@@ -69,9 +69,9 @@ def decide():
     return response
 
 @tracer.start_as_current_span("decide_model")
-def decide_model(*, day_of_week, symbol, error=False, latency=0.0):
+def decide_model(*, trade_id, day_of_week, symbol, error=False, latency=0.0):
 
-    app.logger.info(f"deciding to trade {symbol} on day {day_of_week}")
+    app.logger.info(f"trade requested for {symbol} on day {day_of_week}", extra={'trade_id': trade_id})
     
     pr_volume, share_price = model.sim_market_data(symbol=symbol, day_of_week=day_of_week)
     
@@ -85,7 +85,6 @@ def decide_model(*, day_of_week, symbol, error=False, latency=0.0):
     ## MODEL WOULD BE CALLED HERE
     action, shares = model.sim_decide(symbol=symbol, pr_volume=pr_volume)
     if latency > 0:
-        app.logger.info(f"adding latency={latency}")
         time.sleep(latency)
 
     current_span.set_attribute("out.shares", shares)
@@ -97,5 +96,7 @@ def decide_model(*, day_of_week, symbol, error=False, latency=0.0):
         trade_volume_shares.add(shares)
     else:
         current_span.set_attribute("out.value", 0)
+        
+    app.logger.info(f"traded {symbol} on day {day_of_week}", extra={'trade_id': trade_id})
 
     return action, shares, share_price

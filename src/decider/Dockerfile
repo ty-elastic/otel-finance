@@ -11,6 +11,7 @@ RUN pip3 install elastic-opentelemetry opentelemetry-processor-baggage
 RUN opentelemetry-bootstrap -a install
 
 COPY app.py .
+COPY model.py .
 
 EXPOSE 9001
 CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0", "-p", "9001"]
