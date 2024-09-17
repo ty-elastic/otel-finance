@@ -13,15 +13,18 @@ from opentelemetry.processor.baggage import BaggageSpanProcessor, ALLOW_ALL_BAGG
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
-tracer_provider = TracerProvider()
+tracer_provider = trace.get_tracer_provider()
 tracer_provider.add_span_processor(BaggageSpanProcessor(ALLOW_ALL_BAGGAGE_KEYS))
-trace.set_tracer_provider(tracer_provider)
+
 tracer = trace.get_tracer("decider.tracer")
 
 @app.post('/decide')
 def decide():
     
     trade_id = str(uuid.uuid4())
+    current_span = trace.get_current_span()
+    current_span.set_attribute("trade_id", trade_id)
+    
     context.attach(baggage.set_baggage("trade_id", trade_id))
     
     bags = baggage.get_all()

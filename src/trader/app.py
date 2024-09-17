@@ -13,9 +13,8 @@ from opentelemetry.processor.baggage import BaggageSpanProcessor, ALLOW_ALL_BAGG
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
-tracer_provider = TracerProvider()
+tracer_provider = trace.get_tracer_provider()
 tracer_provider.add_span_processor(BaggageSpanProcessor(ALLOW_ALL_BAGGAGE_KEYS))
-trace.set_tracer_provider(tracer_provider)
 
 meter = get_meter("metric-trader")
 trade_fee_dollars = meter.create_counter("trade-fee-dollars")
