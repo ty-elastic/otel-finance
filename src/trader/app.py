@@ -19,7 +19,7 @@ def init_db():
         with psycopg.connect(f"host={os.environ['POSTGRES_HOST']} port=5432 dbname=trades user={os.environ['POSTGRES_USER']} password={os.environ['POSTGRES_PASSWORD']}") as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "CREATE TABLE trades (id VARCHAR(100) PRIMARY KEY, symbol VARCHAR(10) NOT NULL, shares float NOT NULL, share_price float NOT NULL, action VARCHAR(10) NOT NULL)")
+                    "CREATE TABLE trades (id VARCHAR(100) PRIMARY KEY, timestamp timestamp default current_timestamp, symbol VARCHAR(10) NOT NULL, shares float NOT NULL, share_price float NOT NULL, action VARCHAR(10) NOT NULL)")
                 conn.commit()
         app.logger.info("created table")
     except Exception as inst:

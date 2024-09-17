@@ -10,20 +10,22 @@ def generate_trade(*, symbol, day_of_week):
     except Exception as inst:
         print(inst)
 
+DAYS_OF_WEEK = ['M','Tu', 'W', 'Th', 'F']
+
 def generate_trades():
-    symbols = ['MOT', 'MSI', 'GOGO', 'INTEQ', 'VID', 'ESTC']
-    day_of_week = 1
+    symbols = ['MOT', 'MSI', 'GOGO', 'INTEQ', 'VID', 'ESTC', 'OD1', 'OD2']
+    idx_of_week = 0
     
     while True:
-        day_of_week = ((day_of_week + 1) % 6)
+        idx_of_week = (idx_of_week + 1) % len(DAYS_OF_WEEK)
         trades_per_day = random.randint(0, 100)
         for i in range(trades_per_day):
             symbol = symbols[random.randint(0, len(symbols)-1)]
-            if random.randint(0, 100) > 80:
+            if random.randint(0, 100) > 90:
                 symbol = 'ERR'
-            print(f"trading for {symbol} on {day_of_week}, count={i}")
-            generate_trade(symbol=symbol, day_of_week=day_of_week)
-            latency = float(random.randint(1, 50)) / 100.0
+            print(f"trading for {symbol} on {DAYS_OF_WEEK[idx_of_week]}, count={i}")
+            generate_trade(symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week])
+            latency = float(random.randint(1, 50)) / 1000.0
             time.sleep(latency)
 
 if __name__ == '__main__':

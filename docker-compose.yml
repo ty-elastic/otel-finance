@@ -13,7 +13,9 @@ services:
       OTEL_PYTHON_LOG_LEVEL: "info"
       OTEL_PYTHON_LOG_CORRELATION: "true"
       OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
-
+      ELASTIC_OTEL_SYSTEM_METRICS_ENABLED: "true"
+      OTEL_METRIC_EXPORT_INTERVAL: 5000
+      
       TRADER_HOST: "trader"
     command: ["opentelemetry-instrument", "--logs_exporter", "otlp", "flask", "run", "--host=0.0.0.0", "-p", "9001"]
     depends_on:
@@ -35,6 +37,8 @@ services:
       OTEL_PYTHON_LOG_LEVEL: "info"
       OTEL_PYTHON_LOG_CORRELATION: "true"
       OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
+      ELASTIC_OTEL_SYSTEM_METRICS_ENABLED: "true"
+      OTEL_METRIC_EXPORT_INTERVAL: 5000
 
       POSTGRES_HOST: "postgresql"
       POSTGRES_PASSWORD: "password"
