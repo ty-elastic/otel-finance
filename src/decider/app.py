@@ -37,6 +37,9 @@ def decide():
     trade_id = str(uuid.uuid4())
     set_attribute_and_baggage("trade_id", trade_id)
     
+    customer_id = request.args.get('customer_id', default=None, type=str)
+    set_attribute_and_baggage("customer_id", customer_id)
+    
     day_of_week = request.args.get('day_of_week', default=None, type=str)
     if day_of_week is None:
         day_of_week = random.choice(['M','Tu', 'W', 'Th', 'F'])
@@ -50,7 +53,7 @@ def decide():
     current_span.set_attribute("err.error_model", error_model)
     current_span.set_attribute("err.error_db", error_db)
      
-    action, shares, share_price = decide_model(trade_id=trade_id, day_of_week=day_of_week, symbol=symbol, error=error_model, latency=latency_model)
+    action, shares, share_price = decide_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, error=error_model, latency=latency_model)
 
     response = {}
     response['id'] = trade_id
@@ -58,7 +61,7 @@ def decide():
         
     if error_db is True:
         symbol = None
-    trade_response = requests.post(f"http://{os.environ['TRADER_HOST']}:9000/trade", params={'id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action})
+    trade_response = requests.post(f"http://{os.environ['TRADER_HOST']}:9000/trade", params={'customer_id': customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action})
     trade_response.raise_for_status()
     trade_response_json = trade_response.json()
 
@@ -69,9 +72,9 @@ def decide():
     return response
 
 @tracer.start_as_current_span("decide_model")
-def decide_model(*, trade_id, day_of_week, symbol, error=False, latency=0.0):
+def decide_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency=0.0):
 
-    app.logger.info(f"trade requested for {symbol} on day {day_of_week}", extra={'trade_id': trade_id})
+    app.logger.info(f"trade requested for {symbol} on day {day_of_week}", extra={'trade_id': trade_id, 'customer_id': customer_id})
     
     pr_volume, share_price = model.sim_market_data(symbol=symbol, day_of_week=day_of_week)
     
@@ -97,6 +100,6 @@ def decide_model(*, trade_id, day_of_week, symbol, error=False, latency=0.0):
     else:
         current_span.set_attribute("out.value", 0)
         
-    app.logger.info(f"traded {symbol} on day {day_of_week}", extra={'trade_id': trade_id})
+    app.logger.info(f"traded {symbol} on day {day_of_week}", extra={'trade_id': trade_id, 'customer_id': customer_id})
 
     return action, shares, share_price

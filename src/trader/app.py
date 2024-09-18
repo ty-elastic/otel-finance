@@ -19,7 +19,7 @@ def init_db():
         with psycopg.connect(f"host={os.environ['POSTGRES_HOST']} port=5432 dbname=trades user={os.environ['POSTGRES_USER']} password={os.environ['POSTGRES_PASSWORD']}") as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "CREATE TABLE trades (id VARCHAR(100) PRIMARY KEY, timestamp timestamp default current_timestamp, symbol VARCHAR(10) NOT NULL, shares float NOT NULL, share_price float NOT NULL, action VARCHAR(10) NOT NULL)")
+                    "CREATE TABLE trades (trade_id VARCHAR(100) PRIMARY KEY, customer_id VARCHAR(100) NOT NULL, timestamp timestamp default current_timestamp, symbol VARCHAR(10) NOT NULL, shares float NOT NULL, share_price float NOT NULL, action VARCHAR(10) NOT NULL)")
                 conn.commit()
         app.logger.info("created table")
     except Exception as inst:
@@ -30,7 +30,8 @@ init_db()
 @app.post('/trade')
 def trade():
 
-    trade_id = request.args.get('id')
+    customer_id = request.args.get('customer_id')
+    trade_id = request.args.get('trade_id')
     symbol = request.args.get('symbol', default=None, type=None)
     shares = request.args.get('shares', default=None, type=float)
     share_price = request.args.get('share_price', default=0, type=float)
@@ -39,10 +40,9 @@ def trade():
     with psycopg.connect(f"host={os.environ['POSTGRES_HOST']} port=5432 dbname=trades user={os.environ['POSTGRES_USER']} password={os.environ['POSTGRES_PASSWORD']}") as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO trades (id, symbol, action, shares, share_price) VALUES (%s, %s, %s, %s, %s)",
-                (trade_id, symbol, action, shares, share_price))
+                "INSERT INTO trades (trade_id, customer_id, symbol, action, shares, share_price) VALUES (%s, %s, %s, %s, %s, %s)",
+                (trade_id, customer_id, symbol, action, shares, share_price))
             conn.commit()
 
-            result = {'result': 'committed', 'id': trade_id}
-            app.logger.info(result, extra={'trade_id': trade_id})
-            return result
+            app.logger.info("trade committed", extra={'trade_id': trade_id, 'customer_id': customer_id})
+            return {'result': 'committed'}
