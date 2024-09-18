@@ -19,6 +19,7 @@ DAYS_OF_WEEK = ['M','Tu', 'W', 'Th', 'F']
 
 latency_upper_bound = 50
 error_rate = 10
+latency = False
 
 def generate_trades():
     symbols = ['MOT', 'MSI', 'GOGO', 'INTEQ', 'VID', 'ESTC', 'OD1', 'OD2']
@@ -26,6 +27,8 @@ def generate_trades():
     
     while True:
         idx_of_week = (idx_of_week + 1) % len(DAYS_OF_WEEK)
+        if latency:
+            idx_of_week = 2
         trades_per_day = random.randint(0, 100)
         for i in range(trades_per_day):
             symbol = symbols[random.randint(0, len(symbols)-1)]
@@ -33,8 +36,8 @@ def generate_trades():
                 symbol = 'ERR'
             print(f"trading for {symbol} on {DAYS_OF_WEEK[idx_of_week]}, count={i}")
             generate_trade(symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week])
-            latency = float(random.randint(0, latency_upper_bound)) / 1000.0
-            time.sleep(latency)
+            sleep = float(random.randint(0, latency_upper_bound)) / 1000.0
+            time.sleep(sleep)
 
 @app.post('/tput/fast')
 def tput_fast():
@@ -50,12 +53,24 @@ def tput_default():
     
 @app.post('/err/high')
 def err_high():
-    global latency_upper_bound
+    global error_rate
     error_rate = 75
     return {'KERNEL': 'OK'}
     
 @app.post('/err/default')
 def err_default():
-    global latency_upper_bound
+    global error_rate
     error_rate = 10
+    return {'KERNEL': 'OK'}
+
+@app.post('/latency/high')
+def latency_high():
+    global latency
+    latency = True
+    return {'KERNEL': 'OK'}
+    
+@app.post('/latency/default')
+def latency_default():
+    global latency
+    latency = False
     return {'KERNEL': 'OK'}
