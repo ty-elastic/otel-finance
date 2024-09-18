@@ -54,6 +54,8 @@ services:
     build:
       context: ./src/world/
     restart: on-failure
+    ports:
+      - "9002:9002"
     environment:
       DECIDER_HOST: "decider"
     depends_on:
