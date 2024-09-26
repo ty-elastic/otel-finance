@@ -50,19 +50,19 @@ services:
       collector:
         condition: service_started
 
-  world:
-    build:
-      context: ./src/world/
-    restart: on-failure
-    ports:
-      - "9002:9002"
-    environment:
-      DECIDER_HOST: "decider"
-    depends_on:
-      decider:
-        condition: service_started
-      trader:
-        condition: service_started
+  # world:
+  #   build:
+  #     context: ./src/world/
+  #   restart: on-failure
+  #   ports:
+  #     - "9002:9002"
+  #   environment:
+  #     DECIDER_HOST: "decider"
+  #   depends_on:
+  #     decider:
+  #       condition: service_started
+  #     trader:
+  #       condition: service_started
 
   postgresql:
     image: postgres:latest

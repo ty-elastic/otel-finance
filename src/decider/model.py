@@ -1,26 +1,6 @@
 import random
 from app import app
 
-def sim_errors(*, day_of_week, symbol):
-    
-    latency_model = 0
-    error_model = False
-    error_db = False
-
-    if day_of_week == 'Tu':
-        if symbol == 'ERR':
-            error_db = True
-    elif day_of_week == 'W':
-        latency_model = random.randint(50, 60) / 100.0
-    elif day_of_week == 'Th' or day_of_week == 'F':
-        if symbol == 'ERR':
-            error_model = True
-
-    return latency_model, error_model, error_db
-
-market_data_seed = [random.randint(10, 25), random.randint(25, 75), random.randint(75, 100)]
-market_data = {}
-
 class StreamingMovingAverage:
     def __init__(self, window_size):
         self.window_size = window_size
@@ -37,13 +17,22 @@ class StreamingMovingAverage:
     def get(self):
         return float(self.sum) / len(self.values)
 
-def sim_market_data(*, symbol, day_of_week):
+market_data_seed = [random.randint(10, 25), random.randint(25, 75), random.randint(75, 100)]
+market_data = {}
+
+def clamp(n, minn, maxn):
+    return max(min(maxn, n), minn)
+
+def reset_market_data():
+    global market_data
+    market_data = {}
+
+def sim_market_data(*, symbol, day_of_week, skew_pr_volume=0):
+    global market_data
     
     pr_volume = 0
     
-    if symbol == 'OD1':
-        pr_volume = random.randint(-100, 0)
-    elif day_of_week == 'M':
+    if day_of_week == 'M':
         pr_volume = random.randint(-100, 25)
     elif day_of_week == 'Tu':
         pr_volume = random.randint(-75, 50)
@@ -53,6 +42,9 @@ def sim_market_data(*, symbol, day_of_week):
         pr_volume = random.randint(-50, 75)
     elif day_of_week == 'F':
         pr_volume = random.randint(-25, 100)
+        
+    pr_volume += skew_pr_volume
+    pr_volume = clamp(pr_volume, -100, 100)
     app.logger.info(f"pr_volume: {symbol}={pr_volume}")
         
     initial_idx = hash(symbol) % len(market_data_seed)
@@ -76,10 +68,7 @@ def sim_decide(*, symbol, pr_volume):
     
     action = 'hold'
     shares = 0
-    if symbol == 'OD2':
-        action = 'buy'
-        shares = random.randint(90, 100)
-    elif pr_volume <= -25:
+    if pr_volume <= -25:
         action = 'sell'
         if pr_volume <= -75:
             shares = random.randint(50, 100)

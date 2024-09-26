@@ -25,10 +25,17 @@ meter = get_meter("decider")
 trade_fee_dollars = meter.create_counter("trade-fee-dollars")
 trade_volume_shares = meter.create_counter("trade-volume-shares")
 
+def conform_request_bool(value):
+    return value.lower() == 'true'
+
 def set_attribute_and_baggage(key, value):
     current_span = trace.get_current_span()
     current_span.set_attribute(key, value)
     context.attach(baggage.set_baggage(key, value))
+
+@app.post('/reset')
+def reset():
+    model.reset_market_data()
 
 @app.post('/decide')
 def decide():
@@ -45,15 +52,24 @@ def decide():
         day_of_week = random.choice(['M','Tu', 'W', 'Th', 'F'])
     set_attribute_and_baggage("in.day_of_week", day_of_week)
     
+    region = request.args.get('region', default="NA", type=str)
+    set_attribute_and_baggage("in.region", region)
+
     symbol = request.args.get('symbol', default='ESTC', type=str)
     set_attribute_and_baggage("in.symbol", symbol)
-
-    latency_model, error_model, error_db = model.sim_errors(day_of_week=day_of_week, symbol=symbol )
-    current_span.set_attribute("err.latency_model", latency_model)
-    current_span.set_attribute("err.error_model", error_model)
-    current_span.set_attribute("err.error_db", error_db)
-     
-    action, shares, share_price = decide_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, error=error_model, latency=latency_model)
+    
+    # forced errors
+    latency = request.args.get('latency', default=0, type=float)
+    error_model = request.args.get('error_model', default=False, type=conform_request_bool)
+    error_db = request.args.get('error_db', default=False, type=conform_request_bool)
+    skew_pr_volume = request.args.get('skew_pr_volume', default=0, type=int)
+    
+    try:
+        action, shares, share_price = decide_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 
+                                                   error=error_model, latency=latency, skew_pr_volume=skew_pr_volume)
+    except Exception as inst:
+        current_span.set_attribute("canary_build", True)
+        raise inst
 
     response = {}
     response['id'] = trade_id
@@ -72,17 +88,16 @@ def decide():
     return response
 
 @tracer.start_as_current_span("decide_model")
-def decide_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency=0.0):
+def decide_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency=0.0, skew_pr_volume=0):
 
     app.logger.info(f"trade requested for {symbol} on day {day_of_week}", extra={'trade_id': trade_id, 'customer_id': customer_id})
     
-    pr_volume, share_price = model.sim_market_data(symbol=symbol, day_of_week=day_of_week)
+    pr_volume, share_price = model.sim_market_data(symbol=symbol, day_of_week=day_of_week, skew_pr_volume=skew_pr_volume)
     
     current_span = trace.get_current_span()
     current_span.set_attribute("in.pr_volume", pr_volume)
     
-    if error:
-        current_span.set_attribute("canary_build", "true")
+    if error is True:
         raise Exception("CUDA out of memory. Tried to allocate 256.00 MiB (GPU 0; 11.17 GiB total capacity; 9.70 GiB already allocated; 179.81 MiB free; 9.85 GiB reserved in total by PyTorch)") 
     
     ## MODEL WOULD BE CALLED HERE
