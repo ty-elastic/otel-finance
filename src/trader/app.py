@@ -5,9 +5,9 @@ import os
 import psycopg
 
 from opentelemetry import trace
-from opentelemetry import _logs as logs
 from opentelemetry.processor.baggage import BaggageSpanProcessor, ALLOW_ALL_BAGGAGE_KEYS
 
+from opentelemetry import _logs as logs
 from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
 from opentelemetry.processor.logrecord.baggage import BaggageLogRecordProcessor
 

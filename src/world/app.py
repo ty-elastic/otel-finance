@@ -27,14 +27,15 @@ def generate_trade(*, customer_id, symbol, day_of_week, region, latency, error_m
         print(inst)
 
 DAYS_OF_WEEK = ['M','Tu', 'W', 'Th', 'F']
+S_PER_DAY = 60
 
-latency_upper_bound = 50
+latency_upper_bound = 100
 error_rate = 10
 
 latency_region = None
 
 customers = ['b.smith','l.johnson','j.casey','l.hall','q.bert']
-symbols = ['MOT', 'MSI', 'GOGO', 'INTEQ', 'VID', 'ESTC', 'OD1', 'OD2']
+symbols = ['MOT', 'MSI', 'GOGO', 'INTEQ', 'VID', 'ESTC']
 regions = ['NA', 'LATAM', "EU"]
 
 def generate_trades():
@@ -42,26 +43,33 @@ def generate_trades():
     
     idx_of_week = 0
     
+    day_start = 0
+    
     while True:
-        idx_of_week = (idx_of_week + 1) % len(DAYS_OF_WEEK)
-        region = random.choice(regions)
-        if latency_region == region:
-            latency = random.randint(50, 60) / 100.0
+        now = time.time()
+        if now - day_start >= S_PER_DAY:
+            idx_of_week = (idx_of_week + 1) % len(DAYS_OF_WEEK)
+            print(f"advance to {DAYS_OF_WEEK[idx_of_week]}")
+            day_start = now
         else:
-            latency = 0
-        trades_per_day = random.randint(0, 100)
-        for i in range(trades_per_day):
+            region = random.choice(regions)
+            if latency_region == region:
+                latency = random.randint(50, 60) / 100.0
+            else:
+                latency = 0
+            
             symbol = random.choice(symbols)
             if random.randint(0, 100) > (100-error_rate):
                 symbol = 'ERR'
             customer = random.choice(customers)
-            print(f"trading {symbol} for {customer} on {DAYS_OF_WEEK[idx_of_week]}, count={i}")
+            print(f"trading {symbol} for {customer} on {DAYS_OF_WEEK[idx_of_week]}")
             error_model = False
-            error_db = False    
+            error_db = False
             generate_trade(customer_id=customer, symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week], region=region, 
-                           latency=latency, error_model=error_model, error_db=error_db)
-            sleep = float(random.randint(0, latency_upper_bound)) / 1000.0
+                        latency=latency, error_model=error_model, error_db=error_db)
+            sleep = float(random.randint(1, 1000) / 1000)
             time.sleep(sleep)
+
 
 Thread(target=generate_trades, daemon=False).start()
 

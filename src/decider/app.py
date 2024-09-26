@@ -11,6 +11,10 @@ from opentelemetry import trace, baggage, context
 from opentelemetry.metrics import get_meter
 from opentelemetry.processor.baggage import BaggageSpanProcessor, ALLOW_ALL_BAGGAGE_KEYS
 
+from opentelemetry import _logs as logs
+from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
+from opentelemetry.processor.logrecord.baggage import BaggageLogRecordProcessor
+
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
@@ -18,6 +22,13 @@ import model
 
 tracer_provider = trace.get_tracer_provider()
 tracer_provider.add_span_processor(BaggageSpanProcessor(ALLOW_ALL_BAGGAGE_KEYS))
+
+if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
+    print("enable otel logging")
+    log_provider = logs.get_logger_provider()
+    if 'OTEL_EXPORTER_OTLP_ENDPOINT' in os.environ:
+        exporter = OTLPLogExporter()
+    log_provider.add_log_record_processor(BaggageLogRecordProcessor(ALLOW_ALL_BAGGAGE_KEYS, exporter))
 
 tracer = trace.get_tracer("decider")
 
@@ -90,7 +101,7 @@ def decide():
 @tracer.start_as_current_span("decide_model")
 def decide_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency=0.0, skew_pr_volume=0):
 
-    app.logger.info(f"trade requested for {symbol} on day {day_of_week}", extra={'trade_id': trade_id, 'customer_id': customer_id})
+    app.logger.info(f"trade requested for {symbol} on day {day_of_week}")
     
     pr_volume, share_price = model.sim_market_data(symbol=symbol, day_of_week=day_of_week, skew_pr_volume=skew_pr_volume)
     
@@ -115,6 +126,6 @@ def decide_model(*, trade_id, customer_id, day_of_week, symbol, error=False, lat
     else:
         current_span.set_attribute("out.value", 0)
         
-    app.logger.info(f"traded {symbol} on day {day_of_week}", extra={'trade_id': trade_id, 'customer_id': customer_id})
+    app.logger.info(f"traded {symbol} on day {day_of_week}")
 
     return action, shares, share_price
