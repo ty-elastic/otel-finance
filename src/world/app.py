@@ -13,20 +13,22 @@ TRADE_TIMEOUT = 5
 DAYS_OF_WEEK = ['M','Tu', 'W', 'Th', 'F']
 S_PER_DAY = 60
 
-high_latency_region = None
+latency_per_region = {}
 
-high_tput_customer = None
-high_tput_symbol = None
-high_tput_region = None
+high_tput_per_customer = {}
+high_tput_per_symbol = {}
+high_tput_per_region = {}
 
-db_error_region = None
-model_error_region = None
+db_error_per_region = {}
+model_error_per_region = {}
+
+skew_pr_volume_per_symbol = {}
 
 customers = ['b.smith', 'l.johnson', 'j.casey', 'l.hall', 'q.bert']
 symbols = ['MOT', 'MSI', 'GOGO', 'INTEQ', 'VID', 'ESTC']
 regions = ['NA', 'LATAM', 'EU']
 
-def generate_trade(*, customer_id, symbol, day_of_week, region, latency, error_model, error_db):
+def generate_trade(*, customer_id, symbol, day_of_week, region, latency, error_model, error_db, skew_pr_volume):
     try:
         trade_response = requests.post(f"http://{os.environ['DECIDER_HOST']}:9001/decide", 
                                        params={'symbol': symbol, 
@@ -35,7 +37,8 @@ def generate_trade(*, customer_id, symbol, day_of_week, region, latency, error_m
                                                'latency': latency,
                                                'region': region,
                                                'error_model': error_model,
-                                               'error_db': error_db},
+                                               'error_db': error_db,
+                                               'skew_pr_volume': skew_pr_volume},
                                        timeout=TRADE_TIMEOUT)
         trade_response.raise_for_status()
     except Exception as inst:
@@ -61,96 +64,128 @@ def generate_trades():
             symbol = next_symbol if next_symbol is not None else random.choice(symbols)
             customer_id = next_customer if next_customer is not None else random.choice(customers)
 
-            if high_latency_region == region:
-                latency = random.randint(50, 60) / 100.0
+            if region in latency_per_region:
+                latency = random.randint(latency_per_region[region]-100, latency_per_region[region]+100) / 1000.0
             else:
                 latency = 0
 
-            if model_error_region == region:
-                error_model = True if random.randint(0, 100) > 20 else False
+            if region in model_error_per_region:
+                error_model = True if random.randint(0, 100) > (100-model_error_per_region[region]) else False
             else:
                 error_model = False
 
-            if db_error_region == region:
-                error_db = True if random.randint(0, 100) > 30 else False
+            if region in db_error_per_region:
+                error_db = True if random.randint(0, 100) > (100-db_error_per_region[region]) else False
             else:
                 error_db = False
 
-            print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region} with latency {latency}, error_model={error_model}, error_db={error_db}")
+            if symbol in skew_pr_volume_per_symbol:
+                skew_pr_volume = skew_pr_volume_per_symbol[symbol]
+            else:
+                skew_pr_volume = 0
+ 
+            print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region} with latency {latency}, error_model={error_model}, error_db={error_db}, skew_pr_volume={skew_pr_volume}")
 
-            generate_trade(customer_id=customer_id, symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week], region=region, 
-                        latency=latency, error_model=error_model, error_db=error_db)
+            generate_trade(customer_id=customer_id, symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week], region=region,
+                        latency=latency, error_model=error_model, error_db=error_db, skew_pr_volume=skew_pr_volume)
             
-            if high_tput_region is not None:
-                next_region = high_tput_region if random.randint(0, 100) > 50 else None
+            if len(high_tput_per_region.keys()) > 0:
+                next_region = random.choice(list(high_tput_per_region.keys())) if random.randint(0, 100) > 50 else None
                 if next_region is not None:
                     sleep = float(random.randint(1, 10) / 1000)
             
-            if high_tput_customer is not None:
-                next_customer = high_tput_customer if random.randint(0, 100) > 50 else None
+            if len(high_tput_per_customer.keys()) > 0:
+                next_customer = random.choice(list(high_tput_per_customer.keys())) if random.randint(0, 100) > 50 else None
                 if next_customer is not None:
                     sleep = float(random.randint(1, 10) / 1000)
 
-            if high_tput_symbol is not None:
-                next_symbol = high_tput_symbol if random.randint(0, 100) > 50 else None
+            if len(high_tput_per_symbol.keys()) > 0:
+                next_symbol = random.choice(list(high_tput_per_symbol.keys())) if random.randint(0, 100) > 50 else None
                 if next_symbol is not None:
                     sleep = float(random.randint(1, 10) / 1000)
 
             time.sleep(sleep)
 
-
 Thread(target=generate_trades, daemon=False).start()
 
 @app.post('/tput/region/<region>/<speed>')
 def tput_region(region, speed):
-    global high_tput_region
-    if speed == 'default':
-        high_tput_region = None
-    elif speed == 'high':
-        high_tput_region = region
-    return {'region': region, 'speed': speed}
+    global high_tput_per_region
+    high_tput_per_region[region] = speed
+    return high_tput_per_region
+@app.delete('/tput/region/<region>')
+def tput_region_delete(region):
+    if region in high_tput_per_region:
+        del high_tput_per_region[region]
+    return high_tput_per_region
 
 @app.post('/tput/customer/<customer>/<speed>')
 def tput_customer(customer, speed):
-    global high_tput_customer
-    if speed == 'default':
-        high_tput_customer = None
-    elif speed == 'high':
-        high_tput_customer = customer
-    return {'customer': customer, 'speed': speed}
+    global high_tput_per_customer
+    high_tput_per_customer[customer] = speed
+    return high_tput_per_customer
+@app.delete('/tput/customer/<customer>')
+def tput_customer_delete(customer):
+    if customer in high_tput_per_customer:
+        del high_tput_per_customer[customer]
+    return high_tput_per_customer
 
 @app.post('/tput/symbol/<symbol>/<speed>')
 def tput_symbol(symbol, speed):
-    global high_tput_symbol
-    if speed == 'default':
-        high_tput_symbol = None
-    elif speed == 'high':
-        high_tput_symbol = symbol
-    return {'symbol': symbol, 'speed': speed}
+    global high_tput_per_symbol
+    high_tput_per_symbol[symbol] = speed
+    return high_tput_per_symbol
+@app.delete('/tput/symbol/<symbol>')
+def tput_symbol_delete(symbol):
+    global high_tput_per_symbol
+    if symbol in high_tput_per_symbol:
+        del high_tput_per_symbol[symbol]
+    return high_tput_per_symbol
 
-@app.post('/latency/region/<region>/<latency>')
+@app.post('/latency/region/<region>/<amount>')
 def latency_region(region, amount):
-    global high_latency_region
-    if amount == 'none':
-        high_latency_region = None
-    elif amount == 'high':
-        high_latency_region = region
-    return {'region': region, 'amount': amount}
+    global latency_per_region
+    latency_per_region[region] = int(amount)
+    return latency_per_region    
+@app.delete('/latency/region/<region>')
+def latency_region_delete(region):
+    global latency_per_region
+    if region in latency_per_region:
+        del latency_per_region[region]
+    return latency_per_region    
 
 @app.post('/err/db/region/<region>/<amount>')
 def err_db_region(region, amount):
-    global db_error_region
-    if amount == 'none':
-        db_error_region = None
-    elif amount == 'high':
-        db_error_region = region
-    return {'region': region, 'amount': amount}
+    global db_error_per_region
+    db_error_per_region[region] = int(amount)
+    return db_error_per_region
+@app.delete('/err/db/region/<region>')
+def err_db_region_delete(region):
+    global db_error_per_region
+    if region in db_error_per_region:
+        del db_error_per_region[region]
+    return db_error_per_region
 
 @app.post('/err/model/region/<region>/<amount>')
 def err_model_region(region, amount):
-    global model_error_region
-    if amount == 'none':
-        model_error_region = None
-    elif amount == 'high':
-        model_error_region = region
-    return {'region': region, 'amount': amount}
+    global model_error_per_region
+    model_error_per_region[region] = int(amount)
+    return model_error_per_region    
+@app.delete('/err/model/region/<region>')
+def err_model_region_delete(region):
+    global model_error_per_region
+    if region in model_error_per_region:
+        del model_error_per_region[region]
+    return model_error_per_region
+
+@app.post('/pr/symbol/<symbol>/<amount>')
+def skew_pr_symbol(symbol, amount):
+    global skew_pr_volume_per_symbol
+    skew_pr_volume_per_symbol[symbol] = int(amount)
+    return skew_pr_volume_per_symbol
+@app.delete('/pr/symbol/<symbol>')
+def skew_pr_symbol_delete(symbol):
+    global skew_pr_volume_per_symbol
+    if symbol in skew_pr_volume_per_symbol:
+        del skew_pr_volume_per_symbol[symbol]
+    return skew_pr_volume_per_symbol

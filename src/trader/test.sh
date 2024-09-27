@@ -7,9 +7,9 @@ export OTEL_RESOURCE_ATTRIBUTES="service.version=1.0"
 export ELASTIC_OTEL_SYSTEM_METRICS_ENABLED=true
 export OTEL_METRIC_EXPORT_INTERVAL=5000
 
-export OTEL_PYTHON_LOG_LEVEL="info"
-export OTEL_PYTHON_LOG_CORRELATION="true"
-export OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED="true"
+# export OTEL_PYTHON_LOG_LEVEL="info"
+# export OTEL_PYTHON_LOG_CORRELATION="true"
+# export OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED="true"
 
 # pip install -r requirements.txt
 #opentelemetry-bootstrap -a install
