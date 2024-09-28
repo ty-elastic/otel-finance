@@ -26,3 +26,24 @@ services:
     environment:
       ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}
       ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
+
+  # recorder:
+  #   build:
+  #     context: ./src/recorder/
+  #   restart: on-failure
+  #   volumes:
+  #     - ./logs:/logs
+  #   command: ["-logfile=/logs/recorder.json"]
+  #   ports:
+  #     - "9000:9000"
+  #   environment:
+  #     POSTGRES_HOST: "postgresql"
+  #     POSTGRES_PASSWORD: "password"
+  #     POSTGRES_USER: "admin"
+  #     OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+  #     OTEL_SERVICE_NAME: "recorder"
+  #   depends_on:
+  #     postgresql:
+  #       condition: service_healthy
+  #     collector:
+  #       condition: service_started

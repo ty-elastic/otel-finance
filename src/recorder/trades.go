@@ -12,12 +12,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	log "github.com/sirupsen/logrus"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/baggage"
-	"go.opentelemetry.io/otel/trace"
 )
 
-const albumsSqlTable = `
+const tradesSqlTable = `
 	CREATE TABLE trades(
 		trade_id VARCHAR(100) PRIMARY KEY,
 		customer_id VARCHAR(100) NOT NULL,
@@ -51,7 +48,7 @@ func (c *Recorder) initPostgres() error {
 	c.postgres = conn
 
 	// try to create initial table
-	_, err = conn.Exec(context.Background(), albumsSqlTable)
+	_, err = conn.Exec(context.Background(), tradesSqlTable)
 	if err != nil {
 		// if unable to connect, die and retry
 		if _, ok := err.(net.Error); ok {
@@ -73,26 +70,7 @@ func (c *Recorder) recordTrade(ctx *gin.Context) {
 	sharePrice, _ := strconv.ParseFloat(ctx.Query("share_price"), 32)
 	action := ctx.Query("action")
 
-	// get current span context (from auto-instrumentation)
-	span := trace.SpanFromContext(ctx.Request.Context())
-
-	// pull baggage from context (gin otel middleware pulled it from request headers and put it onto context for us)
-	traceBaggage := baggage.FromContext(ctx.Request.Context())
-	for _, member := range traceBaggage.Members() {
-		// set all baggage as span attributes
-		span.SetAttributes(
-			attribute.String(member.Key(), member.Value()),
-		)
-	}
-
-	sqlStatement := `
-		INSERT INTO trades (trade_id, customer_id, symbol, action, shares, share_price)
-		VALUES ($1, $2, $3, $4, $5, $6)
-	`
-
-	// insert trade
-	returnval, err := c.postgres.Exec(ctx, sqlStatement, tradeId, customerId, symbol, action, shares, sharePrice)
-	fmt.Printf("value of returnval %s", returnval)
+	err := c.insertTrade(ctx.Request.Context(), customerId, tradeId, symbol, shares, sharePrice, action)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -104,4 +82,27 @@ func (c *Recorder) recordTrade(ctx *gin.Context) {
 		"trade_id": tradeId,
 		"result":   "committed",
 	})
+}
+
+func (c *Recorder) insertTrade(context context.Context,
+	customerId string,
+	tradeId string,
+	symbol string,
+	shares int64,
+	sharePrice float64,
+	action string) error {
+
+	sqlStatement := `
+		INSERT INTO trades (trade_id, customer_id, symbol, action, shares, share_price)
+		VALUES ($1, $2, $3, $4, $5, $6)
+	`
+
+	// insert trade
+	returnval, err := c.postgres.Exec(context, sqlStatement, tradeId, customerId, symbol, action, shares, sharePrice)
+	fmt.Printf("value of returnval %s", returnval)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

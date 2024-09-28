@@ -20,6 +20,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	spanbaggage "github.com/ty-elastic/opentelemetryprocessorspanbaggage"
 )
 
 var (
@@ -100,10 +102,15 @@ func initTracerProvider() *sdktrace.TracerProvider {
 	if err != nil {
 		log.Fatalf("OTLP Trace gRPC Creation: %v", err)
 	}
+
+	bsp := spanbaggage.BaggageSpanProcessor{}
+
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(exporter),
 		sdktrace.WithResource(initResource()),
+		sdktrace.WithSpanProcessor(bsp),
 	)
+
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	return tp

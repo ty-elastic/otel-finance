@@ -24,31 +24,33 @@ services:
       collector:
         condition: service_started
 
-  trader:
-    build:
-      context: ./src/trader/
-    restart: on-failure
-    ports:
-      - "9000:9000"
-    environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_SERVICE_NAME: "trader"
-      OTEL_RESOURCE_ATTRIBUTES: "service.version=1.0"
-      OTEL_PYTHON_LOG_LEVEL: "info"
-      OTEL_PYTHON_LOG_CORRELATION: "true"
-      OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
-      ELASTIC_OTEL_SYSTEM_METRICS_ENABLED: "true"
-      OTEL_METRIC_EXPORT_INTERVAL: 5000
+  # trader:
+  #   build:
+  #     context: ./src/trader/
+  #   restart: on-failure
+  #   ports:
+  #     - "9000:9000"
+  #   environment:
+  #     OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+  #     OTEL_SERVICE_NAME: "trader"
+  #     OTEL_RESOURCE_ATTRIBUTES: "service.version=1.0"
+  #     OTEL_PYTHON_LOG_LEVEL: "info"
+  #     OTEL_PYTHON_LOG_CORRELATION: "true"
+  #     OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
+  #     ELASTIC_OTEL_SYSTEM_METRICS_ENABLED: "true"
+  #     OTEL_METRIC_EXPORT_INTERVAL: 5000
 
-      POSTGRES_HOST: "postgresql"
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_USER: "admin"
-    command: ["opentelemetry-instrument", "--logs_exporter", "otlp", "flask", "run", "--host=0.0.0.0", "-p", "9000"]
-    depends_on:
-      postgresql:
-        condition: service_healthy
-      collector:
-        condition: service_started
+  #     POSTGRES_HOST: "postgresql"
+  #     POSTGRES_PASSWORD: "password"
+  #     POSTGRES_USER: "admin"
+  #   command: ["opentelemetry-instrument", "--logs_exporter", "otlp", "flask", "run", "--host=0.0.0.0", "-p", "9000"]
+  #   depends_on:
+  #     postgresql:
+  #       condition: service_healthy
+  #     collector:
+  #       condition: service_started
+
+
 
   # world:
   #   build:
