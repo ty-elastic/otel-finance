@@ -73,11 +73,11 @@ def decide():
     latency = request.args.get('latency', default=0, type=float)
     error_model = request.args.get('error_model', default=False, type=conform_request_bool)
     error_db = request.args.get('error_db', default=False, type=conform_request_bool)
-    skew_pr_volume = request.args.get('skew_pr_volume', default=0, type=int)
+    skew_market_factor = request.args.get('skew_market_factor', default=0, type=int)
     
     try:
         action, shares, share_price = decide_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 
-                                                   error=error_model, latency=latency, skew_pr_volume=skew_pr_volume)
+                                                   error=error_model, latency=latency, skew_market_factor=skew_market_factor)
     except Exception as inst:
         current_span.set_attribute("canary_build", True)
         raise inst
@@ -99,20 +99,20 @@ def decide():
     return response
 
 @tracer.start_as_current_span("decide_model")
-def decide_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency=0.0, skew_pr_volume=0):
+def decide_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency=0.0, skew_market_factor=0):
 
     app.logger.info(f"trade requested for {symbol} on day {day_of_week}")
     
-    pr_volume, share_price = model.sim_market_data(symbol=symbol, day_of_week=day_of_week, skew_pr_volume=skew_pr_volume)
+    market_factor, share_price = model.sim_market_data(symbol=symbol, day_of_week=day_of_week, skew_market_factor=skew_market_factor)
     
     current_span = trace.get_current_span()
-    current_span.set_attribute("in.pr_volume", pr_volume)
+    current_span.set_attribute("in.pr_volume", market_factor)
     
     if error is True:
         raise Exception("CUDA out of memory. Tried to allocate 256.00 MiB (GPU 0; 11.17 GiB total capacity; 9.70 GiB already allocated; 179.81 MiB free; 9.85 GiB reserved in total by PyTorch)") 
     
     ## MODEL WOULD BE CALLED HERE
-    action, shares = model.sim_decide(symbol=symbol, pr_volume=pr_volume)
+    action, shares = model.sim_decide(symbol=symbol, market_factor=market_factor)
     if latency > 0:
         time.sleep(latency)
 
