@@ -6,3 +6,4 @@ logs
 target
 .vscode
 build
+.gradle
