@@ -58,7 +58,7 @@ def sim_market_data(*, symbol, day_of_week, skew_market_factor=0):
         share_price = current_share_price + (current_share_price * (float(market_factor) / 100.0))
         share_price = clamp(share_price, random.randint(1, 100), random.randint(900, 1000))
 
-    smoothed_share_price = market_data[symbol].process(share_price)
+    smoothed_share_price = round(market_data[symbol].process(share_price), 2)
     app.logger.info(f"current market share price for {symbol}: ${'{0:0.2f}'.format(smoothed_share_price)}")
 
     return market_factor, smoothed_share_price

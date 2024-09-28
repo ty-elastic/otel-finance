@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"strconv"
 
@@ -22,7 +23,7 @@ const albumsSqlTable = `
 		customer_id VARCHAR(100) NOT NULL,
 		timestamp timestamp default current_timestamp,
 		symbol VARCHAR(10) NOT NULL,
-		shares float NOT NULL,
+		shares int NOT NULL,
 		share_price float NOT NULL,
 		action VARCHAR(10) NOT NULL
 	)
@@ -65,12 +66,12 @@ func (c *Recorder) initPostgres() error {
 }
 
 func (c *Recorder) recordTrade(ctx *gin.Context) {
-	customerId := ctx.Param("customer_id")
-	tradeId := ctx.Param("trade_id")
-	symbol := ctx.Param("symbol")
-	shares := ctx.Param("shares")
-	sharePrice, _ := strconv.ParseFloat(ctx.Param("share_price"), 32)
-	action, _ := strconv.ParseInt(ctx.Param("action"), 10, 32)
+	customerId := ctx.Query("customer_id")
+	tradeId := ctx.Query("trade_id")
+	symbol := ctx.Query("symbol")
+	shares, _ := strconv.ParseInt(ctx.Query("shares"), 10, 32)
+	sharePrice, _ := strconv.ParseFloat(ctx.Query("share_price"), 32)
+	action := ctx.Query("action")
 
 	// get current span context (from auto-instrumentation)
 	span := trace.SpanFromContext(ctx.Request.Context())
@@ -93,8 +94,14 @@ func (c *Recorder) recordTrade(ctx *gin.Context) {
 	returnval, err := c.postgres.Exec(ctx, sqlStatement, tradeId, customerId, symbol, action, shares, sharePrice)
 	fmt.Printf("value of returnval %s", returnval)
 	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	logger.WithContext(ctx.Request.Context()).Info("trade committed")
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"trade_id": tradeId,
+		"result":   "committed",
+	})
 }
