@@ -20,6 +20,7 @@ services:
     restart: on-failure
     ports:
       - "4317:4317"
+      - "4318:4318"
     volumes:
       - ./src/collector/collector.yml:/collector.yml
     command: ["--config=/collector.yml"]
