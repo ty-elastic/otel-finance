@@ -17,7 +17,6 @@ public class BaggageLogRecordProcessorCustomizer implements AutoConfigurationCus
     autoConfigurationCustomizer.addLoggerProviderCustomizer(
         (sdkLoggerProviderBuilder, config) -> {
           addLogRecordProcessor(sdkLoggerProviderBuilder, config);
-          System.out.println("TESTING!!!!!!!!!!!!!!!!");
           return sdkLoggerProviderBuilder;
         });
   }
