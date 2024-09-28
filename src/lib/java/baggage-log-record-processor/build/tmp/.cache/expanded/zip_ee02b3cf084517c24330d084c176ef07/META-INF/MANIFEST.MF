@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Implementation-Title: javaagent
+Implementation-Version: 2.9.0-SNAPSHOT
+Implementation-Vendor: OpenTelemetry
+Implementation-URL: https://github.com/open-telemetry/opentelemetry-java
+ -instrumentation
+Automatic-Module-Name: io.opentelemetry.javaagent
+Main-Class: io.opentelemetry.javaagent.OpenTelemetryAgent
+Agent-Class: io.opentelemetry.javaagent.OpenTelemetryAgent
+Premain-Class: io.opentelemetry.javaagent.OpenTelemetryAgent
+Can-Redefine-Classes: true
+Can-Retransform-Classes: true
+
