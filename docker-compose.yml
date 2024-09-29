@@ -8,20 +8,16 @@ services:
       - "9001:9001"
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_SERVICE_NAME: "decider"
+      OTEL_SERVICE_NAME: "trader"
       OTEL_RESOURCE_ATTRIBUTES: "service.version=1.0"
       OTEL_PYTHON_LOG_LEVEL: "info"
       OTEL_PYTHON_LOG_CORRELATION: "true"
       OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
       ELASTIC_OTEL_SYSTEM_METRICS_ENABLED: "true"
-      OTEL_METRIC_EXPORT_INTERVAL: 5000
 
-      TRADER_HOST: "router"
-    command: ["opentelemetry-instrument", "--logs_exporter", "otlp", "flask", "run", "--host=0.0.0.0", "-p", "9001"]
+      ROUTER_HOST: "router"
     depends_on:
-      trader:
-        condition: service_started
-      collector:
+      router:
         condition: service_started
 
   monkey:
@@ -33,8 +29,6 @@ services:
     environment:
       TRADER_HOST: "trader"
     depends_on:
-      decider:
-        condition: service_started
       trader:
         condition: service_started
 
@@ -45,28 +39,36 @@ services:
     ports:
       - "9000:9000"
     environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4318"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      OTEL_SERVICE_NAME: "router"
+
       RECORDER_HOST: "recorder-java"
       RECORDER_HOST_CANARY: "recorder-go"
     depends_on:
-      decider:
+      recorder-go:
         condition: service_started
-      trader:
+      recorder-java:
         condition: service_started
 
   recorder-go:
     build:
       context: ./src/recorder-go/
     restart: on-failure
+    volumes:
+      - ./logs:/logs
+    command: ["-logfile=/logs/recorder.log"]
     ports:
       - "9004:9004"
     environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_SERVICE_NAME: "recorder-go"
+  
       POSTGRES_HOST: "postgresql"
       POSTGRES_PASSWORD: "password"
       POSTGRES_USER: "admin"
     depends_on:
-      decider:
-        condition: service_started
-      trader:
+      postgresql:
         condition: service_started
 
   recorder-java:
@@ -76,13 +78,17 @@ services:
     ports:
       - "9003:9003"
     environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4318"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      OTEL_SERVICE_NAME: "recorder-java"
+
       POSTGRES_HOST: "postgresql"
       POSTGRES_PASSWORD: "password"
       POSTGRES_USER: "admin"
     depends_on:
-      decider:
+      postgresql:
         condition: service_started
-      trader:
+      collector:
         condition: service_started
 
   frontend:
@@ -98,9 +104,12 @@ services:
     ports:
       - '9394:80'
     environment:
-      - OTEL_SERVICE_NAME=proxy
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_SERVICE_NAME: "proxy"
     depends_on:
-      collector:
+      monkey:
+        condition: service_started
+      trader:
         condition: service_started
 
   instruqt_frontend:

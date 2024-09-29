@@ -20,12 +20,12 @@ func NewTradeController(tradeService *TradeService) (*TradeController, error) {
 	c.gin = gin.Default()
 	c.gin.Use(otelgin.Middleware(os.Getenv("OTEL_SERVICE_NAME")))
 
-	c.gin.POST("/trade", c.trade)
+	c.gin.POST("/record", c.record)
 
 	return &c, nil
 }
 
-func (c *TradeController) trade(ctx *gin.Context) {
+func (c *TradeController) record(ctx *gin.Context) {
 	customerId := ctx.Query("customer_id")
 	tradeId := ctx.Query("trade_id")
 	symbol := ctx.Query("symbol")

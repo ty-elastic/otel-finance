@@ -17,7 +17,7 @@ public class TradeController {
 
     private final TradeService tradeService;
 
-	@PostMapping("/trade")
+	@PostMapping("/record")
     public ResponseEntity<Trade> trade(@RequestParam(value = "customer_id") String customerId,
 		@RequestParam(value = "trade_id") String tradeId,
 		@RequestParam(value = "symbol") String symbol,

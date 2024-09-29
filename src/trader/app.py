@@ -90,7 +90,7 @@ def decide():
         
     if error_db is True:
         symbol = None
-    trade_response = requests.post(f"http://{os.environ['TRADER_HOST']}:9000/trade", params={'canary': canary, 'customer_id': customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action})
+    trade_response = requests.post(f"http://{os.environ['ROUTER_HOST']}:9000/record", params={'canary': canary, 'customer_id': customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action})
     trade_response.raise_for_status()
     trade_response_json = trade_response.json()
 

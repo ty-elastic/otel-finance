@@ -10,3 +10,4 @@ build
 _archive
 node_modules
 *.log
+_lib

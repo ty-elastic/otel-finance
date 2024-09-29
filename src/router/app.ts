@@ -13,12 +13,12 @@ const pathFilterCanary = function (path: string, req: express.Request) {
 };
 
 const proxyMiddleware1 = createProxyMiddleware<Request, Response>({
-  target: 'http://127.0.0.1:9003',
+  target: 'http://{process.env.RECORDER_HOST}:9003',
   changeOrigin: false,
 })
 
 const proxyMiddleware2 = createProxyMiddleware<Request, Response>({
-  target: 'http://127.0.0.1:9004',
+  target: 'http://{process.env.RECORDER_HOST_CANARY}:9004',
   pathFilter: pathFilterCanary,
   changeOrigin: false,
 })
