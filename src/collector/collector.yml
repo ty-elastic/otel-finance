@@ -6,9 +6,9 @@ receivers:
       http:
         endpoint: 0.0.0.0:4318
 
-  filelog/catalog:
+  filelog/recorder:
     # ingest app log (proprietary format)
-    include: [ logs/catalog.log ]
+    include: [ logs/recorder.log ]
     operators:
       # parse JSON logs from app
       - type: json_parser
@@ -73,5 +73,5 @@ service:
       receivers: [ otlp ]
       exporters: [ otlp/elastic ]
     logs:
-      receivers: [ otlp, filelog/catalog ]
+      receivers: [ otlp, filelog/recorder ]
       exporters: [ otlp/elastic ]

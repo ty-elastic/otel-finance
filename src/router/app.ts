@@ -8,23 +8,22 @@ const PORT: number = parseInt(process.env.PORT || '9000');
 const app: Express = express();
 
 const pathFilterCanary = function (path: string, req: express.Request) {
-  console.log(req.query.canary)
   return req.query.canary === 'True'
 };
 
-const proxyMiddleware1 = createProxyMiddleware<Request, Response>({
+const proxyMiddleware = createProxyMiddleware<Request, Response>({
   target: `http://${process.env.RECORDER_HOST}:9003`,
   changeOrigin: false,
 })
 
-const proxyMiddleware2 = createProxyMiddleware<Request, Response>({
+const proxyMiddlewareCanary = createProxyMiddleware<Request, Response>({
   target: `http://${process.env.RECORDER_HOST_CANARY}:9004`,
   pathFilter: pathFilterCanary,
   changeOrigin: false,
 })
 
-app.use('/', proxyMiddleware1);
-app.use('/', proxyMiddleware2);
+app.use('/', proxyMiddlewareCanary);
+app.use('/', proxyMiddleware);
 
 app.listen(PORT, () => {
   console.log(`Listening for requests on http://localhost:${PORT}`);

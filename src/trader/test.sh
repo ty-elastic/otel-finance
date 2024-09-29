@@ -15,4 +15,4 @@ cd ../../lib
 cd ../src/trader
 pip install -e _lib/baggage-log-record-processor
 
-OTEL_SERVICE_NAME="decider" opentelemetry-instrument flask run --host=0.0.0.0 -p 9001
+OTEL_SERVICE_NAME="trader" opentelemetry-instrument flask run --host=0.0.0.0 -p 9001
