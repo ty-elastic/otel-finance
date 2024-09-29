@@ -1,7 +1,9 @@
 FROM golang:1.23.1-alpine AS builder
 WORKDIR /usr/src/app/
 
-COPY . ./
+COPY go.* .
+COPY *.go .
+COPY _lib .
 RUN go build -o /go/bin/recorder
 
 # -----------------------------------------------------------------------------
