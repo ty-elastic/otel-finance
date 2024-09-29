@@ -74,12 +74,14 @@ def decide():
     error_model = request.args.get('error_model', default=False, type=conform_request_bool)
     error_db = request.args.get('error_db', default=False, type=conform_request_bool)
     skew_market_factor = request.args.get('skew_market_factor', default=0, type=int)
+
+    canary = request.args.get('canary', default=False, type=conform_request_bool)
+    set_attribute_and_baggage("canary", canary)
     
     try:
         action, shares, share_price = decide_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 
                                                    error=error_model, latency=latency, skew_market_factor=skew_market_factor)
     except Exception as inst:
-        current_span.set_attribute("canary_build", True)
         raise inst
 
     response = {}
@@ -88,7 +90,7 @@ def decide():
         
     if error_db is True:
         symbol = None
-    trade_response = requests.post(f"http://{os.environ['TRADER_HOST']}:9000/trade", params={'customer_id': customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action})
+    trade_response = requests.post(f"http://{os.environ['TRADER_HOST']}:9000/trade", params={'canary': canary, 'customer_id': customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action})
     trade_response.raise_for_status()
     trade_response_json = trade_response.json()
 

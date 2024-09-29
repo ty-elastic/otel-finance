@@ -1,7 +1,0 @@
-flask
-psycopg[binary]
-
-elastic-opentelemetry
-opentelemetry-processor-baggage
-
-bagage_log_record_processor

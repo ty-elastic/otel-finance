@@ -15,6 +15,8 @@ S_PER_DAY = 60
 
 latency_per_region = {}
 
+canary_per_region = {}
+
 high_tput_per_customer = {}
 high_tput_per_symbol = {}
 high_tput_per_region = {}
@@ -28,7 +30,7 @@ customers = ['b.smith', 'l.johnson', 'j.casey', 'l.hall', 'q.bert']
 symbols = ['MOT', 'MSI', 'GOGO', 'INTEQ', 'VID', 'ESTC']
 regions = ['NA', 'LATAM', 'EU', 'EMEA']
 
-def generate_trade(*, customer_id, symbol, day_of_week, region, latency, error_model, error_db, skew_market_factor):
+def generate_trade(*, customer_id, symbol, day_of_week, region, latency, error_model, error_db, skew_market_factor, canary):
     try:
         trade_response = requests.post(f"http://{os.environ['DECIDER_HOST']}:9001/decide", 
                                        params={'symbol': symbol, 
@@ -38,7 +40,8 @@ def generate_trade(*, customer_id, symbol, day_of_week, region, latency, error_m
                                                'region': region,
                                                'error_model': error_model,
                                                'error_db': error_db,
-                                               'skew_market_factor': skew_market_factor},
+                                               'skew_market_factor': skew_market_factor,
+                                               'canary': canary},
                                        timeout=TRADE_TIMEOUT)
         trade_response.raise_for_status()
     except Exception as inst:
@@ -84,10 +87,15 @@ def generate_trades():
             else:
                 skew_market_factor = 0
  
-            print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region} with latency {latency}, error_model={error_model}, error_db={error_db}, skew_market_factor={skew_market_factor}")
+            if region in canary_per_region:
+                canary = True
+            else:
+                canary = False
+ 
+            print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region} with latency {latency}, error_model={error_model}, error_db={error_db}, skew_market_factor={skew_market_factor}, canary={canary}")
 
             generate_trade(customer_id=customer_id, symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week], region=region,
-                        latency=latency, error_model=error_model, error_db=error_db, skew_market_factor=skew_market_factor)
+                        latency=latency, error_model=error_model, error_db=error_db, skew_market_factor=skew_market_factor, canary=canary)
             
             if len(high_tput_per_region.keys()) > 0:
                 next_region = random.choice(list(high_tput_per_region.keys())) if random.randint(0, 100) > 50 else None
@@ -189,3 +197,15 @@ def skew_pr_symbol_delete(symbol):
     if symbol in skew_pr_volume_per_symbol:
         del skew_pr_volume_per_symbol[symbol]
     return skew_pr_volume_per_symbol
+
+@app.post('/canary/region/<region>')
+def canary_region(region):
+    global canary_per_region
+    canary_per_region[region] = True
+    return canary_per_region    
+@app.delete('/canary/region/<region>')
+def canary_region_delete(region):
+    global canary_per_region
+    if region in canary_per_region:
+        del canary_per_region[region]
+    return canary_per_region  

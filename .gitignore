@@ -7,3 +7,5 @@ target
 .vscode
 build
 .gradle
+_archive
+node_modules

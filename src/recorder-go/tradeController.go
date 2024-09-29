@@ -44,5 +44,5 @@ func (c *TradeController) trade(ctx *gin.Context) {
 }
 
 func (c *TradeController) Run() {
-	c.gin.Run("0.0.0.0:9000")
+	c.gin.Run("0.0.0.0:9004")
 }
