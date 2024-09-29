@@ -186,17 +186,17 @@ def err_model_region_delete(region):
         del model_error_per_region[region]
     return model_error_per_region
 
-@app.post('/pr/symbol/<symbol>/<amount>')
-def skew_pr_symbol(symbol, amount):
-    global skew_pr_volume_per_symbol
-    skew_pr_volume_per_symbol[symbol] = int(amount)
-    return skew_pr_volume_per_symbol
-@app.delete('/pr/symbol/<symbol>')
+@app.post('/skew_market_factor/symbol/<symbol>/<amount>')
+def skew_market_factor(symbol, amount):
+    global skew_market_factor_per_symbol
+    skew_market_factor_per_symbol[symbol] = int(amount)
+    return skew_market_factor_per_symbol
+@app.delete('/skew_market_factor/symbol/<symbol>')
 def skew_pr_symbol_delete(symbol):
-    global skew_pr_volume_per_symbol
-    if symbol in skew_pr_volume_per_symbol:
-        del skew_pr_volume_per_symbol[symbol]
-    return skew_pr_volume_per_symbol
+    global skew_market_factor_per_symbol
+    if symbol in skew_market_factor_per_symbol:
+        del skew_market_factor_per_symbol[symbol]
+    return skew_market_factor_per_symbol
 
 @app.post('/canary/region/<region>')
 def canary_region(region):
