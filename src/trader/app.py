@@ -30,9 +30,9 @@ if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
         exporter = OTLPLogExporter()
     log_provider.add_log_record_processor(BaggageLogRecordProcessor(ALLOW_ALL_BAGGAGE_KEYS, exporter))
 
-tracer = trace.get_tracer("decider")
+tracer = trace.get_tracer("trader")
 
-meter = get_meter("decider")
+meter = get_meter("trader")
 trade_fee_dollars = meter.create_counter("trade-fee-dollars")
 trade_volume_shares = meter.create_counter("trade-volume-shares")
 
@@ -48,8 +48,8 @@ def set_attribute_and_baggage(key, value):
 def reset():
     model.reset_market_data()
 
-@app.post('/decide')
-def decide():
+@app.post('/trade')
+def trade():
     current_span = trace.get_current_span()
     
     trade_id = str(uuid.uuid4())
@@ -79,7 +79,7 @@ def decide():
     set_attribute_and_baggage("canary", canary)
     
     try:
-        action, shares, share_price = decide_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 
+        action, shares, share_price = run_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 
                                                    error=error_model, latency=latency, skew_market_factor=skew_market_factor)
     except Exception as inst:
         raise inst
@@ -100,8 +100,8 @@ def decide():
     
     return response
 
-@tracer.start_as_current_span("decide_model")
-def decide_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency=0.0, skew_market_factor=0):
+@tracer.start_as_current_span("run_model")
+def run_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency=0.0, skew_market_factor=0):
 
     app.logger.info(f"trade requested for {symbol} on day {day_of_week}")
     
