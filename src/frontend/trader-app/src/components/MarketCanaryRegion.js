@@ -27,7 +27,7 @@ class MarketCanaryRegion extends React.Component {
         event.preventDefault();
 
         try {
-            if (this.state.canary_region_on == false) {
+            if (this.state.canary_region_on === false) {
                 await axios.delete(`/monkey/canary/region/${this.state.canary_region}`);
             } else {
                 await axios.post(`/monkey/canary/region/${this.state.canary_region}`);

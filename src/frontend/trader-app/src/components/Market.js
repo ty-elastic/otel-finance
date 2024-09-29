@@ -48,9 +48,6 @@ class Market extends React.Component {
 
                 <h2>Skew Market Factor by Symbol</h2>
                 <MarketSkewMarketFactorSymbol/>
-                <hr></hr>
-                <h2>Canary by Region</h2>
-                <MarketCanaryRegion/>
             </div>
         );
     }

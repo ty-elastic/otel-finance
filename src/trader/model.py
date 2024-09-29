@@ -1,4 +1,6 @@
 import random
+import time
+
 from app import app
 
 MARKET_WINDOW_SIZE = 5
@@ -63,7 +65,10 @@ def sim_market_data(*, symbol, day_of_week, skew_market_factor=0):
 
     return market_factor, smoothed_share_price
 
-def sim_decide(*, symbol, market_factor):
+def sim_decide(*, symbol, market_factor, error, latency):
+
+    if error:
+        raise Exception("CUDA out of memory. Tried to allocate 256.00 MiB (GPU 0; 11.17 GiB total capacity; 9.70 GiB already allocated; 179.81 MiB free; 9.85 GiB reserved in total by PyTorch)")
 
     action = 'hold'
     shares = 0
@@ -79,6 +84,9 @@ def sim_decide(*, symbol, market_factor):
             shares = random.randint(50, 100)
         else:
             shares = random.randint(1, 50)
+
+    if latency > 0:
+        time.sleep(latency)
 
     return action, shares
     

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
-class Trader extends React.Component {
+class TradeRequest extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -29,7 +29,7 @@ class Trader extends React.Component {
         event.preventDefault();
         
         try {
-            await axios.post("/trader/trade", null, {
+            await axios.post("/trader/trade/request", null, {
                 params: {
                     'symbol': this.state.symbol,
                     'day_of_week': this.state.dayOfWeek,
@@ -94,4 +94,4 @@ class Trader extends React.Component {
     }
 }
 
-export default Trader;
+export default TradeRequest;

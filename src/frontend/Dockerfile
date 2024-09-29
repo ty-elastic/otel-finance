@@ -8,7 +8,6 @@ COPY trader-app/package*.json ./
 RUN npm install
 
 COPY trader-app/ .
-RUN npm install @elastic/apm-rum --save
 
 ARG ELASTIC_APM_SERVER_RUM_ENDPOINT
 ARG ELASTIC_APM_SERVER_RUM_CREDENTIALS

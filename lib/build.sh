@@ -12,3 +12,5 @@ cd ../..
 mkdir -p ../src/trader/_lib/
 cp -r python/ ../src/trader/_lib/
 
+mkdir -p ../src/monkey/_lib/
+cp -r python/ ../src/monkey/_lib/

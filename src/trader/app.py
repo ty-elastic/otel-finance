@@ -1,6 +1,6 @@
 from flask import Flask, request
 import logging
-import time
+
 import random
 import os
 import uuid
@@ -47,11 +47,8 @@ def set_attribute_and_baggage(key, value):
 @app.post('/reset')
 def reset():
     model.reset_market_data()
-
-@app.post('/trade')
-def trade():
-    current_span = trace.get_current_span()
     
+def decode_common_args():
     trade_id = str(uuid.uuid4())
     set_attribute_and_baggage("trade_id", trade_id)
     
@@ -78,11 +75,23 @@ def trade():
     canary = request.args.get('canary', default=False, type=conform_request_bool)
     set_attribute_and_baggage("canary", canary)
     
-    try:
-        action, shares, share_price = run_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 
-                                                   error=error_model, latency=latency, skew_market_factor=skew_market_factor)
-    except Exception as inst:
-        raise inst
+    return trade_id, customer_id, day_of_week, region, symbol, latency, error_model, error_db, skew_market_factor, canary
+
+@tracer.start_as_current_span("trade")
+def trade(*, trade_id, customer_id, day_of_week, shares, share_price, canary, action, error_db):
+    current_span = trace.get_current_span()
+    
+    app.logger.info(f"trade requested for {symbol} on day {day_of_week}")
+    
+    current_span.set_attribute("out.shares", shares)
+    current_span.set_attribute("out.share_price", share_price)
+    current_span.set_attribute("out.action", action)
+    if action == 'buy' or action == 'sell':
+        current_span.set_attribute("out.value", shares * share_price)
+        trade_fee_dollars.add(math.ceil(share_price * shares * .001))
+        trade_volume_shares.add(shares)
+    else:
+        current_span.set_attribute("out.value", 0)
 
     response = {}
     response['id'] = trade_id
@@ -98,36 +107,36 @@ def trade():
     response['share_price']= share_price
     response['action']= action
     
+    app.logger.info(f"traded {symbol} on day {day_of_week}")
+    
     return response
+    
+@app.post('/trade/force')
+def trade_force():
+    trade_id, customer_id, day_of_week, region, symbol, latency, error_model, error_db, skew_market_factor, canary = decode_common_args()
+
+    action = request.args.get('action', type=str)
+    shares = request.args.get('shares', type=int)
+    share_price = request.args.get('share_price', type=float)
+    
+    return trade (trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, canary=canary, action=action, error_db=False)
+
+@app.post('/trade/request')
+def trade_request():
+    trade_id, customer_id, day_of_week, region, symbol, latency, error_model, error_db, skew_market_factor, canary = decode_common_args()
+
+    action, shares, share_price = run_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 
+                                                   error=error_model, latency=latency, skew_market_factor=skew_market_factor)
+
+    return trade (trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, canary=canary, action=action, error_db=error_db)
 
 @tracer.start_as_current_span("run_model")
 def run_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency=0.0, skew_market_factor=0):
-
-    app.logger.info(f"trade requested for {symbol} on day {day_of_week}")
+    current_span = trace.get_current_span()
     
     market_factor, share_price = model.sim_market_data(symbol=symbol, day_of_week=day_of_week, skew_market_factor=skew_market_factor)
+    current_span.set_attribute("in.market_factor", market_factor)
     
-    current_span = trace.get_current_span()
-    current_span.set_attribute("in.pr_volume", market_factor)
-    
-    if error is True:
-        raise Exception("CUDA out of memory. Tried to allocate 256.00 MiB (GPU 0; 11.17 GiB total capacity; 9.70 GiB already allocated; 179.81 MiB free; 9.85 GiB reserved in total by PyTorch)") 
-    
-    ## MODEL WOULD BE CALLED HERE
-    action, shares = model.sim_decide(symbol=symbol, market_factor=market_factor)
-    if latency > 0:
-        time.sleep(latency)
-
-    current_span.set_attribute("out.shares", shares)
-    current_span.set_attribute("out.share_price", share_price)
-    current_span.set_attribute("out.action", action)
-    if action == 'buy' or action == 'sell':
-        current_span.set_attribute("out.value", shares * share_price)
-        trade_fee_dollars.add(math.ceil(share_price * shares * .001))
-        trade_volume_shares.add(shares)
-    else:
-        current_span.set_attribute("out.value", 0)
-        
-    app.logger.info(f"traded {symbol} on day {day_of_week}")
+    action, shares = model.sim_decide(error=error, latency=latency, symbol=symbol, market_factor=market_factor)
 
     return action, shares, share_price

@@ -43,7 +43,7 @@ class MarketTputCustomer extends React.Component {
                 <label>
                     Speed:
                     <select name="tput_customer_speed" value={this.state.tput_customer_speed} onChange={this.handleInputChange}>
-                        <option value="high">Hight</option>
+                        <option value="high">High</option>
                         <option value="default">Default</option>
                     </select>
                 </label>
