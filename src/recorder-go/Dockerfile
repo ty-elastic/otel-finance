@@ -12,5 +12,5 @@ WORKDIR /usr/src/app/
 
 COPY --from=builder /go/bin/recorder ./
 
-EXPOSE 9000
+EXPOSE 9004
 ENTRYPOINT [ "./recorder" ]

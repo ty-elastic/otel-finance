@@ -1,8 +1,8 @@
 services:
 
-  decider:
+  trader:
     build:
-      context: ./src/decider/
+      context: ./src/trader/
     restart: on-failure
     ports:
       - "9001:9001"
@@ -16,7 +16,7 @@ services:
       ELASTIC_OTEL_SYSTEM_METRICS_ENABLED: "true"
       OTEL_METRIC_EXPORT_INTERVAL: 5000
 
-      TRADER_HOST: "trader"
+      TRADER_HOST: "router"
     command: ["opentelemetry-instrument", "--logs_exporter", "otlp", "flask", "run", "--host=0.0.0.0", "-p", "9001"]
     depends_on:
       trader:
@@ -24,47 +24,93 @@ services:
       collector:
         condition: service_started
 
-  # trader:
-  #   build:
-  #     context: ./src/trader/
-  #   restart: on-failure
-  #   ports:
-  #     - "9000:9000"
-  #   environment:
-  #     OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-  #     OTEL_SERVICE_NAME: "trader"
-  #     OTEL_RESOURCE_ATTRIBUTES: "service.version=1.0"
-  #     OTEL_PYTHON_LOG_LEVEL: "info"
-  #     OTEL_PYTHON_LOG_CORRELATION: "true"
-  #     OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
-  #     ELASTIC_OTEL_SYSTEM_METRICS_ENABLED: "true"
-  #     OTEL_METRIC_EXPORT_INTERVAL: 5000
+  monkey:
+    build:
+      context: ./src/monkey/
+    restart: on-failure
+    ports:
+      - "9002:9002"
+    environment:
+      TRADER_HOST: "trader"
+    depends_on:
+      decider:
+        condition: service_started
+      trader:
+        condition: service_started
 
-  #     POSTGRES_HOST: "postgresql"
-  #     POSTGRES_PASSWORD: "password"
-  #     POSTGRES_USER: "admin"
-  #   command: ["opentelemetry-instrument", "--logs_exporter", "otlp", "flask", "run", "--host=0.0.0.0", "-p", "9000"]
-  #   depends_on:
-  #     postgresql:
-  #       condition: service_healthy
-  #     collector:
-  #       condition: service_started
+  router:
+    build:
+      context: ./src/router/
+    restart: on-failure
+    ports:
+      - "9000:9000"
+    environment:
+      RECORDER_HOST: "recorder-java"
+      RECORDER_HOST_CANARY: "recorder-go"
+    depends_on:
+      decider:
+        condition: service_started
+      trader:
+        condition: service_started
 
+  recorder-go:
+    build:
+      context: ./src/recorder-go/
+    restart: on-failure
+    ports:
+      - "9004:9004"
+    environment:
+      POSTGRES_HOST: "postgresql"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_USER: "admin"
+    depends_on:
+      decider:
+        condition: service_started
+      trader:
+        condition: service_started
 
+  recorder-java:
+    build:
+      context: ./src/recorder-java/
+    restart: on-failure
+    ports:
+      - "9003:9003"
+    environment:
+      POSTGRES_HOST: "postgresql"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_USER: "admin"
+    depends_on:
+      decider:
+        condition: service_started
+      trader:
+        condition: service_started
 
-  # world:
-  #   build:
-  #     context: ./src/world/
-  #   restart: on-failure
-  #   ports:
-  #     - "9002:9002"
-  #   environment:
-  #     DECIDER_HOST: "decider"
-  #   depends_on:
-  #     decider:
-  #       condition: service_started
-  #     trader:
-  #       condition: service_started
+  frontend:
+    platform: "linux/amd64"
+    build:
+      context: ./src/frontend/
+      args:
+        ELASTIC_APM_SERVER_RUM_ENDPOINT: ${ELASTIC_APM_SERVER_RUM_ENDPOINT}
+        ELASTIC_APM_SERVER_RUM_CREDENTIALS: ${ELASTIC_APM_SERVER_RUM_CREDENTIALS}
+        ELASTIC_APM_DEPLOYMENT_ENVIRONMENT: default
+    volumes:
+      - ./logs:/var/log/nginx
+    ports:
+      - '9394:80'
+    environment:
+      - OTEL_SERVICE_NAME=proxy
+    depends_on:
+      collector:
+        condition: service_started
+
+  instruqt_frontend:
+    build:
+      context: ./instruqt_frontend/
+    ports:
+      - '9393:80'
+    depends_on:
+      frontend:
+        condition: service_started
 
   postgresql:
     image: postgres:latest
@@ -86,8 +132,10 @@ services:
     restart: on-failure
     ports:
       - "4317:4317"
+      - "4318:4318"
     volumes:
       - ./src/collector/collector.yml:/collector.yml
+      - ./logs:/logs
     command: ["--config=/collector.yml"]
     environment:
       ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}

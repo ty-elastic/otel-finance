@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "opentelemetry-processor-logrecord-baggage"
+dynamic = ["version"]
+description = "OpenTelemetry Baggage Log Record Processor"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.8"
+authors = [
+  { name = "Ty Bekiares", email = "ty.bekiares@elastic.co" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+  "opentelemetry-api ~= 1.5",
+  "opentelemetry-sdk ~= 1.5",
+  "wrapt >= 1.0.0, < 2.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ty-elastic/opentelemetry-python-contrib/tree/main/processor/logrecord/opentelemetry-processor-baggage"
+
+[tool.hatch.version]
+path = "src/opentelemetry/processor/logrecord/baggage/version.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/opentelemetry"]

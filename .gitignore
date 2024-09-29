@@ -9,3 +9,4 @@ build
 .gradle
 _archive
 node_modules
+*.log

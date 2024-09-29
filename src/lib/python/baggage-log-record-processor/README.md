@@ -1,1 +1,0 @@
-OpenTelemetry Baggage LogRecord Processor

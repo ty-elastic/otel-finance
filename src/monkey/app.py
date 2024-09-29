@@ -32,7 +32,7 @@ regions = ['NA', 'LATAM', 'EU', 'EMEA']
 
 def generate_trade(*, customer_id, symbol, day_of_week, region, latency, error_model, error_db, skew_market_factor, canary):
     try:
-        trade_response = requests.post(f"http://{os.environ['DECIDER_HOST']}:9001/decide", 
+        trade_response = requests.post(f"http://{os.environ['TRADER_HOST']}:9001/decide", 
                                        params={'symbol': symbol, 
                                                'day_of_week': day_of_week, 
                                                'customer_id': customer_id, 
