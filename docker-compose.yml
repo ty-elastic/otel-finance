@@ -123,14 +123,14 @@ services:
       trader:
         condition: service_started
 
-  # instruqt_frontend:
-  #   build:
-  #     context: ./instruqt_frontend/
-  #   ports:
-  #     - '9393:80'
-  #   depends_on:
-  #     frontend:
-  #       condition: service_started
+  instruqt_frontend:
+    build:
+      context: ./instruqt_frontend/
+    ports:
+      - '9393:80'
+    depends_on:
+      frontend:
+        condition: service_started
 
   postgresql:
     image: postgres:latest

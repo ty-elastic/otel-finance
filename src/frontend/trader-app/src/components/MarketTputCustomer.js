@@ -64,7 +64,7 @@ class MarketTputCustomer extends React.Component {
                     <br />
                     <input type="submit" value="Submit" />
                 </form>
-                <State key={'high_tput_per_customer'} />
+                <State key='high_tput_per_customer' />
             </div>
         );
     }

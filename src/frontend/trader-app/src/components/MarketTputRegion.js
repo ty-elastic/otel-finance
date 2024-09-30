@@ -63,7 +63,7 @@ class MarketTputRegion extends React.Component {
                     <br />
                     <input type="submit" value="Submit" />
                 </form>
-                <State key={'high_tput_per_region'} />
+                <State key='high_tput_per_region' />
             </div>
         );
     }

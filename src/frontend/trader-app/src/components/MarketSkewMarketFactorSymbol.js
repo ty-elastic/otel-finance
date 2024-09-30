@@ -63,7 +63,7 @@ class MarketSkewMarketFactorSymbol extends React.Component {
                     <input type="submit" value="Submit" />
 
                 </form>
-                <State key={'skew_market_factor_per_symbol'} />
+                <State key='skew_market_factor_per_symbol' />
             </div>
         );
     }

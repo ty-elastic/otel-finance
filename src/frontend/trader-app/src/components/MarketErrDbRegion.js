@@ -60,7 +60,7 @@ class MarketErrDbRegion extends React.Component {
                     <br />
                     <input type="submit" value="Submit" />
                 </form>
-                <State key={'db_error_per_region'} />
+                <State key='db_error_per_region' />
             </div>
         );
     }
