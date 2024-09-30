@@ -30,4 +30,4 @@ And then load the variables
 
 # Architecture
 
-![arch](docs/arch.jpg)
+![arch](docs/arch.png)
