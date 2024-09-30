@@ -16,5 +16,7 @@ COPY model.py .
 # add OTel auto-instrumentation libs matching installed Python modules
 RUN opentelemetry-bootstrap -a install
 
+ENV ROUTER_HOST="router"
+
 EXPOSE 9001
 CMD [ "opentelemetry-instrument", "--logs_exporter", "otlp", "flask", "run", "--host=0.0.0.0", "-p", "9001" ]

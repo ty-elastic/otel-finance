@@ -14,10 +14,6 @@ services:
       OTEL_PYTHON_LOG_LEVEL: "info"
       OTEL_PYTHON_LOG_CORRELATION: "true"
       OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
-
-      ELASTIC_OTEL_SYSTEM_METRICS_ENABLED: "true"
-
-      ROUTER_HOST: "router"
     depends_on:
       router:
         condition: service_started
@@ -35,8 +31,6 @@ services:
       OTEL_PYTHON_LOG_LEVEL: "info"
       OTEL_PYTHON_LOG_CORRELATION: "true"
       OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
-
-      ELASTIC_OTEL_SYSTEM_METRICS_ENABLED: "true"
     depends_on:
       trader:
         condition: service_started
