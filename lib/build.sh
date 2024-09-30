@@ -16,7 +16,7 @@ mkdir -p ../src/recorder-java/_lib/
 wget -O ../src/recorder-java/_lib/elastic-otel-javaagent.jar https://repo1.maven.org/maven2/co/elastic/otel/elastic-otel-javaagent/1.0.0/elastic-otel-javaagent-1.0.0.jar
 
 mkdir -p ../src/trader/_lib/
-cp -r python/ ../src/trader/_lib/
+cp -r python/* ../src/trader/_lib/
 
 mkdir -p ../src/monkey/_lib/
-cp -r python/ ../src/monkey/_lib/
+cp -r python/* ../src/monkey/_lib/
