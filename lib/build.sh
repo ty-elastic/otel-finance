@@ -1,5 +1,5 @@
 mkdir -p ../src/recorder-go/_lib/
-cp -r go/ ../src/recorder-go/_lib/
+cp -r go/* ../src/recorder-go/_lib/
 
 mkdir -p ../src/recorder-java/_lib/
 cd java/baggage-log-record-processor
