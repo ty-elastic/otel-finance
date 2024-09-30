@@ -1,3 +1,0 @@
-cd lib
-./build.sh
-
