@@ -110,8 +110,6 @@ services:
         ELASTIC_APM_SERVER_RUM_ENDPOINT: ${ELASTIC_APM_SERVER_RUM_ENDPOINT}
         ELASTIC_APM_SERVER_RUM_CREDENTIALS: ${ELASTIC_APM_SERVER_RUM_CREDENTIALS}
         ELASTIC_APM_DEPLOYMENT_ENVIRONMENT: default
-    volumes:
-      - ./logs:/var/log/nginx
     ports:
       - '9394:80'
     environment:
