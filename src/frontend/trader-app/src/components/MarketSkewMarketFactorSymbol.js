@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
+import State from './State'
+
 class MarketSkewMarketFactorSymbol extends React.Component {
     constructor(props) {
         super(props);
@@ -39,26 +41,30 @@ class MarketSkewMarketFactorSymbol extends React.Component {
 
     render() {
         return (
-            <form name="skew_market_factor_symbol" onSubmit={this.handleSubmit}>
-                <label>
-                    Amount:
-                    <input type="number" name="skew_market_factor_symbol_amount" value={this.state.skew_market_factor_symbol_amount} min="-100" max="100" onChange={this.handleInputChange}/>
-                </label>
-                <br />
-                <label>
-                    Symbol:
-                    <select name="skew_market_factor_symbol" value={this.state.skew_market_factor_symbol} onChange={this.handleInputChange}>
-                        <option value="MOT">MOT</option>
-                        <option value="MSI">MSI</option>
-                        <option value="GOGO">GOGO</option>
-                        <option value="INTEQ">INTEQ</option>
-                        <option value="VID">VID</option>
-                        <option value="ESTC">ESTC</option>
-                    </select>
-                </label>
-                <br />
-                <input type="submit" value="Submit" />
-            </form>
+            <div>
+                <form name="skew_market_factor_symbol" onSubmit={this.handleSubmit}>
+                    <label>
+                        Amount:
+                        <input type="number" name="skew_market_factor_symbol_amount" value={this.state.skew_market_factor_symbol_amount} min="-100" max="100" onChange={this.handleInputChange} />
+                    </label>
+                    <br />
+                    <label>
+                        Symbol:
+                        <select name="skew_market_factor_symbol" value={this.state.skew_market_factor_symbol} onChange={this.handleInputChange}>
+                            <option value="MOT">MOT</option>
+                            <option value="MSI">MSI</option>
+                            <option value="GOGO">GOGO</option>
+                            <option value="INTEQ">INTEQ</option>
+                            <option value="VID">VID</option>
+                            <option value="ESTC">ESTC</option>
+                        </select>
+                    </label>
+                    <br />
+                    <input type="submit" value="Submit" />
+
+                </form>
+                <State key={'skew_market_factor_per_symbol'} />
+            </div>
         );
     }
 }

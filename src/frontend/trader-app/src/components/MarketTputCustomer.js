@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
+import State from './State'
+
 class MarketTputCustomer extends React.Component {
     constructor(props) {
         super(props);
@@ -39,28 +41,31 @@ class MarketTputCustomer extends React.Component {
 
     render() {
         return (
-            <form name="tput_region" onSubmit={this.handleSubmit}>
-                <label>
-                    Speed:
-                    <select name="tput_customer_speed" value={this.state.tput_customer_speed} onChange={this.handleInputChange}>
-                        <option value="high">High</option>
-                        <option value="default">Default</option>
-                    </select>
-                </label>
-                <br />
-                <label>
-                    Customer:
-                    <select name="tput_customer" value={this.state.tput_customer} onChange={this.handleInputChange}>
-                        <option value="b.smith">b.smith</option>
-                        <option value="l.johnson">l.johnson</option>
-                        <option value="j.casey">j.casey</option>
-                        <option value="l.hall">l.hall</option>
-                        <option value="q.bert">q.bert</option>
-                    </select>
-                </label>
-                <br />
-                <input type="submit" value="Submit" />
-            </form>
+            <div>
+                <form name="tput_region" onSubmit={this.handleSubmit}>
+                    <label>
+                        Speed:
+                        <select name="tput_customer_speed" value={this.state.tput_customer_speed} onChange={this.handleInputChange}>
+                            <option value="high">High</option>
+                            <option value="default">Default</option>
+                        </select>
+                    </label>
+                    <br />
+                    <label>
+                        Customer:
+                        <select name="tput_customer" value={this.state.tput_customer} onChange={this.handleInputChange}>
+                            <option value="b.smith">b.smith</option>
+                            <option value="l.johnson">l.johnson</option>
+                            <option value="j.casey">j.casey</option>
+                            <option value="l.hall">l.hall</option>
+                            <option value="q.bert">q.bert</option>
+                        </select>
+                    </label>
+                    <br />
+                    <input type="submit" value="Submit" />
+                </form>
+                <State key={'high_tput_per_customer'} />
+            </div>
         );
     }
 }

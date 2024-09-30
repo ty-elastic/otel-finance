@@ -17,7 +17,7 @@ function App() {
     <BrowserRouter>
       <div className="App">
         <h1>TradeMaster 2000</h1>
-        <NavLink to="/">Test Model</NavLink> | <NavLink to="/market">Manipulate Market</NavLink>
+        <NavLink to="/">Trade</NavLink> | <NavLink to="/market">Manipulate Market</NavLink>
         <hr/>
         <div className="content">
           <ApmRoutes>

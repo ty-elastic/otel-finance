@@ -10,9 +10,11 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_SERVICE_NAME: "trader"
       OTEL_RESOURCE_ATTRIBUTES: "service.version=1.0"
+
       OTEL_PYTHON_LOG_LEVEL: "info"
       OTEL_PYTHON_LOG_CORRELATION: "true"
       OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
+
       ELASTIC_OTEL_SYSTEM_METRICS_ENABLED: "true"
 
       ROUTER_HOST: "router"
@@ -29,10 +31,11 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_SERVICE_NAME: "monkey"
-      OTEL_RESOURCE_ATTRIBUTES: "service.version=1.0"
+
       OTEL_PYTHON_LOG_LEVEL: "info"
       OTEL_PYTHON_LOG_CORRELATION: "true"
       OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
+
       ELASTIC_OTEL_SYSTEM_METRICS_ENABLED: "true"
 
       TRADER_HOST: "trader"

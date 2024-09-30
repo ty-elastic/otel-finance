@@ -34,12 +34,7 @@ class TradeRequest extends React.Component {
                     'symbol': this.state.symbol,
                     'day_of_week': this.state.dayOfWeek,
                     'customer_id': this.state.customerId,
-                    //'latency': this.state.latency,
                     'region': this.state.region,
-                    //'error_model': this.state.errorModel,
-                    //'error_db': this.state.errorDb,
-                    //'skew_market_factor': this.state.skewMarketFactor,
-                    //'canary': this.state.canary,
                 }
             });
         } catch (err) {
@@ -88,6 +83,7 @@ class TradeRequest extends React.Component {
                         <option value="NA">NA</option>
                     </select>
                 </label>
+                <br />
                 <input type="submit" value="Submit" />
             </form>
         );

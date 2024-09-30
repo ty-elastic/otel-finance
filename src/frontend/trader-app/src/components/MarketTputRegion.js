@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
+import State from './State'
+
 class MarketTputRegion extends React.Component {
     constructor(props) {
         super(props);
@@ -39,27 +41,30 @@ class MarketTputRegion extends React.Component {
 
     render() {
         return (
-            <form name="tput_region" onSubmit={this.handleSubmit}>
-                <label>
-                    Speed:
-                    <select name="tput_region_speed" value={this.state.tput_region_speed} onChange={this.handleInputChange}>
-                        <option value="high">High</option>
-                        <option value="default">Default</option>
-                    </select>
-                </label>
-                <br />
-                <label>
-                    Region:
-                    <select name="tput_region" value={this.state.tput_region} onChange={this.handleInputChange}>
-                        <option value="EMEA">EMEA</option>
-                        <option value="EU">EU</option>
-                        <option value="LATAM">LATAM</option>
-                        <option value="NA">NA</option>
-                    </select>
-                </label>
-                <br />
-                <input type="submit" value="Submit" />
-            </form>
+            <div>
+                <form name="tput_region" onSubmit={this.handleSubmit}>
+                    <label>
+                        Speed:
+                        <select name="tput_region_speed" value={this.state.tput_region_speed} onChange={this.handleInputChange}>
+                            <option value="high">High</option>
+                            <option value="default">Default</option>
+                        </select>
+                    </label>
+                    <br />
+                    <label>
+                        Region:
+                        <select name="tput_region" value={this.state.tput_region} onChange={this.handleInputChange}>
+                            <option value="EMEA">EMEA</option>
+                            <option value="EU">EU</option>
+                            <option value="LATAM">LATAM</option>
+                            <option value="NA">NA</option>
+                        </select>
+                    </label>
+                    <br />
+                    <input type="submit" value="Submit" />
+                </form>
+                <State key={'high_tput_per_region'} />
+            </div>
         );
     }
 }

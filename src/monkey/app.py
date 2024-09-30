@@ -6,12 +6,31 @@ import time
 import os
 from threading import Thread
 
+from opentelemetry import trace, baggage, context
+from opentelemetry.metrics import get_meter
+from opentelemetry.processor.baggage import BaggageSpanProcessor, ALLOW_ALL_BAGGAGE_KEYS
+
+from opentelemetry import _logs as logs
+from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
+from opentelemetry.processor.logrecord.baggage import BaggageLogRecordProcessor
+
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
+tracer_provider = trace.get_tracer_provider()
+tracer_provider.add_span_processor(BaggageSpanProcessor(ALLOW_ALL_BAGGAGE_KEYS))
+
+if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
+    print("enable otel logging")
+    log_provider = logs.get_logger_provider()
+    if 'OTEL_EXPORTER_OTLP_ENDPOINT' in os.environ:
+        exporter = OTLPLogExporter()
+    log_provider.add_log_record_processor(BaggageLogRecordProcessor(ALLOW_ALL_BAGGAGE_KEYS, exporter))
+
 TRADE_TIMEOUT = 5
-DAYS_OF_WEEK = ['M','Tu', 'W', 'Th', 'F']
 S_PER_DAY = 60
+
+DAYS_OF_WEEK = ['M','Tu', 'W', 'Th', 'F']
 
 latency_per_region = {}
 
@@ -115,6 +134,25 @@ def generate_trades():
             time.sleep(sleep)
 
 Thread(target=generate_trades, daemon=False).start()
+
+@app.get('/state')
+def get_state():
+    state = {
+        'days_of_week': DAYS_OF_WEEK,
+        'customers': customers,
+        'symbols': symbols,
+        'regions': regions,
+        
+        'latency_per_region': latency_per_region,
+        'canary_per_region': canary_per_region,
+        'high_tput_per_customer': high_tput_per_customer,
+        'high_tput_per_symbol': high_tput_per_symbol,
+        'high_tput_per_region': high_tput_per_region,
+        'db_error_per_region': db_error_per_region,
+        'model_error_per_region': model_error_per_region,
+        'skew_market_factor_per_symbol': skew_market_factor_per_symbol
+    }
+    return state
 
 @app.post('/tput/region/<region>/<speed>')
 def tput_region(region, speed):

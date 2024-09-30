@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
+import State from './State'
+
 class MarketCanaryRegion extends React.Component {
     constructor(props) {
         super(props);
@@ -39,24 +41,27 @@ class MarketCanaryRegion extends React.Component {
 
     render() {
         return (
-            <form name="canary_region" onSubmit={this.handleSubmit}>
-                <label>
-                    Canary:
-                    <input type="checkbox" name="canary_region_on" value={this.state.canary_region_on} onChange={this.handleInputChange}/>
-                </label>
-                <br />
-                <label>
-                    Region:
-                    <select name="canary_region" value={this.state.canary_region} onChange={this.handleInputChange}>
-                        <option value="EMEA">EMEA</option>
-                        <option value="EU">EU</option>
-                        <option value="LATAM">LATAM</option>
-                        <option value="NA">NA</option>
-                    </select>
-                </label>
-                <br />
-                <input type="submit" value="Submit" />
-            </form>
+            <div>
+                <form name="canary_region" onSubmit={this.handleSubmit}>
+                    <label>
+                        Canary:
+                        <input type="checkbox" name="canary_region_on" value={this.state.canary_region_on} onChange={this.handleInputChange}/>
+                    </label>
+                    <br />
+                    <label>
+                        Region:
+                        <select name="canary_region" value={this.state.canary_region} onChange={this.handleInputChange}>
+                            <option value="EMEA">EMEA</option>
+                            <option value="EU">EU</option>
+                            <option value="LATAM">LATAM</option>
+                            <option value="NA">NA</option>
+                        </select>
+                    </label>
+                    <br />
+                    <input type="submit" value="Submit" />
+                </form>
+                <State key={'canary_per_region'}/>
+            </div>
         );
     }
 }

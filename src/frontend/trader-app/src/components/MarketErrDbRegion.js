@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
+import State from './State'
+
 class MarketErrDbRegion extends React.Component {
     constructor(props) {
         super(props);
@@ -39,24 +41,27 @@ class MarketErrDbRegion extends React.Component {
 
     render() {
         return (
-            <form name="err_model_region" onSubmit={this.handleSubmit}>
-                <label>
-                    Amount (%):
-                    <input type="number" name="err_db_region_amount" value={this.state.err_db_region_amount} min="0" max="100" onChange={this.handleInputChange}/>
-                </label>
-                <br />
-                <label>
-                    Region:
-                    <select name="latency_region" value={this.state.err_db_region} onChange={this.handleInputChange}>
-                        <option value="EMEA">EMEA</option>
-                        <option value="EU">EU</option>
-                        <option value="LATAM">LATAM</option>
-                        <option value="NA">NA</option>
-                    </select>
-                </label>
-                <br />
-                <input type="submit" value="Submit" />
-            </form>
+            <div>
+                <form name="err_model_region" onSubmit={this.handleSubmit}>
+                    <label>
+                        Amount (%):
+                        <input type="number" name="err_db_region_amount" value={this.state.err_db_region_amount} min="0" max="100" onChange={this.handleInputChange} />
+                    </label>
+                    <br />
+                    <label>
+                        Region:
+                        <select name="latency_region" value={this.state.err_db_region} onChange={this.handleInputChange}>
+                            <option value="EMEA">EMEA</option>
+                            <option value="EU">EU</option>
+                            <option value="LATAM">LATAM</option>
+                            <option value="NA">NA</option>
+                        </select>
+                    </label>
+                    <br />
+                    <input type="submit" value="Submit" />
+                </form>
+                <State key={'db_error_per_region'} />
+            </div>
         );
     }
 }

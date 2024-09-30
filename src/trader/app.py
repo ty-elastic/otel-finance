@@ -7,6 +7,7 @@ import uuid
 import math
 
 import requests
+
 from opentelemetry import trace, baggage, context
 from opentelemetry.metrics import get_meter
 from opentelemetry.processor.baggage import BaggageSpanProcessor, ALLOW_ALL_BAGGAGE_KEYS
@@ -78,7 +79,7 @@ def decode_common_args():
     return trade_id, customer_id, day_of_week, region, symbol, latency, error_model, error_db, skew_market_factor, canary
 
 @tracer.start_as_current_span("trade")
-def trade(*, trade_id, customer_id, day_of_week, shares, share_price, canary, action, error_db):
+def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, canary, action, error_db):
     current_span = trace.get_current_span()
     
     app.logger.info(f"trade requested for {symbol} on day {day_of_week}")
@@ -119,7 +120,7 @@ def trade_force():
     shares = request.args.get('shares', type=int)
     share_price = request.args.get('share_price', type=float)
     
-    return trade (trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, canary=canary, action=action, error_db=False)
+    return trade (trade_id=trade_id, symbol=symbol, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, canary=canary, action=action, error_db=False)
 
 @app.post('/trade/request')
 def trade_request():
@@ -128,7 +129,7 @@ def trade_request():
     action, shares, share_price = run_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 
                                                    error=error_model, latency=latency, skew_market_factor=skew_market_factor)
 
-    return trade (trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, canary=canary, action=action, error_db=error_db)
+    return trade (trade_id=trade_id, symbol=symbol, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, canary=canary, action=action, error_db=error_db)
 
 @tracer.start_as_current_span("run_model")
 def run_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency=0.0, skew_market_factor=0):

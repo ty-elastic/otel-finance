@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
+import State from './State'
+
 class MarketTputSymbol extends React.Component {
     constructor(props) {
         super(props);
@@ -41,29 +43,32 @@ class MarketTputSymbol extends React.Component {
 
     render() {
         return (
-            <form name="tput_symbol" onSubmit={this.handleSubmit}>
-                <label>
-                    Speed:
-                    <select name="tput_symbol_speed" value={this.state.tput_symbol_speed} onChange={this.handleInputChange}>
-                        <option value="high">High</option>
-                        <option value="default">Default</option>
-                    </select>
-                </label>
-                <br />
-                <label>
-                    Symbol:
-                    <select name="tput_symbol" value={this.state.tput_symbol} onChange={this.handleInputChange}>
-                        <option value="MOT">MOT</option>
-                        <option value="MSI">MSI</option>
-                        <option value="GOGO">GOGO</option>
-                        <option value="INTEQ">INTEQ</option>
-                        <option value="VID">VID</option>
-                        <option value="ESTC">ESTC</option>
-                    </select>
-                </label>
-                <br />
-                <input type="submit" value="Submit" />
-            </form>
+            <div>
+                <form name="tput_symbol" onSubmit={this.handleSubmit}>
+                    <label>
+                        Speed:
+                        <select name="tput_symbol_speed" value={this.state.tput_symbol_speed} onChange={this.handleInputChange}>
+                            <option value="high">High</option>
+                            <option value="default">Default</option>
+                        </select>
+                    </label>
+                    <br />
+                    <label>
+                        Symbol:
+                        <select name="tput_symbol" value={this.state.tput_symbol} onChange={this.handleInputChange}>
+                            <option value="MOT">MOT</option>
+                            <option value="MSI">MSI</option>
+                            <option value="GOGO">GOGO</option>
+                            <option value="INTEQ">INTEQ</option>
+                            <option value="VID">VID</option>
+                            <option value="ESTC">ESTC</option>
+                        </select>
+                    </label>
+                    <br />
+                    <input type="submit" value="Submit" />
+                </form>
+                <State key={'high_tput_per_symbol'} />
+            </div>
         );
     }
 }
