@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import jakarta.validation.constraints.Min;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -25,10 +27,15 @@ public class Trade {
   private String customerId;
   @Column(name="symbol")
   private String symbol;
+
+  @Min(value = 0, message = "shares must be > 0")
   @Column(name="shares")
   private int shares;
+
+  @Min(value = 0, message = "share_price must be > 0")
   @Column(name="share_price")
   private float sharePrice;
+
   @Column(name="action")
   private String action;
 }

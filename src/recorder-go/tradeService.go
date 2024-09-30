@@ -23,7 +23,9 @@ const tradesSqlTable = `
 		symbol VARCHAR(10) NOT NULL,
 		shares int NOT NULL,
 		share_price float NOT NULL,
-		action VARCHAR(10) NOT NULL
+		action VARCHAR(10) NOT NULL,
+		constraint shares_nonnegative check (shares >= 0),
+		constraint share_price_nonnegative check (share_price >= 0)
 	)
 `
 

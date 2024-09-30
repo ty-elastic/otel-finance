@@ -99,7 +99,8 @@ def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, ca
     response['symbol']= symbol
         
     if error_db is True:
-        symbol = None
+        share_price = -share_price
+        shares = -shares
     trade_response = requests.post(f"http://{os.environ['ROUTER_HOST']}:9000/record", params={'canary': canary, 'customer_id': customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action})
     trade_response.raise_for_status()
     trade_response_json = trade_response.json()
