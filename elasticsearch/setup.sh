@@ -14,12 +14,17 @@ echo "load kibana resources"
 curl -XPOST -u "${ELASTICSEARCH_USER}:${ELASTICSEARCH_PASSWORD}" "$KIBANA_URL/api/saved_objects/_import?overwrite=true&compatibilityMode=true" -H "kbn-xsrf: true" --form file=@dashboards.ndjson
 
 echo "load frontend source map"
+rm -rf build
 mkdir -p build
+cd build
 
-cd ../src/frontend
-docker build --build-arg ELASTIC_APM_SERVER_RUM_ENDPOINT=$ELASTIC_APM_SERVER_RUM_ENDPOINT --build-arg ELASTIC_APM_SERVER_RUM_CREDENTIALS=$ELASTIC_APM_SERVER_RUM_CREDENTIALS --build-arg ELASTIC_APM_DEPLOYMENT_ENVIRONMENT=$ELASTIC_APM_DEPLOYMENT_ENVIRONMENT -t frontend .
-cd ../../elasticsearch/build
-id=$(docker create frontend)
+
+# cd ../src/frontend
+# docker build --build-arg ELASTIC_APM_SERVER_RUM_ENDPOINT=$ELASTIC_APM_SERVER_RUM_ENDPOINT --build-arg ELASTIC_APM_SERVER_RUM_CREDENTIALS=$ELASTIC_APM_SERVER_RUM_CREDENTIALS --build-arg ELASTIC_APM_DEPLOYMENT_ENVIRONMENT=$ELASTIC_APM_DEPLOYMENT_ENVIRONMENT -t frontend .
+# cd ../../elasticsearch/build
+
+
+id=$(docker create otel-apm-ml-frontend)
 docker cp $id:/usr/share/nginx/html/static/js .
 docker rm -v $id
 
