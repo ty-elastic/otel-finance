@@ -25,7 +25,7 @@ public class TradeService {
 
         // intentionally make this slow to compare to go variant
         try {
-            Thread.sleep(5);
+            Thread.sleep(10);
         }
         catch (Exception e) {}
 

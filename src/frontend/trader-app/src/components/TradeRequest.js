@@ -84,7 +84,7 @@ class TradeRequest extends React.Component {
                     </select>
                 </label>
                 <br />
-                <input type="submit" value="Submit" />
+                <input data-transaction-name="TradeRequest" type="submit" value="Submit" />
             </form>
         );
     }

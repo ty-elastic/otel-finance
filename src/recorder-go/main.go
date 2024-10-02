@@ -120,7 +120,7 @@ func main() {
 	}()
 
 	tradeService, _ := NewTradeService()
-	tradeController, _ := NewTradeController(tradeService)
+	tradeController, _ := NewTradeController(tp, tradeService)
 
 	tradeController.Run()
 }

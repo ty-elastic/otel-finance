@@ -5,14 +5,8 @@ import MarketTputRegion from './MarketTputRegion'
 import MarketTputSymbol from './MarketTputSymbol'
 import MarketTputCustomer from './MarketTputCustomer'
 
-import MarketLatencyRegion from './MarketLatencyRegion'
-
 import MarketSkewMarketFactorSymbol from './MarketSkewMarketFactorSymbol'
 
-import MarketCanaryRegion from './MarketCanaryRegion'
-
-import MarketErrModelRegion from './MarketErrModelRegion'
-import MarketErrDbRegion from './MarketErrDbRegion'
 
 class Market extends React.Component {
     render() {
@@ -28,22 +22,6 @@ class Market extends React.Component {
                 <hr></hr>
                 <h2>Throughput by Customer</h2>
                 <MarketTputCustomer/>
-                <hr></hr>
-
-                <h2>Model Error by Region</h2>
-                <MarketErrModelRegion/>
-                <hr></hr>
-
-                <h2>DB Error by Region</h2>
-                <MarketErrDbRegion/>
-                <hr></hr>
-
-                <h2>Latency by Region</h2>
-                <MarketLatencyRegion/>
-                <hr></hr>
-
-                <h2>Canary by Region</h2>
-                <MarketCanaryRegion/>
                 <hr></hr>
 
                 <h2>Skew Market Factor by Symbol</h2>

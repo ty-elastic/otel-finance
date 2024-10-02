@@ -3,12 +3,12 @@ import axios from "axios";
 
 import State from './State'
 
-class MarketErrModelRegion extends React.Component {
+class ErrorDbRegion extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            err_model_region_amount: 0,
-            err_model_region: 'EU',
+            err_db_region_amount: 0,
+            err_db_region: 'EU',
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
@@ -30,9 +30,9 @@ class MarketErrModelRegion extends React.Component {
 
         try {
             if (this.state.err_model_region_amount === 0) {
-                await axios.delete(`/monkey/err/model/region/${this.state.err_model_region}`);
+                await axios.delete(`/monkey/err/db/region/${this.state.err_db_region}`);
             } else {
-                await axios.post(`/monkey/err/model/region/${this.state.err_model_region}/${this.state.err_model_region_amount}`);
+                await axios.post(`/monkey/err/db/region/${this.state.err_db_region}/${this.state.err_db_region_amount}`);
             }
         } catch (err) {
             console.log(err.message)
@@ -45,12 +45,12 @@ class MarketErrModelRegion extends React.Component {
                 <form name="err_model_region" onSubmit={this.handleSubmit}>
                     <label>
                         Amount (%):
-                        <input type="number" name="err_model_region_amount" value={this.state.err_model_region_amount} min="0" max="100" onChange={this.handleInputChange} />
+                        <input type="number" name="err_db_region_amount" value={this.state.err_db_region_amount} min="0" max="100" onChange={this.handleInputChange} />
                     </label>
                     <br />
                     <label>
                         Region:
-                        <select name="latency_region" value={this.state.err_model_region} onChange={this.handleInputChange}>
+                        <select name="latency_region" value={this.state.err_db_region} onChange={this.handleInputChange}>
                             <option value="EMEA">EMEA</option>
                             <option value="EU">EU</option>
                             <option value="LATAM">LATAM</option>
@@ -58,12 +58,12 @@ class MarketErrModelRegion extends React.Component {
                         </select>
                     </label>
                     <br />
-                    <input type="submit" value="Submit" />
+                    <input data-transaction-name="ErrorDbRegion" type="submit" value="Submit" />
                 </form>
-                <State key='db_model_per_region' />
+                <State key='db_error_per_region' />
             </div>
         );
     }
 }
 
-export default MarketErrModelRegion;
+export default ErrorDbRegion;

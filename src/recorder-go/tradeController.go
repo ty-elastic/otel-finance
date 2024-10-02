@@ -5,9 +5,9 @@ import (
 	"os"
 	"strconv"
 
-	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
-
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
 type TradeController struct {
@@ -15,10 +15,11 @@ type TradeController struct {
 	tradeService *TradeService
 }
 
-func NewTradeController(tradeService *TradeService) (*TradeController, error) {
+func NewTradeController(tp *sdktrace.TracerProvider, tradeService *TradeService) (*TradeController, error) {
 	c := TradeController{tradeService: tradeService}
 	c.gin = gin.Default()
-	c.gin.Use(otelgin.Middleware(os.Getenv("OTEL_SERVICE_NAME")))
+
+	c.gin.Use(otelgin.Middleware(os.Getenv("OTEL_SERVICE_NAME"), otelgin.WithTracerProvider(tp)))
 
 	c.gin.POST("/record", c.record)
 
@@ -38,9 +39,9 @@ func (c *TradeController) record(ctx *gin.Context) {
 	res, err := c.tradeService.RecordTrade(ctx.Request.Context(), &trade)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
+	} else {
+		ctx.JSON(http.StatusOK, res)
 	}
-
-	ctx.JSON(http.StatusOK, res)
 }
 
 func (c *TradeController) Run() {

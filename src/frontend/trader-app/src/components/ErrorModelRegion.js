@@ -3,12 +3,12 @@ import axios from "axios";
 
 import State from './State'
 
-class MarketLatencyRegion extends React.Component {
+class ErrorModelRegion extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            latency_region_amount: 0,
-            latency_region: 'NA',
+            err_model_region_amount: 0,
+            err_model_region: 'EU',
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
@@ -29,10 +29,10 @@ class MarketLatencyRegion extends React.Component {
         event.preventDefault();
 
         try {
-            if (this.state.latency_region_amount === 0) {
-                await axios.delete(`/monkey/latency/region/${this.state.latency_region}`);
+            if (this.state.err_model_region_amount === 0) {
+                await axios.delete(`/monkey/err/model/region/${this.state.err_model_region}`);
             } else {
-                await axios.post(`/monkey/latency/region/${this.state.latency_region}/${this.state.latency_region_amount}`);
+                await axios.post(`/monkey/err/model/region/${this.state.err_model_region}/${this.state.err_model_region_amount}`);
             }
         } catch (err) {
             console.log(err.message)
@@ -42,15 +42,15 @@ class MarketLatencyRegion extends React.Component {
     render() {
         return (
             <div>
-                <form name="latency_region" onSubmit={this.handleSubmit}>
+                <form name="err_model_region" onSubmit={this.handleSubmit}>
                     <label>
-                        Amount (ms):
-                        <input type="number" name="latency_region_amount" value={this.state.latency_region_amount} min="0" max="2000" onChange={this.handleInputChange} />
+                        Amount (%):
+                        <input type="number" name="err_model_region_amount" value={this.state.err_model_region_amount} min="0" max="100" onChange={this.handleInputChange} />
                     </label>
                     <br />
                     <label>
                         Region:
-                        <select name="latency_region" value={this.state.latency_region} onChange={this.handleInputChange}>
+                        <select name="latency_region" value={this.state.err_model_region} onChange={this.handleInputChange}>
                             <option value="EMEA">EMEA</option>
                             <option value="EU">EU</option>
                             <option value="LATAM">LATAM</option>
@@ -58,12 +58,12 @@ class MarketLatencyRegion extends React.Component {
                         </select>
                     </label>
                     <br />
-                    <input type="submit" value="Submit" /> 
+                    <input data-transaction-name="ErrorModelRegion" type="submit" value="Submit" />
                 </form>
-                <State key='latency_per_region' />
+                <State key='db_model_per_region' />
             </div>
         );
     }
 }
 
-export default MarketLatencyRegion;
+export default ErrorModelRegion;

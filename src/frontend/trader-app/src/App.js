@@ -6,7 +6,7 @@ import Error from './components/Error'
 import './App.css';
 import { v4 as uuidv4 } from 'uuid';
 import axios from "axios";
-import { Route, NavLink, BrowserRouter, Routes } from "react-router-dom";
+import { Route, NavLink, HashRouter, BrowserRouter, Routes } from "react-router-dom";
 
 import { ApmRoutes } from '@elastic/apm-rum-react'
 
@@ -16,7 +16,7 @@ axios.defaults.headers.common['baggage'] = `session_id=${sessionId}`;
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <div className="App">
         <h1>TradeMaster 2000</h1>
         <NavLink to="/">Trade</NavLink> | <NavLink to="/market">Manipulate Market</NavLink> | <NavLink to="/error">Generate Errors</NavLink>
@@ -29,7 +29,7 @@ function App() {
           </ApmRoutes>
         </div>
       </div>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

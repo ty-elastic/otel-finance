@@ -9,6 +9,8 @@ import (
 	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5/pgxpool"
 	log "github.com/sirupsen/logrus"
+
+	"go.opentelemetry.io/otel/trace"
 )
 
 type TradeService struct {
@@ -77,6 +79,8 @@ func (c *TradeService) RecordTrade(context context.Context, trade *Trade) (*Trad
 	// insert trade
 	_, err := c.postgres.Exec(context, sqlStatement, trade.TradeId, trade.CustomerId, trade.Symbol, trade.Action, trade.Shares, trade.SharePrice)
 	if err != nil {
+		span := trace.SpanFromContext(context)
+		span.RecordError(err, trace.WithStackTrace(true))
 		return nil, err
 	}
 

@@ -110,7 +110,7 @@ class TradeForce extends React.Component {
                     </select>
                 </label>
                 <br />
-                <input type="submit" value="Submit" />
+                <input data-transaction-name="TradeForce" type="submit" value="Submit" />
             </form>
         );
     }

@@ -3,12 +3,12 @@ import axios from "axios";
 
 import State from './State'
 
-class MarketCanaryRegion extends React.Component {
+class ErrorLatencyRegion extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            canary_region_on: false,
-            canary_region: 'EU'
+            latency_region_amount: 0,
+            latency_region: 'NA',
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
@@ -29,10 +29,10 @@ class MarketCanaryRegion extends React.Component {
         event.preventDefault();
 
         try {
-            if (this.state.canary_region_on === false) {
-                await axios.delete(`/monkey/canary/region/${this.state.canary_region}`);
+            if (this.state.latency_region_amount === 0) {
+                await axios.delete(`/monkey/latency/region/${this.state.latency_region}`);
             } else {
-                await axios.post(`/monkey/canary/region/${this.state.canary_region}`);
+                await axios.post(`/monkey/latency/region/${this.state.latency_region}/${this.state.latency_region_amount}`);
             }
         } catch (err) {
             console.log(err.message)
@@ -42,15 +42,15 @@ class MarketCanaryRegion extends React.Component {
     render() {
         return (
             <div>
-                <form name="canary_region" onSubmit={this.handleSubmit}>
+                <form name="latency_region" onSubmit={this.handleSubmit}>
                     <label>
-                        Canary:
-                        <input type="checkbox" name="canary_region_on" value={this.state.canary_region_on} onChange={this.handleInputChange}/>
+                        Amount (ms):
+                        <input type="number" name="latency_region_amount" value={this.state.latency_region_amount} min="0" max="2000" onChange={this.handleInputChange} />
                     </label>
                     <br />
                     <label>
                         Region:
-                        <select name="canary_region" value={this.state.canary_region} onChange={this.handleInputChange}>
+                        <select name="latency_region" value={this.state.latency_region} onChange={this.handleInputChange}>
                             <option value="EMEA">EMEA</option>
                             <option value="EU">EU</option>
                             <option value="LATAM">LATAM</option>
@@ -58,12 +58,12 @@ class MarketCanaryRegion extends React.Component {
                         </select>
                     </label>
                     <br />
-                    <input type="submit" value="Submit" />
+                    <input data-transaction-name="ErrorLatencyRegion" type="submit" value="Submit" /> 
                 </form>
-                <State key='canary_per_region'/>
+                <State key='latency_per_region' />
             </div>
         );
     }
 }
 
-export default MarketCanaryRegion;
+export default ErrorLatencyRegion;

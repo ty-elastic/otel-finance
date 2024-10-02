@@ -2,6 +2,9 @@ import random
 import time
 
 from app import app
+from opentelemetry import trace
+
+tracer = trace.get_tracer("trader")
 
 MARKET_WINDOW_SIZE = 5
 market_data_seed = [random.randint(10, 25), random.randint(25, 75), random.randint(75, 100)]
@@ -30,6 +33,7 @@ def reset_market_data():
     global market_data
     market_data = {}
 
+@tracer.start_as_current_span("sim_market_data")
 def sim_market_data(*, symbol, day_of_week, skew_market_factor=0):
     global market_data
     
@@ -65,6 +69,7 @@ def sim_market_data(*, symbol, day_of_week, skew_market_factor=0):
 
     return market_factor, smoothed_share_price
 
+@tracer.start_as_current_span("sim_decide")
 def sim_decide(*, symbol, market_factor, error, latency):
 
     if error:
@@ -73,17 +78,19 @@ def sim_decide(*, symbol, market_factor, error, latency):
     action = 'hold'
     shares = 0
     if market_factor <= -25:
-        action = 'sell'
-        if market_factor <= -75:
-            shares = random.randint(50, 100)
-        else:
-            shares = random.randint(1, 50)
+        with tracer.start_as_current_span("sell") as span:
+            action = 'sell'
+            if market_factor <= -75:
+                shares = random.randint(50, 100)
+            else:
+                shares = random.randint(1, 50)
     elif market_factor >= 25:
-        action = 'buy'
-        if market_factor >= 75:
-            shares = random.randint(50, 100)
-        else:
-            shares = random.randint(1, 50)
+        with tracer.start_as_current_span("buy") as buy:
+            action = 'buy'
+            if market_factor >= 75:
+                shares = random.randint(50, 100)
+            else:
+                shares = random.randint(1, 50)
 
     if latency > 0:
         time.sleep(latency)

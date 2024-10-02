@@ -3,12 +3,12 @@ import axios from "axios";
 
 import State from './State'
 
-class MarketErrDbRegion extends React.Component {
+class CanaryRegion extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            err_db_region_amount: 0,
-            err_db_region: 'EU',
+            canary_region_on: false,
+            canary_region: 'EU'
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
@@ -29,10 +29,10 @@ class MarketErrDbRegion extends React.Component {
         event.preventDefault();
 
         try {
-            if (this.state.err_model_region_amount === 0) {
-                await axios.delete(`/monkey/err/db/region/${this.state.err_db_region}`);
+            if (this.state.canary_region_on === false) {
+                await axios.delete(`/monkey/canary/region/${this.state.canary_region}`);
             } else {
-                await axios.post(`/monkey/err/db/region/${this.state.err_db_region}/${this.state.err_db_region_amount}`);
+                await axios.post(`/monkey/canary/region/${this.state.canary_region}`);
             }
         } catch (err) {
             console.log(err.message)
@@ -42,15 +42,15 @@ class MarketErrDbRegion extends React.Component {
     render() {
         return (
             <div>
-                <form name="err_model_region" onSubmit={this.handleSubmit}>
+                <form name="canary_region" onSubmit={this.handleSubmit}>
                     <label>
-                        Amount (%):
-                        <input type="number" name="err_db_region_amount" value={this.state.err_db_region_amount} min="0" max="100" onChange={this.handleInputChange} />
+                        Canary:
+                        <input type="checkbox" name="canary_region_on" value={this.state.canary_region_on} onChange={this.handleInputChange}/>
                     </label>
                     <br />
                     <label>
                         Region:
-                        <select name="latency_region" value={this.state.err_db_region} onChange={this.handleInputChange}>
+                        <select name="canary_region" value={this.state.canary_region} onChange={this.handleInputChange}>
                             <option value="EMEA">EMEA</option>
                             <option value="EU">EU</option>
                             <option value="LATAM">LATAM</option>
@@ -58,12 +58,12 @@ class MarketErrDbRegion extends React.Component {
                         </select>
                     </label>
                     <br />
-                    <input type="submit" value="Submit" />
+                    <input data-transaction-name="CanaryRegion" type="submit" value="Submit" />
                 </form>
-                <State key='db_error_per_region' />
+                <State key='canary_per_region'/>
             </div>
         );
     }
 }
 
-export default MarketErrDbRegion;
+export default CanaryRegion;
