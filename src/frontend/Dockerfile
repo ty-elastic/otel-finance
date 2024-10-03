@@ -25,8 +25,7 @@ RUN echo "\
         serviceName: '${SERVICE_NAME}', \n\
         serverUrl: '${ELASTIC_APM_SERVER_RUM_ENDPOINT}', \n\
         sendCredentials: ${ELASTIC_APM_SERVER_RUM_CREDENTIALS}, \n\
-        serviceVersion: '${SERVICE_VERSION}', \n\
-        environment: '${ELASTIC_APM_DEPLOYMENT_ENVIRONMENT}' \n\
+        serviceVersion: '${SERVICE_VERSION}' \n\
     }) \n\
     export default apm; \n\
 " > src/rum.js
