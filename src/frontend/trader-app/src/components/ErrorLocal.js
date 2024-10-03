@@ -7,7 +7,7 @@ class ErrorLocal extends React.Component {
     }
 
     handleBrowserException(event) {
-        throw new Error('Intentional Exception!');
+        throw new Error('Warning: Each child in a list should have a unique key prop');
     }
 
     render() {
