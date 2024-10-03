@@ -1,0 +1,35 @@
+{
+    "mappings": {
+      "dynamic": "true",
+      "properties": {
+        "ml": {
+          "properties": {
+            "inference": {
+              "properties": {
+                "body_expanded": {
+                  "properties": {
+                    "model_id": {
+                      "type": "keyword"
+                    },
+                    "predicted_value": {
+                      "type": "sparse_vector"
+                    }
+                  }
+                },
+                "title_expanded": {
+                  "properties": {
+                    "model_id": {
+                      "type": "keyword"
+                    },
+                    "predicted_value": {
+                      "type": "sparse_vector"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
