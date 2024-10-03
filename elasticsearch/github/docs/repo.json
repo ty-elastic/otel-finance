@@ -1,0 +1,28 @@
+{
+    "visibility": "PUBLIC",
+    "isArchived": false,
+    "stargazerCount": 0,
+    "description": null,
+    "watchers": {
+        "totalCount": 1
+    },
+    "forkCount": 0,
+    "type": "Repository",
+    "nameWithOwner": "ty-elastic/otel-finance",
+    "url": "https://github.com/ty-elastic/otel-finance",
+    "isFork": false,
+    "createdAt": "2024-09-17T01:21:16Z",
+    "defaultBranchRef": {
+        "name": "main"
+    },
+    "name": "otel-finance",
+    "id": "R_kgDOMytsLQ",
+    "_timestamp": "2024-09-18T03:37:52Z",
+    "primaryLanguage": {
+        "name": "Python"
+    },
+
+    "_extract_binary_content": false,
+    "_reduce_whitespace": true,
+    "_run_ml_inference": true
+}

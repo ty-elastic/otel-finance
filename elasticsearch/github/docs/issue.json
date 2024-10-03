@@ -1,0 +1,22 @@
+{
+    "author": {
+        "login": "ty-elastic"
+    },
+    "issue_comments": [],
+    "title": "CUDA out of memory",
+    "body": "If you are receiving an error like `CUDA out of memory. Tried to allocate 256.00 MiB (GPU 0; 11.17 GiB total capacity; 9.70 GiB already allocated; 179.81 MiB free; 9.85 GiB reserved in total by PyTorch)`, it means that you do not have enough GPU RAM available to run the models on this node. Either increase GPU RAM on this node, or run fewer models on this node.",
+    "type": "Issue",
+    "url": "https://github.com/ty-elastic/otel-finance/issues/1",
+    "number": 1,
+    "createdAt": "2024-09-18T02:41:44Z",
+    "assignees_list": [],
+    "labels_field": [],
+    "state": "OPEN",
+    "id": "I_kwDOMytsLc6W8_YH",
+    "closedAt": null,
+    "_timestamp": "2024-09-18T02:41:45Z",
+
+    "_extract_binary_content": false,
+    "_reduce_whitespace": true,
+    "_run_ml_inference": true
+}
