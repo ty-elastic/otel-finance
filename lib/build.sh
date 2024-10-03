@@ -8,9 +8,6 @@ id=$(docker create java-baggage-log-record-processor)
 docker cp $id:/usr/src/app/build/libs/opentelemetry-java-baggage-log-record-processor-1.0-all.jar - > ../../../src/recorder-java/_lib/opentelemetry-java-baggage-log-record-processor-all.jar
 docker rm -v $id
 cd ../..
-# ./gradlew build
-# mkdir -p ../../../src/recorder-java/_lib/
-# cp build/libs/opentelemetry-java-baggage-log-record-processor-1.0-all.jar ../../../src/recorder-java/_lib/opentelemetry-java-baggage-log-record-processor-all.jar
 
 mkdir -p ../src/recorder-java/_lib/
 wget -O ../src/recorder-java/_lib/elastic-otel-javaagent.jar https://repo1.maven.org/maven2/co/elastic/otel/elastic-otel-javaagent/1.0.0/elastic-otel-javaagent-1.0.0.jar
