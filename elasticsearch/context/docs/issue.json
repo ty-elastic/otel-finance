@@ -9,7 +9,11 @@
     "url": "https://github.com/ty-elastic/otel-finance/issues/1",
     "number": 1,
     "createdAt": "2024-09-18T02:41:44Z",
-    "assignees_list": [],
+    "assignees_list": [
+        {
+          "login": "ty-elastic"
+        }
+    ],
     "labels_field": [],
     "state": "OPEN",
     "id": "I_kwDOMytsLc6W8_YH",
