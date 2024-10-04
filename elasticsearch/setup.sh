@@ -6,10 +6,14 @@ cd context
 ./context.sh
 cd ..
 
-cd resources
-./resources.sh
+cd dashboards
+./dashboards.sh
 cd ..
 
 cd slos
 ./slos.sh
+cd ..
+
+cd ml
+./ml.sh
 cd ..

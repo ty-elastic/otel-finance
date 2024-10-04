@@ -1,0 +1,59 @@
+{
+  "groups": [
+    "finance"
+  ],
+  "description": "",
+  "analysis_config": {
+    "bucket_span": "15m",
+    "detectors": [
+      {
+        "detector_description": "max(\"numeric_labels.out_shares\") by \"labels.in_symbol\" over \"labels.customer_id\"",
+        "function": "max",
+        "field_name": "numeric_labels.out_shares",
+        "by_field_name": "labels.in_symbol",
+        "over_field_name": "labels.customer_id",
+        "detector_index": 0
+      }
+    ],
+    "influencers": [
+      "labels.customer_id",
+      "labels.in_symbol"
+    ],
+    "model_prune_window": "30d"
+  },
+  "analysis_limits": {
+    "model_memory_limit": "11mb",
+    "categorization_examples_limit": 4
+  },
+  "data_description": {
+    "time_field": "@timestamp",
+    "time_format": "epoch_ms"
+  },
+  "model_plot_config": {
+    "enabled": false,
+    "annotations_enabled": false
+  },
+  "model_snapshot_retention_days": 10,
+  "daily_model_snapshot_retention_after_days": 1,
+  "results_index_name": "shared",
+  "allow_lazy_open": false,
+  "datafeed_config": {
+    "datafeed_id": "datafeed-shares_by_customer",
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "match_all": {}
+          }
+        ]
+      }
+    },
+    "indices": [
+      "traces-apm-trader"
+    ],
+    "scroll_size": 1000,
+    "delayed_data_check_config": {
+      "enabled": true
+    }
+  }
+}
