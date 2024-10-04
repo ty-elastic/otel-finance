@@ -34,8 +34,8 @@ if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
 tracer = trace.get_tracer("trader")
 
 meter = get_meter("trader")
-trade_fee_dollars = meter.create_counter("trading_revenue", "units")
-trade_volume_shares = meter.create_counter("trading_volume", "shares")
+trading_revenue = meter.create_counter("trading_revenue", "units")
+trading_volume = meter.create_counter("trading_volume", "shares")
 
 def conform_request_bool(value):
     return value.lower() == 'true'
@@ -89,8 +89,8 @@ def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, ca
     current_span.set_attribute("out.action", action)
     if action == 'buy' or action == 'sell':
         current_span.set_attribute("out.value", shares * share_price)
-        trade_fee_dollars.add(math.ceil(share_price * shares * .001))
-        trade_volume_shares.add(shares)
+        trading_revenue.add(math.ceil(share_price * shares * .001))
+        trading_volume.add(shares)
     else:
         current_span.set_attribute("out.value", 0)
 
