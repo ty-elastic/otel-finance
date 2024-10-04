@@ -1,7 +1,14 @@
 {
     "extension": ".md",
     "type": "blob",
-    "body": "# Trader Runbook ## Issue Resolution 1) create a github issue if it doesn't already exist 2) raise awareness in the #trader slack channel",
+    "body": "# Runbook for the APM service trader. **Description:** This runbook provides instructions for diagnosing and resolving issues related to the trading service using APM. *Steps:** 1. create a github issue if it doesn't already exist. 2. raise awareness in the #trader slack channel.",
     "name": "trader_runbook.md",
-    "_timestamp": "2024-09-28T19:54:09Z"
+    "path": "docs/trader_runbook.md",
+    "mode": "100644",
+    "id": "ty-elastic/otel-finance/docs/trader_runbook.md",
+    "_timestamp": "2024-09-28T19:54:09Z",
+
+    "_extract_binary_content": false,
+    "_reduce_whitespace": true,
+    "_run_ml_inference": true
 }
