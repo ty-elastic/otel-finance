@@ -1,0 +1,31 @@
+{
+    "name": "Trader: Latency",
+    "description": "",
+    "indicator": {
+        "type": "sli.apm.transactionDuration",
+        "params": {
+            "service": "trader",
+            "environment": "*",
+            "transactionType": "request",
+            "transactionName": "POST /trade/request",
+            "threshold": 250,
+            "filter": "",
+            "index": "metrics-apm*,apm-*"
+        }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+        "duration": "30d",
+        "type": "rolling"
+    },
+    "objective": {
+        "target": 0.99
+    },
+    "tags": [],
+    "groupBy": [
+        "*"
+    ],
+    "settings": {
+        "preventInitialBackfill": false
+    }
+}

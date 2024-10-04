@@ -9,3 +9,7 @@ cd ..
 cd resources
 ./resources.sh
 cd ..
+
+cd slos
+./slos.sh
+cd ..
