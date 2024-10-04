@@ -1,0 +1,7 @@
+{
+    "extension": ".md",
+    "type": "blob",
+    "body": "# Trader Runbook ## Issue Resolution 1) create a github issue if it doesn't already exist 2) raise awareness in the #trader slack channel",
+    "name": "trader_runbook.md",
+    "_timestamp": "2024-09-28T19:54:09Z"
+}

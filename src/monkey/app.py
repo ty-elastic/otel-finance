@@ -33,16 +33,12 @@ S_PER_DAY = 60
 DAYS_OF_WEEK = ['M','Tu', 'W', 'Th', 'F']
 
 latency_per_region = {}
-
 canary_per_region = {}
-
 high_tput_per_customer = {}
 high_tput_per_symbol = {}
 high_tput_per_region = {}
-
 db_error_per_region = {}
 model_error_per_region = {}
-
 skew_market_factor_per_symbol = {}
 
 customers = ['b.smith', 'l.johnson', 'j.casey', 'l.hall', 'q.bert']
@@ -134,6 +130,34 @@ def generate_trades():
             time.sleep(sleep)
 
 Thread(target=generate_trades, daemon=False).start()
+
+@app.get('/reset/market')
+def reset_market():
+    global high_tput_per_customer
+    global high_tput_per_symbol
+    global high_tput_per_region
+    global skew_market_factor_per_symbol
+    
+    high_tput_per_customer = {}
+    high_tput_per_symbol = {}
+    high_tput_per_region = {}
+    skew_market_factor_per_symbol = {}
+    
+    app.logger.info(f"market reset")
+
+@app.get('/reset/error')
+def reset_error():
+    global latency_per_region
+    global canary_per_region
+    global db_error_per_region
+    global model_error_per_region
+    
+    latency_per_region = {}
+    canary_per_region = {}
+    db_error_per_region = {}
+    model_error_per_region = {}
+    
+    app.logger.info(f"error reset")
 
 @app.get('/state')
 def get_state():

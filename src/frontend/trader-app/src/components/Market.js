@@ -4,7 +4,7 @@ import axios from "axios";
 import MarketTputRegion from './MarketTputRegion'
 import MarketTputSymbol from './MarketTputSymbol'
 import MarketTputCustomer from './MarketTputCustomer'
-
+import MarketReset from './MarketReset'
 import MarketSkewMarketFactorSymbol from './MarketSkewMarketFactorSymbol'
 
 
@@ -13,6 +13,9 @@ class Market extends React.Component {
         return (
             <div>
                 <h1>Manipulate Market</h1>
+
+                <h2>Reset Conditions</h2>
+                <MarketReset></MarketReset>
 
                 <h2>Throughput by Region</h2>
                 <MarketTputRegion/>

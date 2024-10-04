@@ -5,7 +5,7 @@ import CanaryRegion from './CanaryRegion'
 
 import ErrorModelRegion from './ErrorModelRegion'
 import ErrorDbRegion from './ErrorDbRegion'
-
+import ErrorReset from './ErrorReset'
 import ErrorLocal from './ErrorLocal'
 
 class Error extends React.Component {
@@ -22,6 +22,9 @@ class Error extends React.Component {
         return (
             <div>
                 <h1>Generate Errors</h1>
+
+                <h2>Reset Conditions</h2>
+                <ErrorReset></ErrorReset>
 
                 <h2>Browser (Javascript) Error</h2>
                 <ErrorLocal/>
