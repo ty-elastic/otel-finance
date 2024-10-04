@@ -25,6 +25,15 @@ for i in pipelines/*.json; do
 done
 
 for i in docs/*.json; do
-  ID=$(echo -n  "${i}" | base64)
-  curl -XPUT -u "${ELASTICSEARCH_USER}:${ELASTICSEARCH_PASSWORD}" "$ELASTICSEARCH_URL/search-github/_doc/${ID}?pipeline=search-github" -H "Content-Type: application/json" -d @${i}
+  filename=$(basename -- "$i")
+  extension="${filename##*.}"
+  filename="${filename%.*}"
+  curl -XPUT -u "${ELASTICSEARCH_USER}:${ELASTICSEARCH_PASSWORD}" "$ELASTICSEARCH_URL/search-github/_doc/${filename}?pipeline=search-github" -H "Content-Type: application/json" -d @${i}
+done
+
+for i in knowledge/*.json; do
+  filename=$(basename -- "$i")
+  extension="${filename##*.}"
+  filename="${filename%.*}"
+  curl -XPUT -u "${ELASTICSEARCH_USER}:${ELASTICSEARCH_PASSWORD}" "$ELASTICSEARCH_URL/.kibana-observability-ai-assistant-kb-000001/_doc/${filename}?pipeline=.kibana-observability-ai-assistant-kb-ingest-pipeline" -H "Content-Type: application/json" -d @${i}
 done
