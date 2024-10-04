@@ -16,7 +16,8 @@ class Market extends React.Component {
 
                 <h2>Reset Conditions</h2>
                 <MarketReset></MarketReset>
-
+                <hr></hr>
+                
                 <h2>Throughput by Region</h2>
                 <MarketTputRegion/>
                 <hr></hr>

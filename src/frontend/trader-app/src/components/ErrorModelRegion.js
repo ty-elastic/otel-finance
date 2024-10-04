@@ -50,7 +50,7 @@ class ErrorModelRegion extends React.Component {
                     <br />
                     <label>
                         Region:
-                        <select name="latency_region" value={this.state.err_model_region} onChange={this.handleInputChange}>
+                        <select name="err_model_region" value={this.state.err_model_region} onChange={this.handleInputChange}>
                             <option value="EMEA">EMEA</option>
                             <option value="EU">EU</option>
                             <option value="LATAM">LATAM</option>

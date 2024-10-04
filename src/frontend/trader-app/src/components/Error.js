@@ -25,6 +25,7 @@ class Error extends React.Component {
 
                 <h2>Reset Conditions</h2>
                 <ErrorReset></ErrorReset>
+                <hr></hr>
 
                 <h2>Browser (Javascript) Error</h2>
                 <ErrorLocal/>

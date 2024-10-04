@@ -42,7 +42,7 @@ class ErrorDbRegion extends React.Component {
     render() {
         return (
             <div>
-                <form name="err_model_region" onSubmit={this.handleSubmit}>
+                <form name="err_db_region" onSubmit={this.handleSubmit}>
                     <label>
                         Amount (%):
                         <input type="number" name="err_db_region_amount" value={this.state.err_db_region_amount} min="0" max="100" onChange={this.handleInputChange} />
@@ -50,7 +50,7 @@ class ErrorDbRegion extends React.Component {
                     <br />
                     <label>
                         Region:
-                        <select name="latency_region" value={this.state.err_db_region} onChange={this.handleInputChange}>
+                        <select name="err_db_region" value={this.state.err_db_region} onChange={this.handleInputChange}>
                             <option value="EMEA">EMEA</option>
                             <option value="EU">EU</option>
                             <option value="LATAM">LATAM</option>
