@@ -10,6 +10,9 @@ MARKET_WINDOW_SIZE = 5
 market_data_seed = [random.randint(10, 25), random.randint(25, 75), random.randint(75, 100)]
 market_data = {}
 
+MODEL_EXCEPTIONS = ["CUDA out of memory. Tried to allocate 256.00 MiB (GPU 0; 11.17 GiB total capacity; 9.70 GiB already allocated; 179.81 MiB free; 9.85 GiB reserved in total by PyTorch",
+             "RuntimeError: mat1 and mat2 shapes cannot be multiplied (3x4 and 3x4)"]
+
 class StreamingMovingAverage:
     def __init__(self, window_size):
         self.window_size = window_size
@@ -73,7 +76,7 @@ def sim_market_data(*, symbol, day_of_week, skew_market_factor=0):
 def sim_decide(*, symbol, market_factor, error, latency):
 
     if error:
-        raise Exception("CUDA out of memory. Tried to allocate 256.00 MiB (GPU 0; 11.17 GiB total capacity; 9.70 GiB already allocated; 179.81 MiB free; 9.85 GiB reserved in total by PyTorch)")
+        raise Exception(random.choice(MODEL_EXCEPTIONS))
 
     action = 'hold'
     shares = 0

@@ -34,8 +34,8 @@ if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
 tracer = trace.get_tracer("trader")
 
 meter = get_meter("trader")
-trade_fee_dollars = meter.create_counter("trade-fee-dollars")
-trade_volume_shares = meter.create_counter("trade-volume-shares")
+trade_fee_dollars = meter.create_counter("trading_revenue", "units")
+trade_volume_shares = meter.create_counter("trading_volume", "shares")
 
 def conform_request_bool(value):
     return value.lower() == 'true'
