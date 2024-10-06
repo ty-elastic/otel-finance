@@ -1,0 +1,60 @@
+{
+  "description": "classify APM traces",
+  "source": {
+    "index": [
+      "traces-apm-trader"
+    ],
+    "query": {
+      "bool": {
+        "should": [
+          {
+            "term": {
+              "labels.com_example_data_source": {
+                "value": "training"
+              }
+            }
+          }
+        ],
+        "minimum_should_match": 1
+      }
+    }
+  },
+  "dest": {
+    "index": "com_example_classification",
+    "results_field": "ml"
+  },
+  "analysis": {
+    "classification": {
+      "dependent_variable": "labels.com_example_classification",
+      "num_top_feature_importance_values": 0,
+      "class_assignment_objective": "maximize_minimum_recall",
+      "num_top_classes": -1,
+      "prediction_field_name": "labels.com_example_classification_prediction",
+      "training_percent": 80,
+      "randomize_seed": -5562395441749973000,
+      "early_stopping_enabled": true
+    }
+  },
+  "analyzed_fields": {
+    "includes": [
+      "labels.com_example_classification",
+      "labels.com_example_action",
+      "labels.com_example_canary",
+      "labels.com_example_customer_id",
+      "labels.com_example_data_source",
+      "labels.com_example_day_of_week",
+      "labels.com_example_region",
+      "labels.com_example_session_id",
+      "labels.com_example_symbol",
+      "labels.com_example_trade_id",
+      "numeric_labels.com_example_market_factor",
+      "numeric_labels.com_example_share_price",
+      "numeric_labels.com_example_shares",
+      "numeric_labels.com_example_value"
+    ],
+    "excludes": []
+  },
+  "model_memory_limit": "33mb",
+  "allow_lazy_start": false,
+  "max_num_threads": 1
+}
