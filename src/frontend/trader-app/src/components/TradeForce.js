@@ -41,7 +41,7 @@ class TradeForce extends React.Component {
                     'action': this.state.action,
                     'shares': this.state.shares,
                     'share_price': this.state.sharePrice,
-
+                    'data_source': 'customer'
                 }
             });
         } catch (err) {

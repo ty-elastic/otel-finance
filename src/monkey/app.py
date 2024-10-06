@@ -29,23 +29,25 @@ if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
 
 TRADE_TIMEOUT = 5
 S_PER_DAY = 60
+TRAINING_TRADE_COUNT = 1000
 
 DAYS_OF_WEEK = ['M','Tu', 'W', 'Th', 'F']
+ACTIONS = ['buy', 'sell', 'hold']
 
-latency_per_region = {}
-canary_per_region = {}
-high_tput_per_customer = {}
-high_tput_per_symbol = {}
-high_tput_per_region = {}
-db_error_per_region = {}
-model_error_per_region = {}
-skew_market_factor_per_symbol = {}
+g_latency_per_region = {}
+g_canary_per_region = {}
+g_high_tput_per_customer = {}
+g_high_tput_per_symbol = {}
+g_high_tput_per_region = {}
+g_db_error_per_region = {}
+g_model_error_per_region = {}
+g_skew_market_factor_per_symbol = {}
 
 customers = ['b.smith', 'l.johnson', 'j.casey', 'l.hall', 'q.bert']
 symbols = ['MOT', 'MSI', 'GOGO', 'INTEQ', 'VID', 'ESTC']
 regions = ['NA', 'LATAM', 'EU', 'EMEA']
 
-def generate_trade(*, customer_id, symbol, day_of_week, region, latency, error_model, error_db, skew_market_factor, canary):
+def generate_trade_request(*, customer_id, symbol, day_of_week, region, latency, error_model, error_db, skew_market_factor, canary, data_source):
     try:
         trade_response = requests.post(f"http://{os.environ['TRADER_HOST']}:9001/trade/request", 
                                        params={'symbol': symbol, 
@@ -56,13 +58,14 @@ def generate_trade(*, customer_id, symbol, day_of_week, region, latency, error_m
                                                'error_model': error_model,
                                                'error_db': error_db,
                                                'skew_market_factor': skew_market_factor,
-                                               'canary': canary},
+                                               'canary': canary,
+                                               'data_source': data_source},
                                        timeout=TRADE_TIMEOUT)
         trade_response.raise_for_status()
     except Exception as inst:
         print(inst)
 
-def generate_trades():
+def generate_trade_requests():
     idx_of_week = 0
     day_start = 0
     next_region = None
@@ -75,63 +78,64 @@ def generate_trades():
             idx_of_week = (idx_of_week + 1) % len(DAYS_OF_WEEK)
             print(f"advance to {DAYS_OF_WEEK[idx_of_week]}")
             day_start = now
+
+        sleep = float(random.randint(1, 1000) / 1000)
+        
+        region = next_region if next_region is not None else random.choice(regions)
+        symbol = next_symbol if next_symbol is not None else random.choice(symbols)
+        customer_id = next_customer if next_customer is not None else random.choice(customers)
+
+        if region in latency_per_region:
+            latency = random.randint(latency_per_region[region]-100, latency_per_region[region]+100) / 1000.0
         else:
-            sleep = float(random.randint(1, 1000) / 1000)
-            
-            region = next_region if next_region is not None else random.choice(regions)
-            symbol = next_symbol if next_symbol is not None else random.choice(symbols)
-            customer_id = next_customer if next_customer is not None else random.choice(customers)
+            latency = 0
 
-            if region in latency_per_region:
-                latency = random.randint(latency_per_region[region]-100, latency_per_region[region]+100) / 1000.0
-            else:
-                latency = 0
+        if region in model_error_per_region:
+            error_model = True if random.randint(0, 100) > (100-model_error_per_region[region]) else False
+        else:
+            error_model = False
 
-            if region in model_error_per_region:
-                error_model = True if random.randint(0, 100) > (100-model_error_per_region[region]) else False
-            else:
-                error_model = False
+        if region in db_error_per_region:
+            error_db = True if random.randint(0, 100) > (100-db_error_per_region[region]) else False
+        else:
+            error_db = False
 
-            if region in db_error_per_region:
-                error_db = True if random.randint(0, 100) > (100-db_error_per_region[region]) else False
-            else:
-                error_db = False
+        if symbol in skew_market_factor_per_symbol:
+            skew_market_factor = skew_market_factor_per_symbol[symbol]
+        else:
+            skew_market_factor = 0
 
-            if symbol in skew_market_factor_per_symbol:
-                skew_market_factor = skew_market_factor_per_symbol[symbol]
-            else:
-                skew_market_factor = 0
- 
-            if region in canary_per_region:
-                canary = True
-            else:
-                canary = False
- 
-            print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region} with latency {latency}, error_model={error_model}, error_db={error_db}, skew_market_factor={skew_market_factor}, canary={canary}")
+        if region in canary_per_region:
+            canary = True
+        else:
+            canary = False
 
-            generate_trade(customer_id=customer_id, symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week], region=region,
-                        latency=latency, error_model=error_model, error_db=error_db, skew_market_factor=skew_market_factor, canary=canary)
-            
-            if len(high_tput_per_region.keys()) > 0:
-                next_region = random.choice(list(high_tput_per_region.keys())) if random.randint(0, 100) > 50 else None
-                if next_region is not None:
-                    sleep = float(random.randint(1, 10) / 1000)
-            
-            if len(high_tput_per_customer.keys()) > 0:
-                next_customer = random.choice(list(high_tput_per_customer.keys())) if random.randint(0, 100) > 50 else None
-                if next_customer is not None:
-                    sleep = float(random.randint(1, 10) / 1000)
+        print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region} with latency {latency}, error_model={error_model}, error_db={error_db}, skew_market_factor={skew_market_factor}, canary={canary}")
 
-            if len(high_tput_per_symbol.keys()) > 0:
-                next_symbol = random.choice(list(high_tput_per_symbol.keys())) if random.randint(0, 100) > 50 else None
-                if next_symbol is not None:
-                    sleep = float(random.randint(1, 10) / 1000)
+        generate_trade_request(customer_id=customer_id, symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week], region=region,
+                    latency=latency, error_model=error_model, error_db=error_db, skew_market_factor=skew_market_factor, canary=canary,
+                    data_source='monkey')
+        
+        if len(high_tput_per_region.keys()) > 0:
+            next_region = random.choice(list(high_tput_per_region.keys())) if random.randint(0, 100) > 50 else None
+            if next_region is not None:
+                sleep = float(random.randint(1, 10) / 1000)
+        
+        if len(high_tput_per_customer.keys()) > 0:
+            next_customer = random.choice(list(high_tput_per_customer.keys())) if random.randint(0, 100) > 50 else None
+            if next_customer is not None:
+                sleep = float(random.randint(1, 10) / 1000)
 
-            time.sleep(sleep)
+        if len(high_tput_per_symbol.keys()) > 0:
+            next_symbol = random.choice(list(high_tput_per_symbol.keys())) if random.randint(0, 100) > 50 else None
+            if next_symbol is not None:
+                sleep = float(random.randint(1, 10) / 1000)
 
-Thread(target=generate_trades, daemon=False).start()
+        time.sleep(sleep)
 
-@app.get('/reset/market')
+Thread(target=generate_trade_requests, daemon=False).start()
+
+@app.post('/reset/market')
 def reset_market():
     global high_tput_per_customer
     global high_tput_per_symbol
@@ -145,7 +149,7 @@ def reset_market():
     
     app.logger.info(f"market reset")
 
-@app.get('/reset/error')
+@app.post('/reset/error')
 def reset_error():
     global latency_per_region
     global canary_per_region
@@ -271,3 +275,74 @@ def canary_region_delete(region):
     if region in canary_per_region:
         del canary_per_region[region]
     return canary_per_region  
+
+def generate_trade_force(*, day_of_week, region, symbol, action, shares, share_price, data_source, classification):
+    try:
+        trade_response = requests.post(f"http://{os.environ['TRADER_HOST']}:9001/trade/force", 
+                                       params={'symbol': symbol,
+                                               'day_of_week': day_of_week, 
+                                               'shares': shares, 
+                                               'action': action,
+                                               'region': region,
+                                               'share_price': share_price,
+                                               'data_source': data_source,
+                                               'classification': classification
+                                               },
+                                       timeout=TRADE_TIMEOUT)
+        trade_response.raise_for_status()
+    except Exception as inst:
+        print(inst)
+
+def generate_trades(*, fixed_day_of_week=None, fixed_region = None, fixed_symbol = None,
+                    fixed_action = None, fixed_shares_min = None, fixed_shares_max = None, 
+                    fixed_share_price_min = None, fixed_share_price_max = None, classification):
+
+    if fixed_day_of_week is not None:
+        idx_of_week = 0
+    else:
+        idx_of_week = DAYS_OF_WEEK.index(fixed_day_of_week)
+    
+    while True:
+        if fixed_day_of_week is not None:
+            idx_of_week = DAYS_OF_WEEK.index(fixed_day_of_week)
+        else:
+            idx_of_week = DAYS_OF_WEEK.index(random.choice(DAYS_OF_WEEK))
+
+        region = fixed_region if fixed_region is not None else random.choice(regions)
+        symbol = fixed_symbol if fixed_symbol is not None else random.choice(symbols)
+        customer_id = random.choice(customers)
+        action = fixed_action if fixed_action is not None else random.choice(ACTIONS)
+        if fixed_shares_min is not None:
+            shares = random.randint(fixed_shares_min, fixed_shares_max)
+        else:
+            shares = random.randint(1, 100)
+        if fixed_share_price_min is not None:
+            share_price = random.randint(fixed_share_price_min, fixed_share_price_max)
+        else:
+            share_price = random.randint(1, 1000)
+
+        print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region}")
+
+        generate_trade_force(symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week], region=region,
+                             action=action, shares=shares, share_price=share_price, classification=classification,
+                             data_source='training')
+
+        sleep = float(random.randint(1, 10) / 1000)
+        time.sleep(sleep)
+
+@app.post('/train/<classification>')
+def train_label(classification):
+
+    day_of_week = request.args.get('day_of_week', default=None, type=str)
+    region = request.args.get('region', default=None, type=str)
+    symbol = request.args.get('symbol', default=None, type=str)
+    action = request.args.get('action', default=None, type=str)
+    shares_min = request.args.get('shares_min', default=None, type=int)
+    shares_max = request.args.get('shares_max', default=None, type=int)
+    share_price_min = request.args.get('share_price_min', default=None, type=float)
+    share_price_max = request.args.get('share_price_max', default=None, type=float)
+    
+    generate_trades(fixed_day_of_week=day_of_week, fixed_region = region, fixed_symbol = symbol,
+                    fixed_action = action, fixed_shares_min = shares_min, fixed_shares_max = shares_max, 
+                    fixed_share_price_min=share_price_min, fixed_share_price_max=share_price_max, 
+                    classification=classification)

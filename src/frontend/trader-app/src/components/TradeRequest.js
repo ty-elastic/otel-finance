@@ -35,6 +35,7 @@ class TradeRequest extends React.Component {
                     'day_of_week': this.state.dayOfWeek,
                     'customer_id': this.state.customerId,
                     'region': this.state.region,
+                    'data_source': 'customer'
                 }
             });
         } catch (err) {

@@ -13,7 +13,7 @@ class MarketReset extends React.Component {
         event.preventDefault();
 
         try {
-            await axios.delete(`/monkey/reset/market`);
+            await axios.post(`/monkey/reset/market`);
         } catch (err) {
             console.log(err.message)
         }

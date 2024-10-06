@@ -13,7 +13,7 @@ class ErrorReset extends React.Component {
         event.preventDefault();
 
         try {
-            await axios.delete(`/monkey/reset/error`);
+            await axios.post(`/monkey/reset/error`);
         } catch (err) {
             console.log(err.message)
         }

@@ -1,10 +1,34 @@
 receivers:
-  otlp:
+  otlp/fromsdk:
     protocols:
       grpc:
         endpoint: 0.0.0.0:4317
-      http:
-        endpoint: 0.0.0.0:4318
+
+  # Receiver for CPU, Disk, Memory, and Filesystem metrics
+  hostmetrics/system:
+    collection_interval: 30s
+    scrapers:
+      filesystem:
+      memory:
+        metrics:
+          system.memory.utilization:
+            enabled: true
+      process:
+        mute_process_exe_error: true
+        mute_process_io_error: true
+        mute_process_user_error: true
+        metrics:
+          process.threads:
+            enabled: true
+          process.open_file_descriptors:
+            enabled: true
+          process.memory.utilization:
+            enabled: true
+          process.disk.operations:
+            enabled: true
+      network:
+      processes:
+      load:
 
   filelog/recorder:
     # ingest app log (proprietary format)
@@ -51,12 +75,43 @@ receivers:
 
 processors:
   batch:
+  resourcedetection:
+    detectors: ["system"]
+    system:
+      hostname_sources: ["os"]
+      resource_attributes:
+        host.name:
+          enabled: true
+        host.id:
+          enabled: false
+        host.arch:
+          enabled: true
+        host.ip:
+          enabled: true
+        host.mac:
+          enabled: true
+        host.cpu.vendor.id:
+          enabled: true
+        host.cpu.family:
+          enabled: true
+        host.cpu.model.id:
+          enabled: true
+        host.cpu.model.name:
+          enabled: true
+        host.cpu.stepping:
+          enabled: true
+        host.cpu.cache.l2.size:
+          enabled: true
+        os.description:
+          enabled: true
+        os.type:
+          enabled: true
 
 exporters:
   logging:
     verbosity: detailed
 
-  otlp/elastic: 
+  otlp/apm: 
     endpoint: "${ELASTIC_APM_SERVER_ENDPOINT}"
     tls:
       insecure: true
@@ -66,12 +121,27 @@ exporters:
 
 service:
   pipelines:
-    traces:
-      receivers: [ otlp ]
-      exporters: [ otlp/elastic ]
-    metrics:
-      receivers: [ otlp ]
-      exporters: [ otlp/elastic ]
-    logs:
-      receivers: [ otlp, filelog/recorder ]
-      exporters: [ otlp/elastic ]
+    traces/fromsdk:
+      receivers: [otlp/fromsdk]
+      processors: [batch]
+      exporters: [otlp/apm]
+
+    metrics/fromsdk:
+      receivers: [otlp/fromsdk]
+      processors: [batch]
+      exporters: [otlp/apm]
+
+    logs/fromsdk:
+      receivers: [otlp/fromsdk]
+      processors: [batch]
+      exporters: [otlp/apm]
+
+    metrics/hostmetrics:
+      receivers: [hostmetrics/system]
+      processors: [resourcedetection]
+      exporters: [otlp/apm]
+
+    logs/recorder:
+      receivers: [filelog/recorder]
+      processors: [resourcedetection]
+      exporters: [otlp/apm]

@@ -141,7 +141,7 @@ services:
       retries : 5
 
   collector:
-    image: otel/opentelemetry-collector-contrib:latest
+    image: otel/opentelemetry-collector-contrib
     restart: on-failure
     ports:
       - "4317:4317"
@@ -153,3 +153,4 @@ services:
     environment:
       ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}
       ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
+      ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}

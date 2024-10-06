@@ -1,4 +1,4 @@
-echo "load slos"
+echo "load ML"
 for i in *.json; do
     filename=$(basename -- "$i")
     extension="${filename##*.}"
