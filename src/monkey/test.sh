@@ -8,9 +8,9 @@ export OTEL_METRIC_EXPORT_INTERVAL=5000
 # export OTEL_PYTHON_LOG_CORRELATION="true"
 # export OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED="true"
 
-cd ../../lib
-./build.sh
-cd ../src/trader
-pip install -e _lib/baggage-log-record-processor
+# cd ../../lib
+# ./build.sh
+# cd ../src/trader
+# pip install -e _lib/baggage-log-record-processor
 
 OTEL_SERVICE_NAME="monkey" opentelemetry-instrument flask run --host=0.0.0.0 -p 9002

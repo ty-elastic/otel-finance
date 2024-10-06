@@ -48,6 +48,7 @@ def set_attribute_and_baggage(key, value):
 @app.post('/reset')
 def reset():
     model.reset_market_data()
+    return None
     
 def decode_common_args():
     trade_id = str(uuid.uuid4())
@@ -71,7 +72,8 @@ def decode_common_args():
     set_attribute_and_baggage("data_source", data_source)
 
     classification = request.args.get('classification', default=None, type=str)
-    set_attribute_and_baggage("classification", data_source)
+    if classification is not None:
+        set_attribute_and_baggage("classification", classification)
     
     # forced errors
     latency = request.args.get('latency', default=0, type=float)

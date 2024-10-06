@@ -7,7 +7,6 @@ import MarketTputCustomer from './MarketTputCustomer'
 import MarketReset from './MarketReset'
 import MarketSkewMarketFactorSymbol from './MarketSkewMarketFactorSymbol'
 
-
 class Market extends React.Component {
     render() {
         return (

@@ -34,14 +34,14 @@ TRAINING_TRADE_COUNT = 1000
 DAYS_OF_WEEK = ['M','Tu', 'W', 'Th', 'F']
 ACTIONS = ['buy', 'sell', 'hold']
 
-g_latency_per_region = {}
-g_canary_per_region = {}
-g_high_tput_per_customer = {}
-g_high_tput_per_symbol = {}
-g_high_tput_per_region = {}
-g_db_error_per_region = {}
-g_model_error_per_region = {}
-g_skew_market_factor_per_symbol = {}
+latency_per_region = {}
+canary_per_region = {}
+high_tput_per_customer = {}
+high_tput_per_symbol = {}
+high_tput_per_region = {}
+db_error_per_region = {}
+model_error_per_region = {}
+skew_market_factor_per_symbol = {}
 
 customers = ['b.smith', 'l.johnson', 'j.casey', 'l.hall', 'q.bert']
 symbols = ['MOT', 'MSI', 'GOGO', 'INTEQ', 'VID', 'ESTC']
@@ -152,16 +152,22 @@ def reset_market():
 @app.post('/reset/error')
 def reset_error():
     global latency_per_region
-    global canary_per_region
     global db_error_per_region
     global model_error_per_region
     
     latency_per_region = {}
-    canary_per_region = {}
     db_error_per_region = {}
     model_error_per_region = {}
     
     app.logger.info(f"error reset")
+
+@app.post('/reset/test')
+def test_error():
+    global canary_per_region
+
+    canary_per_region = {}
+    
+    app.logger.info(f"test reset")
 
 @app.get('/state')
 def get_state():
@@ -253,7 +259,7 @@ def err_model_region_delete(region):
     return model_error_per_region
 
 @app.post('/skew_market_factor/symbol/<symbol>/<amount>')
-def skew_market_factor(symbol, amount):
+def skew_market_factor_symbol(symbol, amount):
     global skew_market_factor_per_symbol
     skew_market_factor_per_symbol[symbol] = int(amount)
     return skew_market_factor_per_symbol
@@ -276,7 +282,7 @@ def canary_region_delete(region):
         del canary_per_region[region]
     return canary_per_region  
 
-def generate_trade_force(*, day_of_week, region, symbol, action, shares, share_price, data_source, classification):
+def generate_trade_force(*, customer_id, day_of_week, region, symbol, action, shares, share_price, data_source, classification):
     try:
         trade_response = requests.post(f"http://{os.environ['TRADER_HOST']}:9001/trade/force", 
                                        params={'symbol': symbol,
@@ -284,6 +290,7 @@ def generate_trade_force(*, day_of_week, region, symbol, action, shares, share_p
                                                'shares': shares, 
                                                'action': action,
                                                'region': region,
+                                               'customer_id': customer_id,
                                                'share_price': share_price,
                                                'data_source': data_source,
                                                'classification': classification
@@ -297,34 +304,45 @@ def generate_trades(*, fixed_day_of_week=None, fixed_region = None, fixed_symbol
                     fixed_action = None, fixed_shares_min = None, fixed_shares_max = None, 
                     fixed_share_price_min = None, fixed_share_price_max = None, classification):
 
-    if fixed_day_of_week is not None:
+    if fixed_day_of_week is None:
         idx_of_week = 0
     else:
         idx_of_week = DAYS_OF_WEEK.index(fixed_day_of_week)
     
-    while True:
-        if fixed_day_of_week is not None:
-            idx_of_week = DAYS_OF_WEEK.index(fixed_day_of_week)
-        else:
-            idx_of_week = DAYS_OF_WEEK.index(random.choice(DAYS_OF_WEEK))
+    for x in range(0, TRAINING_TRADE_COUNT):
+        
+        trade_classification = f"not {classification}"
+        
+        idx_of_week = DAYS_OF_WEEK.index(random.choice(DAYS_OF_WEEK))
+        if fixed_day_of_week is not None and DAYS_OF_WEEK.index(fixed_day_of_week) == idx_of_week:
+            trade_classification = classification
 
-        region = fixed_region if fixed_region is not None else random.choice(regions)
-        symbol = fixed_symbol if fixed_symbol is not None else random.choice(symbols)
+        region = random.choice(regions)
+        if fixed_region is not None and fixed_region == region:
+            trade_classification = classification
+ 
+        symbol = random.choice(symbols)
+        if fixed_symbol is not None and fixed_symbol == symbol:
+            trade_classification = classification
+
         customer_id = random.choice(customers)
-        action = fixed_action if fixed_action is not None else random.choice(ACTIONS)
-        if fixed_shares_min is not None:
-            shares = random.randint(fixed_shares_min, fixed_shares_max)
-        else:
-            shares = random.randint(1, 100)
-        if fixed_share_price_min is not None:
-            share_price = random.randint(fixed_share_price_min, fixed_share_price_max)
-        else:
-            share_price = random.randint(1, 1000)
+        
+        action = random.choice(ACTIONS)
+        if fixed_action is not None and fixed_action == action:
+            trade_classification = classification
 
-        print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region}")
+        shares = random.randint(1, 100)
+        if fixed_shares_min is not None and shares >= fixed_shares_min and shares <= fixed_shares_max:
+            trade_classification = classification
 
-        generate_trade_force(symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week], region=region,
-                             action=action, shares=shares, share_price=share_price, classification=classification,
+        share_price = random.randint(1, 1000)
+        if fixed_share_price_min is not None and share_price >= fixed_share_price_min and share_price <= fixed_share_price_max:
+            trade_classification = classification
+
+        print(f"training {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region}, classification {trade_classification}")
+
+        generate_trade_force(symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week], region=region, customer_id=customer_id,
+                             action=action, shares=shares, share_price=share_price, classification=trade_classification,
                              data_source='training')
 
         sleep = float(random.randint(1, 10) / 1000)
@@ -346,3 +364,5 @@ def train_label(classification):
                     fixed_action = action, fixed_shares_min = shares_min, fixed_shares_max = shares_max, 
                     fixed_share_price_min=share_price_min, fixed_share_price_max=share_price_max, 
                     classification=classification)
+    
+    return None

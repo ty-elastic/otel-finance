@@ -18,7 +18,7 @@ function App() {
   return (
     <HashRouter>
       <div className="App">
-        <h1>TradeMaster 2000</h1>
+        <h1>Trader</h1>
         <NavLink to="/">Trade</NavLink> | <NavLink to="/market">Manipulate Market</NavLink> | <NavLink to="/error">Generate Errors</NavLink>
         <hr/>
         <div className="content">

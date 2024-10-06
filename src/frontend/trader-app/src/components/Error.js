@@ -43,15 +43,7 @@ class Error extends React.Component {
                 <ErrorLatencyRegion/>
                 <hr></hr>
 
-                <h2>Canary by Region</h2>
-                <CanaryRegion/>
-                <hr></hr>
-
             </div>
-
-
-
-
         );
     }
 }

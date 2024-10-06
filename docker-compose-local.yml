@@ -1,4 +1,130 @@
 services:
+
+  # trader:
+  #   build:
+  #     context: ./src/trader/
+  #   restart: on-failure
+  #   ports:
+  #     - "9001:9001"
+  #   environment:
+  #     OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+  #     OTEL_SERVICE_NAME: "trader"
+  #     OTEL_RESOURCE_ATTRIBUTES: "service.version=1.0"
+
+  #     OTEL_PYTHON_LOG_LEVEL: "info"
+  #     OTEL_PYTHON_LOG_CORRELATION: "true"
+  #     OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
+  #   depends_on:
+  #     router:
+  #       condition: service_started
+
+  # monkey:
+  #   build:
+  #     context: ./src/monkey/
+  #   restart: on-failure
+  #   ports:
+  #     - "9002:9002"
+  #   environment:
+  #     OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+  #     OTEL_SERVICE_NAME: "monkey"
+
+  #     OTEL_PYTHON_LOG_LEVEL: "info"
+  #     OTEL_PYTHON_LOG_CORRELATION: "true"
+  #     OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
+  #   depends_on:
+  #     trader:
+  #       condition: service_started
+
+  router:
+    build:
+      context: ./src/router/
+    restart: on-failure
+    ports:
+      - "9000:9000"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "router"
+
+      RECORDER_HOST: "recorder-java"
+      RECORDER_HOST_CANARY: "recorder-go"
+    depends_on:
+      recorder-go:
+        condition: service_started
+      recorder-java:
+        condition: service_started
+
+  recorder-go:
+    build:
+      context: ./src/recorder-go/
+    restart: on-failure
+    volumes:
+      - ./logs:/logs
+    command: ["-logfile=/logs/recorder.log"]
+    ports:
+      - "9004:9004"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_SERVICE_NAME: "recorder-go"
+  
+      POSTGRES_HOST: "postgresql"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_USER: "admin"
+    depends_on:
+      postgresql:
+        condition: service_started
+
+  recorder-java:
+    build:
+      context: ./src/recorder-java/
+    restart: on-failure
+    ports:
+      - "9003:9003"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "recorder-java"
+
+      POSTGRES_HOST: "postgresql"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_USER: "admin"
+    depends_on:
+      postgresql:
+        condition: service_started
+      collector:
+        condition: service_started
+
+  frontend:
+    platform: "linux/amd64"
+    build:
+      context: ./src/frontend/
+      args:
+        ELASTIC_APM_SERVER_RUM_ENDPOINT: ${ELASTIC_APM_SERVER_RUM_ENDPOINT}
+        ELASTIC_APM_SERVER_RUM_CREDENTIALS: ${ELASTIC_APM_SERVER_RUM_CREDENTIALS}
+
+        KIBANA_URL: ${KIBANA_URL}
+        ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
+        ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+    ports:
+      - '31236:80'
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_SERVICE_NAME: "proxy"
+    # depends_on:
+    #   monkey:
+    #     condition: service_started
+    #   trader:
+    #     condition: service_started
+
+  instruqt_frontend:
+    build:
+      context: ./instruqt_frontend/
+    ports:
+      - '9393:80'
+    depends_on:
+      frontend:
+        condition: service_started
+
   postgresql:
     image: postgres:latest
     restart: on-failure
@@ -27,3 +153,4 @@ services:
     environment:
       ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}
       ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
+      ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
