@@ -7,7 +7,7 @@ RUN pip3 install -r requirements.txt
 
 # add OTel libs
 RUN pip3 install elastic-opentelemetry opentelemetry-processor-baggage
-COPY _lib/ .
+COPY lib/ .
 RUN pip3 install -e baggage-log-record-processor
 
 COPY app.py .

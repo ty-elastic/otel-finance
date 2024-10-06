@@ -19,6 +19,8 @@ from opentelemetry.processor.logrecord.baggage import BaggageLogRecordProcessor
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
+ATTRIBUTE_PREFIX = "com.example"
+
 import model
 
 tracer_provider = trace.get_tracer_provider()
@@ -52,28 +54,28 @@ def reset():
     
 def decode_common_args():
     trade_id = str(uuid.uuid4())
-    set_attribute_and_baggage("trade_id", trade_id)
+    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.trade_id", trade_id)
     
     customer_id = request.args.get('customer_id', default=None, type=str)
-    set_attribute_and_baggage("customer_id", customer_id)
+    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.customer_id", customer_id)
     
     day_of_week = request.args.get('day_of_week', default=None, type=str)
     if day_of_week is None:
         day_of_week = random.choice(['M','Tu', 'W', 'Th', 'F'])
-    set_attribute_and_baggage("day_of_week", day_of_week)
+    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.day_of_week", day_of_week)
     
     region = request.args.get('region', default="NA", type=str)
-    set_attribute_and_baggage("region", region)
+    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.region", region)
 
     symbol = request.args.get('symbol', default='ESTC', type=str)
-    set_attribute_and_baggage("symbol", symbol)
+    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.symbol", symbol)
 
     data_source = request.args.get('data_source', default='monkey', type=str)
-    set_attribute_and_baggage("data_source", data_source)
+    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.data_source", data_source)
 
     classification = request.args.get('classification', default=None, type=str)
     if classification is not None:
-        set_attribute_and_baggage("classification", classification)
+        set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.classification", classification)
     
     # forced errors
     latency = request.args.get('latency', default=0, type=float)
@@ -82,7 +84,7 @@ def decode_common_args():
     skew_market_factor = request.args.get('skew_market_factor', default=0, type=int)
 
     canary = request.args.get('canary', default=False, type=conform_request_bool)
-    set_attribute_and_baggage("canary", canary)
+    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.canary", canary)
     
     return trade_id, customer_id, day_of_week, region, symbol, latency, error_model, error_db, skew_market_factor, canary, data_source, classification
 
@@ -92,15 +94,15 @@ def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, ca
     
     app.logger.info(f"trade requested for {symbol} on day {day_of_week}")
     
-    current_span.set_attribute("shares", shares)
-    current_span.set_attribute("share_price", share_price)
-    current_span.set_attribute("action", action)
+    current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.shares", shares)
+    current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.share_price", share_price)
+    current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.action", action)
     if action == 'buy' or action == 'sell':
-        current_span.set_attribute("value", shares * share_price)
+        current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.value", shares * share_price)
         trading_revenue.add(math.ceil(share_price * shares * .001))
         trading_volume.add(shares)
     else:
-        current_span.set_attribute("value", 0)
+        current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.value", 0)
 
     response = {}
     response['id'] = trade_id
@@ -145,7 +147,7 @@ def run_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latenc
     current_span = trace.get_current_span()
     
     market_factor, share_price = model.sim_market_data(symbol=symbol, day_of_week=day_of_week, skew_market_factor=skew_market_factor)
-    current_span.set_attribute("market_factor", market_factor)
+    current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.market_factor", market_factor)
     
     action, shares = model.sim_decide(error=error, latency=latency, symbol=symbol, market_factor=market_factor)
 
