@@ -1,23 +1,23 @@
 {
   "groups": [
-    "finance"
+    "otel-apm-ml"
   ],
   "description": "",
   "analysis_config": {
     "bucket_span": "15m",
     "detectors": [
       {
-        "detector_description": "max(\"numeric_labels.out_shares\") by \"labels.in_symbol\" over \"labels.customer_id\"",
+        "detector_description": "max(\"numeric_labels.com_example_shares\") by \"labels.com_example_symbol\" over \"labels.com_example_customer_id\"",
         "function": "max",
-        "field_name": "numeric_labels.out_shares",
-        "by_field_name": "labels.in_symbol",
-        "over_field_name": "labels.customer_id",
+        "field_name": "numeric_labels.com_example_shares",
+        "by_field_name": "labels.com_example_symbol",
+        "over_field_name": "labels.com_example_customer_id",
         "detector_index": 0
       }
     ],
     "influencers": [
-      "labels.customer_id",
-      "labels.in_symbol"
+      "labels.com_example_customer_id",
+      "labels.com_example_symbol"
     ],
     "model_prune_window": "30d"
   },

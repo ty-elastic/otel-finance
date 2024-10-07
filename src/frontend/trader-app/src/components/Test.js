@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import CanaryRegion from './CanaryRegion'
 import TestReset from './TestReset'
 
-class Error extends React.Component {
+class Test extends React.Component {
     constructor(props) {
         super(props);
         this.handleBrowserException = this.handleBrowserException.bind(this);
@@ -26,4 +26,4 @@ class Error extends React.Component {
     }
 }
 
-export default Error;
+export default Test;

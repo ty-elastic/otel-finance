@@ -1,0 +1,21 @@
+{
+    "description": "Uses the pre-trained data frame analytics model {{ MODEL_ID }} to infer against the data that is being ingested in the pipeline",
+    "processors": [
+        {
+            "inference": {
+                "model_id": "{{ MODEL_ID }}",
+                "ignore_failure": true,
+                "target_field": "ml.inference.labels.com_example_classification_prediction",
+                "inference_config": {
+                    "classification": {
+                        "num_top_classes": -1,
+                        "top_classes_results_field": "top_classes",
+                        "results_field": "labels.com_example_classification_prediction",
+                        "num_top_feature_importance_values": 0,
+                        "prediction_field_type": "string"
+                    }
+                }
+            }
+        }
+    ]
+}

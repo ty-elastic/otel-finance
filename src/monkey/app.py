@@ -148,6 +148,7 @@ def reset_market():
     skew_market_factor_per_symbol = {}
     
     app.logger.info(f"market reset")
+    return None
 
 @app.post('/reset/error')
 def reset_error():
@@ -160,6 +161,7 @@ def reset_error():
     model_error_per_region = {}
     
     app.logger.info(f"error reset")
+    return None
 
 @app.post('/reset/test')
 def test_error():
@@ -168,6 +170,7 @@ def test_error():
     canary_per_region = {}
     
     app.logger.info(f"test reset")
+    return None
 
 @app.get('/state')
 def get_state():
