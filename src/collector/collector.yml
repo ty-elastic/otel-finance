@@ -8,7 +8,14 @@ receivers:
   hostmetrics/system:
     collection_interval: 30s
     scrapers:
+      disk:
       filesystem:
+      cpu:
+        metrics:
+          system.cpu.utilization:
+            enabled: true
+          system.cpu.logical.count:
+            enabled: true
       memory:
         metrics:
           system.memory.utilization:
@@ -75,6 +82,7 @@ receivers:
 
 processors:
   batch:
+  elasticinframetrics:
   resourcedetection:
     detectors: ["system"]
     system:
@@ -106,10 +114,33 @@ processors:
           enabled: true
         os.type:
           enabled: true
+  attributes/dataset:
+    actions:
+      - key: event.dataset
+        from_attribute: data_stream.dataset
+        action: upsert
+  resource/process:
+    attributes:
+      - key: process.executable.name
+        action: delete
+      - key: process.executable.path
+        action: delete
 
 exporters:
-  logging:
+  debug:
     verbosity: detailed
+
+  elasticsearch:
+    endpoints: ["${ELASTICSEARCH_URL}"]
+    api_key: ${ELASTICSEARCH_APIKEY}
+    mapping:
+      mode: ecs
+    logs_dynamic_index:
+      enabled: true
+    metrics_dynamic_index:
+      enabled: true
+    traces_dynamic_index:
+      enabled: true
 
   otlp/apm: 
     endpoint: "${ELASTIC_APM_SERVER_ENDPOINT}"
@@ -138,10 +169,10 @@ service:
 
     metrics/hostmetrics:
       receivers: [hostmetrics/system]
-      processors: [resourcedetection]
-      exporters: [otlp/apm]
+      processors: [elasticinframetrics, resourcedetection, attributes/dataset, resource/process]
+      exporters: [elasticsearch]
 
     logs/recorder:
       receivers: [filelog/recorder]
       processors: [resourcedetection]
-      exporters: [otlp/apm]
+      exporters: [elasticsearch]

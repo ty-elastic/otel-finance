@@ -141,7 +141,7 @@ services:
       retries : 5
 
   collector:
-    image: otel/opentelemetry-collector-contrib
+    image: docker.elastic.co/beats/elastic-agent:8.15.2
     restart: on-failure
     ports:
       - "4317:4317"
@@ -149,8 +149,10 @@ services:
     volumes:
       - ./src/collector/collector.yml:/collector.yml
       - ./logs:/logs
-    command: ["--config=/collector.yml"]
+    entrypoint: "/usr/share/elastic-agent/elastic-agent"
+    command: ["otel", "-c", "/collector.yml"]
     environment:
       ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}
       ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
       ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
+      ELASTICSEARCH_APIKEY: ${ELASTICSEARCH_APIKEY}

@@ -15,7 +15,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.30.0
 )
 
-replace github.com/ty-elastic/opentelemetryprocessorspanbaggage v0.0.0 => ./_lib/baggagespanprocessor
+replace github.com/ty-elastic/opentelemetryprocessorspanbaggage v0.0.0 => ./lib/baggagespanprocessor
 
 require (
 	github.com/bytedance/sonic v1.12.3 // indirect

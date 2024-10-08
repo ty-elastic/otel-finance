@@ -3,7 +3,7 @@ WORKDIR /usr/src/app/
 
 COPY go.* ./
 COPY *.go ./
-COPY _lib _lib
+COPY lib lib
 RUN go build -o /go/bin/recorder
 
 # -----------------------------------------------------------------------------
