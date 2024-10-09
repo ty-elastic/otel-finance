@@ -1,5 +1,5 @@
 {
-    "name": "Trader: Latency",
+    "name": "[Trader] Latency",
     "description": "",
     "indicator": {
         "type": "sli.apm.transactionDuration",
@@ -21,7 +21,9 @@
     "objective": {
         "target": 0.99
     },
-    "tags": [],
+    "tags": [
+        "workshop"
+    ],
     "groupBy": [
         "*"
     ],

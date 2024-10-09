@@ -6,7 +6,6 @@ import TestReset from './TestReset'
 class Test extends React.Component {
     constructor(props) {
         super(props);
-        this.handleBrowserException = this.handleBrowserException.bind(this);
     }
 
     render() {

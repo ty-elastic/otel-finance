@@ -28,9 +28,8 @@ class BaggageLogRecordProcessor(logs.LogRecordProcessor):
 
     """
 
-    def __init__(self, baggage_key_predicate: BaggageKeyPredicateT, exporter: LogExporter) -> None:
+    def __init__(self, baggage_key_predicate: BaggageKeyPredicateT) -> None:
         self._baggage_key_predicate = baggage_key_predicate
-        self._exporter = exporter
         self._shutdown = False
 
     def emit(
@@ -43,11 +42,9 @@ class BaggageLogRecordProcessor(logs.LogRecordProcessor):
         for key, value in baggage.items():
             if self._baggage_key_predicate(key):
                 log_data.log_record.attributes[key] = value
-        self._exporter.export((log_data,))
                 
     def shutdown(self):
         self._shutdown = True
-        self._exporter.shutdown()
     
     def force_flush(self, timeout_millis: int = 30000) -> bool:  # pylint: disable=no-self-use
         return True

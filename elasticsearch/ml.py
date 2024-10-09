@@ -23,7 +23,7 @@ def load_trained(*, replace=True):
                                 print(f"deleting old pipeline {pipeline_id}")
                                 res = client.ingest.delete_pipeline(id=pipeline_id)
                     except Exception as inst:
-                        print("unable to delete old pipelines ml-inference-{filename}*: {inst}")
+                        print(f"unable to delete old pipelines ml-inference-{filename}*: {inst}")
                     
                     try:
                         print(f"looking for old trained models {filename}*")
@@ -32,19 +32,19 @@ def load_trained(*, replace=True):
                             print(f"deleting old trained model {filename}*")
                             res = client.ml.delete_trained_model(model_id=trained_model_config['model_id'], force=True)
                     except Exception as inst:
-                        print("unable to delete old trained models {filename}*: {inst}")
+                        print(f"unable to delete old trained models {filename}*: {inst}")
                               
                     try:
                         print(f"deleting old data frame analytics {filename}*")
                         result = client.ml.delete_data_frame_analytics(id=filename, force=True)
                     except Exception as inst:
-                        print("unable to delete old data frame analytics {filename}*: {inst}")
+                        print(f"unable to delete old data frame analytics {filename}*: {inst}")
                     
                     try:
                         print(f"deleting old index {filename}")
                         result = client.indices.delete(index=filename)
                     except Exception as inst:
-                        print("unable to delete old index {filename}: {inst}")
+                        print(f"unable to delete old index {filename}: {inst}")
 
                 json_job = json.load(job)
 
@@ -55,8 +55,9 @@ def load_trained(*, replace=True):
                     print(f"create trained ml job {filename}: {inst}")
 
                 try:
-                    print("start data frame analytics {filename}")
-                    client.ml.start_data_frame_analytics(id=filename)
+                    print(f"start data frame analytics {filename}")
+                    res = client.ml.start_data_frame_analytics(id=filename)
+                    print(res)
                 except Exception as inst:
                     print(f"started data frame analytics {filename}: {inst}")
                 
@@ -64,7 +65,7 @@ def load_trained(*, replace=True):
                     time.sleep(2)
                     
                     try:
-                        print("get trained models {filename}")
+                        print(f"get trained models {filename}")
                         result = client.ml.get_trained_models(model_id=f"{filename}*")
                         if len(result['trained_model_configs']) == 0:
                             continue

@@ -43,7 +43,7 @@ class BaggageLogRecordProcessor(logs.LogRecordProcessor):
         for key, value in baggage.items():
             if self._baggage_key_predicate(key):
                 log_data.log_record.attributes[key] = value
-        self._exporter.export((log_data,))
+        #self._exporter.export((log_data,))
                 
     def shutdown(self):
         self._shutdown = True

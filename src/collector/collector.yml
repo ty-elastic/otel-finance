@@ -81,7 +81,6 @@ receivers:
         if: attributes.span_id != nil
 
 processors:
-  batch:
   elasticinframetrics:
   resourcedetection:
     detectors: ["system"]
@@ -154,17 +153,14 @@ service:
   pipelines:
     traces/fromsdk:
       receivers: [otlp/fromsdk]
-      processors: [batch]
       exporters: [otlp/apm]
 
     metrics/fromsdk:
       receivers: [otlp/fromsdk]
-      processors: [batch]
       exporters: [otlp/apm]
 
     logs/fromsdk:
       receivers: [otlp/fromsdk]
-      processors: [batch]
       exporters: [otlp/apm]
 
     metrics/hostmetrics:

@@ -1,5 +1,7 @@
 import random
 import time
+import requests
+import uuid
 
 from app import app
 from opentelemetry import trace
@@ -97,6 +99,8 @@ def sim_decide(*, symbol, market_factor, error, latency):
 
     if latency > 0:
         time.sleep(latency)
+        inst = "HTTPSConnectionPool(host=market.example.com, port=443): Max retries exceeded with url: / (Caused by NameResolutionError(Failed to resolve market.example.com ([Errno -2] Name or service not known)))"
+        app.logger.warn(f"unable to fetch current market data; skipping: {inst}")
 
     return action, shares
     

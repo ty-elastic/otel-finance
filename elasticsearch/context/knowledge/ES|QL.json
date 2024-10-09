@@ -1,0 +1,7 @@
+{
+    "text": "remember for ES|QL, you need to use '*' for wildcards, not '%'",
+    "is_correction": false,
+    "public": true,
+    "confidence": "high",
+    "doc_id": "ES|QL"
+}

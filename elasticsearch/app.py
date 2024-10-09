@@ -11,6 +11,9 @@ import ml
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
+@app.post('/start_traces'):
+    
+
 @app.post('/ml/train')
 def ml_train():
     ml.load_trained()

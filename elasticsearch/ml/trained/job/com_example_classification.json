@@ -17,6 +17,9 @@
         ],
         "minimum_should_match": 1
       }
+    },
+    "_source": {
+      "includes": ["labels.com_example_*", "numeric_labels.com_example_*"]
     }
   },
   "dest": {
@@ -54,7 +57,7 @@
     ],
     "excludes": []
   },
-  "model_memory_limit": "33mb",
+  "model_memory_limit": "35mb",
   "allow_lazy_start": false,
   "max_num_threads": 1
 }

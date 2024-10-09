@@ -14,6 +14,6 @@ cd slos
 ./slos.sh
 cd ..
 
-cd ml
-./ml.sh
-cd ..
+# cd ml
+# ./ml.sh
+# cd ..

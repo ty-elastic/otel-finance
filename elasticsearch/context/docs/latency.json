@@ -1,0 +1,26 @@
+{
+    "author": {
+        "login": "ty-elastic"
+    },
+    "issue_comments": [],
+    "title": "Max retries exceeded with url",
+    "body": "If you are receiving an error like `[WARN] unable to fetch current market data; skipping: HTTPSConnectionPool(host=market.example.com, port=443): Max retries exceeded with url: / (Caused by NameResolutionError(Failed to resolve market.example.com ([Errno -2] Name or service not known)))`, it means that the market.example.com service has not been provisioned yet in this (new) region. Please ask IT to provision it.",
+    "type": "Issue",
+    "url": "https://github.com/ty-elastic/otel-finance/issues/2",
+    "number": 1,
+    "createdAt": "2024-09-18T02:41:44Z",
+    "assignees_list": [
+        {
+            "login": "ty-elastic"
+        }
+    ],
+    "labels_field": [],
+    "state": "CLOSED",
+    "id": "ty-elastic/otel-finance/issues/latency",
+    "closedAt": null,
+    "_timestamp": "2024-09-18T02:41:45Z",
+
+    "_extract_binary_content": false,
+    "_reduce_whitespace": true,
+    "_run_ml_inference": true
+}

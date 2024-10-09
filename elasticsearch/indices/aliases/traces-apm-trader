@@ -1,0 +1,7 @@
+{
+  "filter": {
+    "term": {
+      "service.name": "trader"
+    }
+  }
+}
