@@ -118,19 +118,19 @@ def generate_trade_requests():
         
         if len(high_tput_per_region.keys()) > 0:
             next_high_tput_region = random.choice(list(high_tput_per_region.keys()))
-            next_region = next_high_tput_region if random.randint(0, 100) > high_tput_per_region[next_high_tput_region] else None
+            next_region = next_high_tput_region if random.randint(0, 100) > (100-high_tput_per_region[next_high_tput_region]) else None
             if next_region is not None:
                 sleep = float(random.randint(1, 4) / 1000)
         
         if len(high_tput_per_customer.keys()) > 0:
             next_high_tput_customer = random.choice(list(high_tput_per_customer.keys()))
-            next_customer = next_high_tput_customer if random.randint(0, 100) > high_tput_per_customer[next_high_tput_customer] else None
+            next_customer = next_high_tput_customer if random.randint(0, 100) > (100-high_tput_per_customer[next_high_tput_customer]) else None
             if next_customer is not None:
                 sleep = float(random.randint(1, 4) / 1000)
 
         if len(high_tput_per_symbol.keys()) > 0:
             next_high_tput_symbol = random.choice(list(high_tput_per_symbol.keys()))
-            next_symbol = next_high_tput_symbol if random.randint(0, 100) > high_tput_per_symbol[next_high_tput_symbol] else None
+            next_symbol = next_high_tput_symbol if random.randint(0, 100) > (100-high_tput_per_symbol[next_high_tput_symbol]) else None
             if next_symbol is not None:
                 sleep = float(random.randint(1, 4) / 1000)
 
@@ -208,7 +208,7 @@ def tput_region_delete(region):
 @app.post('/tput/customer/<customer>/<speed>')
 def tput_customer(customer, speed):
     global high_tput_per_customer
-    high_tput_per_customer[customer] = speed
+    high_tput_per_customer[customer] = 50
     return high_tput_per_customer
 @app.delete('/tput/customer/<customer>')
 def tput_customer_delete(customer):
@@ -219,7 +219,7 @@ def tput_customer_delete(customer):
 @app.post('/tput/symbol/<symbol>/<speed>')
 def tput_symbol(symbol, speed):
     global high_tput_per_symbol
-    high_tput_per_symbol[symbol] = speed
+    high_tput_per_symbol[symbol] = 50
     return high_tput_per_symbol
 @app.delete('/tput/symbol/<symbol>')
 def tput_symbol_delete(symbol):
