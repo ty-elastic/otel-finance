@@ -11,7 +11,6 @@ from opentelemetry.metrics import get_meter
 from opentelemetry.processor.baggage import BaggageSpanProcessor, ALLOW_ALL_BAGGAGE_KEYS
 
 from opentelemetry import _logs as logs
-from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
 from opentelemetry.processor.logrecord.baggage import BaggageLogRecordProcessor
 
 app = Flask(__name__)
@@ -23,9 +22,7 @@ tracer_provider.add_span_processor(BaggageSpanProcessor(ALLOW_ALL_BAGGAGE_KEYS))
 if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
     print("enable otel logging")
     log_provider = logs.get_logger_provider()
-    if 'OTEL_EXPORTER_OTLP_ENDPOINT' in os.environ:
-        exporter = OTLPLogExporter()
-    log_provider.add_log_record_processor(BaggageLogRecordProcessor(ALLOW_ALL_BAGGAGE_KEYS, exporter))
+    log_provider.add_log_record_processor(BaggageLogRecordProcessor(ALLOW_ALL_BAGGAGE_KEYS))
 
 TRADE_TIMEOUT = 5
 S_PER_DAY = 60
