@@ -6,6 +6,7 @@ receivers:
 
   # Receiver for CPU, Disk, Memory, and Filesystem metrics
   hostmetrics/system:
+    root_path: /hostfs
     collection_interval: 30s
     scrapers:
       disk:

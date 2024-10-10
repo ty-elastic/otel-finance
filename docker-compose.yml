@@ -149,6 +149,7 @@ services:
     volumes:
       - ./src/collector/collector.yml:/collector.yml
       - ./logs:/logs
+      - /:/hostfs
     entrypoint: "/usr/share/elastic-agent/elastic-agent"
     command: ["otel", "-c", "/collector.yml"]
     environment:
