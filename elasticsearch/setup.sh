@@ -1,5 +1,9 @@
-cd assistant
-./openai.sh
+# cd assistant
+# ./openai.sh
+# cd ..
+
+cd apikey
+./apikey.sh
 cd ..
 
 cd context

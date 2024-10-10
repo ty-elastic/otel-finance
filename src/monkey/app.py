@@ -117,19 +117,22 @@ def generate_trade_requests():
                     data_source='monkey')
         
         if len(high_tput_per_region.keys()) > 0:
-            next_region = random.choice(list(high_tput_per_region.keys())) if random.randint(0, 100) > 50 else None
+            next_high_tput_region = random.choice(list(high_tput_per_region.keys()))
+            next_region = next_high_tput_region if random.randint(0, 100) > high_tput_per_region[next_high_tput_region] else None
             if next_region is not None:
-                sleep = float(random.randint(1, 10) / 1000)
+                sleep = float(random.randint(1, 4) / 1000)
         
         if len(high_tput_per_customer.keys()) > 0:
-            next_customer = random.choice(list(high_tput_per_customer.keys())) if random.randint(0, 100) > 50 else None
+            next_high_tput_customer = random.choice(list(high_tput_per_customer.keys()))
+            next_customer = next_high_tput_customer if random.randint(0, 100) > high_tput_per_customer[next_high_tput_customer] else None
             if next_customer is not None:
-                sleep = float(random.randint(1, 10) / 1000)
+                sleep = float(random.randint(1, 4) / 1000)
 
         if len(high_tput_per_symbol.keys()) > 0:
-            next_symbol = random.choice(list(high_tput_per_symbol.keys())) if random.randint(0, 100) > 50 else None
+            next_high_tput_symbol = random.choice(list(high_tput_per_symbol.keys()))
+            next_symbol = next_high_tput_symbol if random.randint(0, 100) > high_tput_per_symbol[next_high_tput_symbol] else None
             if next_symbol is not None:
-                sleep = float(random.randint(1, 10) / 1000)
+                sleep = float(random.randint(1, 4) / 1000)
 
         time.sleep(sleep)
 
@@ -194,7 +197,7 @@ def get_state():
 @app.post('/tput/region/<region>/<speed>')
 def tput_region(region, speed):
     global high_tput_per_region
-    high_tput_per_region[region] = speed
+    high_tput_per_region[region] = 50
     return high_tput_per_region
 @app.delete('/tput/region/<region>')
 def tput_region_delete(region):
@@ -229,7 +232,7 @@ def tput_symbol_delete(symbol):
 def latency_region(region, amount):
     global latency_per_region
     latency_per_region[region] = int(amount)
-    high_tput_per_region[region] = 'high'
+    high_tput_per_region[region] = 75
     return latency_per_region    
 @app.delete('/latency/region/<region>')
 def latency_region_delete(region):
@@ -244,7 +247,7 @@ def latency_region_delete(region):
 def err_db_region(region, amount):
     global db_error_per_region
     db_error_per_region[region] = int(amount)
-    high_tput_per_region[region] = 'high'
+    high_tput_per_region[region] = 75
     return db_error_per_region
 @app.delete('/err/db/region/<region>')
 def err_db_region_delete(region):
@@ -259,7 +262,7 @@ def err_db_region_delete(region):
 def err_model_region(region, amount):
     global model_error_per_region
     model_error_per_region[region] = int(amount)
-    high_tput_per_region[region] = 'high'
+    high_tput_per_region[region] = 75
     return model_error_per_region    
 @app.delete('/err/model/region/<region>')
 def err_model_region_delete(region):
