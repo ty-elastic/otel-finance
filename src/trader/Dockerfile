@@ -6,9 +6,9 @@ COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 
 # add OTel libs
-RUN pip3 --root-user-action=ignore install elastic-opentelemetry opentelemetry-processor-baggage
+RUN pip3 install --root-user-action=ignore elastic-opentelemetry opentelemetry-processor-baggage
 COPY lib/ .
-RUN pip3 --root-user-action=ignore install -e baggage-log-record-processor
+RUN pip3 install --root-user-action=ignore -e baggage-log-record-processor
 
 COPY app.py .
 COPY model.py .
