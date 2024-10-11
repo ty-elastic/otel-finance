@@ -3,7 +3,7 @@ FROM python:3.12.6-slim-bookworm
 WORKDIR /python-docker
 
 COPY requirements.txt .
-RUN pip3 install -r requirements.txt
+RUN pip3 install --root-user-action=ignore -r requirements.txt
 
 # add OTel libs
 RUN pip3 install --root-user-action=ignore elastic-opentelemetry opentelemetry-processor-baggage

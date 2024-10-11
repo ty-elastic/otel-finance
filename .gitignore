@@ -11,3 +11,4 @@ _archive
 node_modules
 *.log
 _lib
+otel-workshop-trading-instruqt
