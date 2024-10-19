@@ -40,7 +40,7 @@ db_error_per_region = {}
 model_error_per_region = {}
 skew_market_factor_per_symbol = {}
 
-customers = ['b.smith', 'l.johnson', 'j.casey', 'l.hall', 'q.bert']
+customers = ['b.smith', 'l.johnson', 'j.casey', 'l.hall', 'q.bert', 'carol.halley']
 symbols = ['MOT', 'MSI', 'GOGO', 'INTEQ', 'VID', 'ESTC']
 regions = ['NA', 'LATAM', 'EU', 'EMEA']
 
