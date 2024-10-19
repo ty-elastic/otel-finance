@@ -8,4 +8,5 @@ for i in static/js/*.js; do
   -F "service_version=${SERVICE_VERSION}" \
   -F "bundle_filepath=/${i}" \
   -F "sourcemap=@${i}.map"
+  sleep 5
 done
