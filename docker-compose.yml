@@ -141,7 +141,7 @@ services:
       retries : 5
 
   collector:
-    image: docker.elastic.co/beats/elastic-agent:8.15.2
+    image: docker.elastic.co/beats/elastic-agent:8.15.3
     restart: on-failure
     ports:
       - "4317:4317"
