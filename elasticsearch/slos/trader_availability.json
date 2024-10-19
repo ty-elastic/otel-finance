@@ -1,8 +1,8 @@
 {
-    "name": "[Trader] Latency",
+    "name": "[Trader] Availability",
     "description": "",
     "indicator": {
-        "type": "sli.apm.transactionDuration",
+        "type": "sli.apm.transactionErrorRate",
         "params": {
             "service": "trader",
             "environment": "*",
@@ -15,11 +15,11 @@
     },
     "budgetingMethod": "occurrences",
     "timeWindow": {
-        "duration": "30d",
+        "duration": "7d",
         "type": "rolling"
     },
     "objective": {
-        "target": 0.99
+        "target": 0.99999
     },
     "tags": [
         "workshop"
