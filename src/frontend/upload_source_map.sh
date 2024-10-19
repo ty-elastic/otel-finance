@@ -1,6 +1,6 @@
 for i in static/js/*.js; do
   echo "${i}"
-  curl --max-time 30 -s -X POST "$KIBANA_URL/api/apm/sourcemaps" \
+  curl --keepalive-time 600 -iv --limit-rate 500K -X POST "$KIBANA_URL/api/apm/sourcemaps" \
   -H 'Content-Type: multipart/form-data' \
   -H 'kbn-xsrf: true' \
   -u "${ELASTICSEARCH_USER}:${ELASTICSEARCH_PASSWORD}" \
