@@ -38,8 +38,8 @@ ENV ELASTICSEARCH_USER=$ELASTICSEARCH_USER
 ENV ELASTICSEARCH_PASSWORD=$ELASTICSEARCH_PASSWORD
 
 COPY upload_source_map.sh build/
-RUN cd build && \
-    ./upload_source_map.sh
+# RUN cd build && \
+#     ./upload_source_map.sh
 
 # -------------------------------------
 FROM nginx:1.25.3
