@@ -11,7 +11,7 @@ import requests
 KIBANA_RESOURCES_PATH = 'kibana'
 TIMEOUT = 10
 
-def load_resources():
+def load():
 
     for file in os.listdir(KIBANA_RESOURCES_PATH):
         if file.endswith(".ndjson"):

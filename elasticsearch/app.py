@@ -9,8 +9,10 @@ from threading import Thread
 from elasticsearch import Elasticsearch
 
 import ml
-import index
+import alias
 import kibana
+import slo
+import context
 
 app = Flask(__name__)
 
@@ -20,13 +22,16 @@ def ml_train():
     return None
 
 def init():
-    kibana.load_resources()
+    alias.load()
+    kibana.load()
+    slo.load()
+    context.load()
 
 def maintenance_loop():
-    indices_created = False
+    aliases_created = False
     while True:
-        if not indices_created:
-            indices_created = index.create_aliases()
+        if not aliases_created:
+            aliases_created = alias.load()
         time.sleep(10)
 
 def start_maintenance_thread():

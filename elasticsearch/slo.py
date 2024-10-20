@@ -14,9 +14,9 @@ KNOWLEDGE_RESOURCES_PATH = 'context/knowledge'
 
 TIMEOUT = 10
 
-SLO_RESOURCES_PATH  = 'slos'
+SLO_RESOURCES_PATH  = 'slo'
 
-def load_slos():
+def load():
 
     for file in os.listdir(SLO_RESOURCES_PATH):
         if file.endswith(".json"):
