@@ -129,4 +129,4 @@ def load_anomaly(*, replace=False):
                 except Exception as inst:
                     print(inst)
                     
-load_trained()
+#load_trained()

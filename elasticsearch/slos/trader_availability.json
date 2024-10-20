@@ -8,7 +8,6 @@
             "environment": "*",
             "transactionType": "request",
             "transactionName": "POST /trade/request",
-            "threshold": 250,
             "filter": "",
             "index": "metrics-apm*,apm-*"
         }
