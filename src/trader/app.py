@@ -80,7 +80,7 @@ def decode_common_args():
     error_db = request.args.get('error_db', default=False, type=conform_request_bool)
     skew_market_factor = request.args.get('skew_market_factor', default=0, type=int)
 
-    canary = request.args.get('canary', default=False, type=conform_request_bool)
+    canary = request.args.get('canary', default="false", type=str)
     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.canary", canary)
     
     return trade_id, customer_id, day_of_week, region, symbol, latency, error_model, error_db, skew_market_factor, canary, data_source, classification

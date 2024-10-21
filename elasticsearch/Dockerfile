@@ -6,6 +6,7 @@ COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 
 COPY *.py .
+
 COPY context context
 COPY alias alias
 COPY kibana kibana

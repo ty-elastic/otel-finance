@@ -103,9 +103,9 @@ def generate_trade_requests():
             skew_market_factor = 0
 
         if region in canary_per_region:
-            canary = True
+            canary = "true"
         else:
-            canary = False
+            canary = "false"
 
         print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region} with latency {latency}, error_model={error_model}, error_db={error_db}, skew_market_factor={skew_market_factor}, canary={canary}")
 
