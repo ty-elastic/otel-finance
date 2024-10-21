@@ -5,7 +5,7 @@ WORKDIR /python-docker
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 
-COPY *.py /
+COPY *.py ./
 
 COPY context context
 COPY alias alias
