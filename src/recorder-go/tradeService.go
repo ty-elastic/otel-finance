@@ -84,7 +84,7 @@ func (c *TradeService) RecordTrade(context context.Context, trade *Trade) (*Trad
 		return nil, err
 	}
 
-	logger.WithContext(context).Info("trade committed")
+	logger.WithContext(context).Info("trade committed for " + trade.CustomerId)
 
 	return trade, nil
 }

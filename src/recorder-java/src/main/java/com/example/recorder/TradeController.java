@@ -24,7 +24,7 @@ public class TradeController {
 		@RequestParam(value = "shares") int shares,
 		@RequestParam(value = "share_price") float sharePrice,
 		@RequestParam(value = "action") String action) {
-			Trade trade = new Trade(customerId, tradeId, symbol, shares, sharePrice, action);
+			Trade trade = new Trade(tradeId, customerId, symbol, shares, sharePrice, action);
 			return ResponseEntity.ok().body(tradeService.recordTrade(trade));
     }
 }
