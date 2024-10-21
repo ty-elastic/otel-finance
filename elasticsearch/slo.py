@@ -1,16 +1,5 @@
-from flask import Flask, request
-import logging
 import requests
-import random
-import time
 import os
-import threading
-from elasticsearch import Elasticsearch
-import requests
-from pathlib import Path
-
-INDICES_RESOURCES_PATH = 'context/indices'
-KNOWLEDGE_RESOURCES_PATH = 'context/knowledge'
 
 TIMEOUT = 10
 
@@ -28,5 +17,3 @@ def load():
                                      auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']),
                                      headers={"kbn-xsrf": "reporting", "Content-Type": "application/json"})
                 print(resp.json())  
-
-#load_slos()

@@ -1,11 +1,4 @@
-from flask import Flask, request
-import logging
-import requests
-import random
-import time
 import os
-import threading
-from elasticsearch import Elasticsearch
 import requests
 from pathlib import Path
 
@@ -95,5 +88,3 @@ def load():
     load_elser()
     load_knowledge()
     load_indices()
-    
-#load()

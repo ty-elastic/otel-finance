@@ -1,31 +1,32 @@
-from flask import Flask, request
-import logging
-import requests
-import random
+from flask import Flask
 import time
-import os
 import threading
-from threading import Thread
-from elasticsearch import Elasticsearch
 
 import ml
 import alias
 import kibana
 import slo
 import context
+import assistant
 
 app = Flask(__name__)
 
-@app.post('/ml/train')
-def ml_train():
+@app.post('/load/ml/trained')
+def load_ml_trained():
     ml.load_trained()
+    return None
+
+@app.post('/load/ml/anomaly')
+def load_ml_anomaly():
+    ml.load_anomaly()
     return None
 
 def init():
     alias.load()
+    assistant.load()
+    context.load()
     kibana.load()
     slo.load()
-    context.load()
 
 def maintenance_loop():
     aliases_created = False

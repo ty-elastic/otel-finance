@@ -128,5 +128,3 @@ def load_anomaly(*, replace=False):
                     client.ml.start_datafeed(datafeed_id=json_job['datafeed_config']['datafeed_id'])
                 except Exception as inst:
                     print(inst)
-                    
-#load_trained()

@@ -1,11 +1,4 @@
-from flask import Flask, request
-import logging
-import requests
-import random
-import time
 import os
-import threading
-from elasticsearch import Elasticsearch
 import requests
 
 KIBANA_RESOURCES_PATH = 'kibana'

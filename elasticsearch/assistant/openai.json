@@ -1,0 +1,11 @@
+{
+    "name": "openai-connector",
+    "config": {
+        "apiProvider": "Azure OpenAI",
+        "apiUrl": "$OPENAI_URL"
+    },
+    "secrets": {
+        "apiKey": "$OPENAI_KEY"
+    },
+    "connector_type_id": ".gen-ai"
+}

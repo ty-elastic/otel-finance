@@ -1,5 +1,17 @@
 services:
 
+  elasticsearch_helper:
+    build:
+      context: ./elasticsearch
+    restart: on-failure
+    ports:
+      - "9010:9010"
+    environment:
+        KIBANA_URL: ${KIBANA_URL}
+        ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
+        ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
+        ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+
   trader:
     build:
       context: ./src/trader/
