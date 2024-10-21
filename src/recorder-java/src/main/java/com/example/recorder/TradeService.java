@@ -29,7 +29,7 @@ public class TradeService {
         }
         catch (Exception e) {}
 
-        log.info("trade committed");
+        log.info("trade committed for " + trade.customerId);
         return savedTrade;
     }
 }

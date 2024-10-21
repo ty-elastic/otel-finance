@@ -21,21 +21,21 @@ import jakarta.validation.constraints.Min;
 public class Trade {
   @Id
   @Column(name="trade_id")
-  private String tradeId;
+  public String tradeId;
 
   @Column(name="customer_id")
-  private String customerId;
+  public String customerId;
   @Column(name="symbol")
-  private String symbol;
+  public String symbol;
 
   @Min(value = 0, message = "shares must be > 0")
   @Column(name="shares")
-  private int shares;
+  public int shares;
 
   @Min(value = 0, message = "share_price must be > 0")
   @Column(name="share_price")
-  private float sharePrice;
+  public float sharePrice;
 
   @Column(name="action")
-  private String action;
+  public String action;
 }
