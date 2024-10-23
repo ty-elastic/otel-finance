@@ -35,122 +35,153 @@ services:
   #     trader:
   #       condition: service_started
 
-  router:
-    build:
-      context: ./src/router/
-    restart: on-failure
-    ports:
-      - "9000:9000"
-    environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-      OTEL_SERVICE_NAME: "router"
+  # router:
+  #   build:
+  #     context: ./src/router/
+  #   restart: on-failure
+  #   ports:
+  #     - "9000:9000"
+  #   environment:
+  #     OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+  #     OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+  #     OTEL_SERVICE_NAME: "router"
 
-      RECORDER_HOST: "recorder-java"
-      RECORDER_HOST_CANARY: "recorder-go"
-    depends_on:
-      recorder-go:
-        condition: service_started
-      recorder-java:
-        condition: service_started
+  #     RECORDER_HOST: "recorder-java"
+  #     RECORDER_HOST_CANARY: "recorder-go"
+  #   depends_on:
+  #     recorder-go:
+  #       condition: service_started
+  #     recorder-java:
+  #       condition: service_started
 
-  recorder-go:
-    build:
-      context: ./src/recorder-go/
-    restart: on-failure
-    volumes:
-      - ./logs:/logs
-    command: ["-logfile=/logs/recorder.log"]
-    ports:
-      - "9004:9004"
-    environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_SERVICE_NAME: "recorder-go"
+  # recorder-go:
+  #   build:
+  #     context: ./src/recorder-go/
+  #   restart: on-failure
+  #   volumes:
+  #     - ./logs:/logs
+  #   command: ["-logfile=/logs/recorder.log"]
+  #   ports:
+  #     - "9004:9004"
+  #   environment:
+  #     OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+  #     OTEL_SERVICE_NAME: "recorder-go"
   
-      POSTGRES_HOST: "postgresql"
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_USER: "admin"
-    depends_on:
-      postgresql:
-        condition: service_started
+  #     POSTGRES_HOST: "postgresql"
+  #     POSTGRES_PASSWORD: "password"
+  #     POSTGRES_USER: "admin"
+  #   depends_on:
+  #     postgresql:
+  #       condition: service_started
 
-  recorder-java:
-    build:
-      context: ./src/recorder-java/
-    restart: on-failure
-    ports:
-      - "9003:9003"
-    environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-      OTEL_SERVICE_NAME: "recorder-java"
+  # recorder-java:
+  #   build:
+  #     context: ./src/recorder-java/
+  #   restart: on-failure
+  #   ports:
+  #     - "9003:9003"
+  #   environment:
+  #     OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+  #     OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+  #     OTEL_SERVICE_NAME: "recorder-java"
 
-      POSTGRES_HOST: "postgresql"
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_USER: "admin"
-    depends_on:
-      postgresql:
-        condition: service_started
-      collector:
-        condition: service_started
+  #     POSTGRES_HOST: "postgresql"
+  #     POSTGRES_PASSWORD: "password"
+  #     POSTGRES_USER: "admin"
+  #   depends_on:
+  #     postgresql:
+  #       condition: service_started
+  #     collector:
+  #       condition: service_started
 
-  frontend:
-    platform: "linux/amd64"
-    build:
-      context: ./src/frontend/
-      args:
-        ELASTIC_APM_SERVER_RUM_ENDPOINT: ${ELASTIC_APM_SERVER_RUM_ENDPOINT}
-        ELASTIC_APM_SERVER_RUM_CREDENTIALS: ${ELASTIC_APM_SERVER_RUM_CREDENTIALS}
+  # frontend:
+  #   platform: "linux/amd64"
+  #   build:
+  #     context: ./src/frontend/
+  #     args:
+  #       ELASTIC_APM_SERVER_RUM_ENDPOINT: ${ELASTIC_APM_SERVER_RUM_ENDPOINT}
+  #       ELASTIC_APM_SERVER_RUM_CREDENTIALS: ${ELASTIC_APM_SERVER_RUM_CREDENTIALS}
 
-        KIBANA_URL: ${KIBANA_URL}
-        ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
-        ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
-    ports:
-      - '31236:80'
-    environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_SERVICE_NAME: "proxy"
-    # depends_on:
-    #   monkey:
-    #     condition: service_started
-    #   trader:
-    #     condition: service_started
+  #       KIBANA_URL: ${KIBANA_URL}
+  #       ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
+  #       ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+  #   ports:
+  #     - '31236:80'
+  #   environment:
+  #     OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+  #     OTEL_SERVICE_NAME: "proxy"
+  #   # depends_on:
+  #   #   monkey:
+  #   #     condition: service_started
+  #   #   trader:
+  #   #     condition: service_started
 
-  instruqt_frontend:
-    build:
-      context: ./instruqt_frontend/
-    ports:
-      - '9393:80'
-    depends_on:
-      frontend:
-        condition: service_started
+  # instruqt_frontend:
+  #   build:
+  #     context: ./instruqt_frontend/
+  #   ports:
+  #     - '9393:80'
+  #   depends_on:
+  #     frontend:
+  #       condition: service_started
 
-  postgresql:
-    image: postgres:latest
-    restart: on-failure
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: "trades"
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_USER: "admin"
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-q", "-d", "trades", "-U", "admin" ]
-      interval : 5s
-      timeout : 5s
-      retries : 5
+  # postgresql:
+  #   image: postgres:latest
+  #   restart: on-failure
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     POSTGRES_DB: "trades"
+  #     POSTGRES_PASSWORD: "password"
+  #     POSTGRES_USER: "admin"
+  #   healthcheck:
+  #     test: [ "CMD", "pg_isready", "-q", "-d", "trades", "-U", "admin" ]
+  #     interval : 5s
+  #     timeout : 5s
+  #     retries : 5
 
-  collector:
+  # collector:
+  #   image: otel/opentelemetry-collector-contrib
+  #   restart: on-failure
+  #   ports:
+  #     - "4317:4317"
+  #     - "4318:4318"
+  #   volumes:
+  #     - ./src/collector/collector.yml:/collector.yml
+  #     - ./logs:/logs
+  #   command: ["--config=/collector.yml"]
+  #   environment:
+  #     ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}
+  #     ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
+  #     ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
+
+  # collector_playback:
+  #   image: docker.elastic.co/beats/elastic-agent:8.15.3
+  #   restart: on-failure
+  #   ports:
+  #     - "4318:4318"
+  #     - "4319:4319"
+  #   volumes:
+  #     - ./src/collector/collector_playback.yml:/collector.yml
+  #   entrypoint: "/usr/share/elastic-agent/elastic-agent"
+  #   command: ["otel", "-c", "/collector.yml"]
+  #   environment:
+  #     ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}
+  #     ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
+  #     ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
+  #     ELASTICSEARCH_APIKEY: ${ELASTICSEARCH_APIKEY}
+
+
+  collector_playback:
     image: otel/opentelemetry-collector-contrib
     restart: on-failure
     ports:
-      - "4317:4317"
       - "4318:4318"
     volumes:
-      - ./src/collector/collector.yml:/collector.yml
-      - ./logs:/logs
+      - ./src/collector/collector_playback2.yml:/collector.yml
     command: ["--config=/collector.yml"]
     environment:
       ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}
       ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
       ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
+      ELASTICSEARCH_APIKEY: ${ELASTICSEARCH_APIKEY}

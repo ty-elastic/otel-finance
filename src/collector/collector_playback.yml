@@ -1,0 +1,60 @@
+receivers:
+  otlp/apm:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+  otlp/elasticsearch:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4319
+
+exporters:
+  debug:
+    verbosity: detailed
+
+  elasticsearch:
+    endpoints: ["${ELASTICSEARCH_URL}"]
+    api_key: ${ELASTICSEARCH_APIKEY}
+    mapping:
+      mode: ecs
+    logs_dynamic_index:
+      enabled: true
+    metrics_dynamic_index:
+      enabled: true
+    traces_dynamic_index:
+      enabled: true
+
+  otlp/apm: 
+    endpoint: "${ELASTIC_APM_SERVER_ENDPOINT}"
+    tls:
+      insecure: true
+    headers:
+      # Elastic APM Server secret token
+      Authorization: "Bearer ${ELASTIC_APM_SERVER_SECRET}"
+
+
+service:
+  telemetry:
+    logs:
+      level: "debug"
+
+  pipelines:
+    traces/apm:
+      receivers: [otlp/apm]
+      exporters: [otlp/apm, debug]
+
+    metrics/apm:
+      receivers: [otlp/apm]
+      exporters: [otlp/apm]
+
+    metrics/elasticsearch:
+      receivers: [otlp/elasticsearch]
+      exporters: [elasticsearch]
+
+    logs/apm:
+      receivers: [otlp/apm]
+      exporters: [otlp/apm]
+
+    logs/elasticsearch:
+      receivers: [otlp/elasticsearch]
+      exporters: [elasticsearch]

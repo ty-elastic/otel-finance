@@ -1,8 +1,8 @@
 services:
 
-  elasticsearch_helper:
+  resources:
     build:
-      context: ./elasticsearch
+      context: ./resources
     restart: on-failure
     ports:
       - "9010:9010"
@@ -157,11 +157,27 @@ services:
     restart: on-failure
     ports:
       - "4317:4317"
-      - "4318:4318"
     volumes:
       - ./src/collector/collector.yml:/collector.yml
       - ./logs:/logs
+      - ./recorded:/recorded
       - /:/hostfs
+    entrypoint: "/usr/share/elastic-agent/elastic-agent"
+    command: ["otel", "-c", "/collector.yml"]
+    environment:
+      ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}
+      ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
+      ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
+      ELASTICSEARCH_APIKEY: ${ELASTICSEARCH_APIKEY}
+
+  collector_playback:
+    image: docker.elastic.co/beats/elastic-agent:8.15.3
+    restart: on-failure
+    ports:
+      - "4318:4318"
+      - "4319:4319"
+    volumes:
+      - ./src/collector/collector_playback.yml:/collector.yml
     entrypoint: "/usr/share/elastic-agent/elastic-agent"
     command: ["otel", "-c", "/collector.yml"]
     environment:

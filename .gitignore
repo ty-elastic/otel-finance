@@ -3,6 +3,7 @@
 __pycache__
 .venv
 logs
+recorded
 target
 .vscode
 build
