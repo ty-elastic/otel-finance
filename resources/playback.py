@@ -86,6 +86,7 @@ def parse(file, ts_offset=0, align_to_days=False):
 
                             if align_to_days:
                                 dow = get_day_of_week(scope_span['attributes'])
+                                #print(dow)
                                 if first_ts is None and dow != 'M':
                                     #print("skip non-monday")
                                     continue
@@ -98,20 +99,15 @@ def parse(file, ts_offset=0, align_to_days=False):
                             
                             if scope_span['traceId'] not in uuids['traceId']:
                                 uuids['traceId'][scope_span['traceId']] = os.urandom(16).hex()#random.getrandbits(128)
-                                scope_span['traceId'] =  uuids['traceId'][scope_span['traceId']]
-                            else:
-                                scope_span['traceId'] = uuids['traceId'][scope_span['traceId']]
+                            scope_span['traceId'] = uuids['traceId'][scope_span['traceId']]
                                 
                             if scope_span['spanId'] not in uuids['spanId']:
                                 uuids['spanId'][scope_span['spanId']] = os.urandom(8).hex()
-                                scope_span['spanId'] = uuids['spanId'][scope_span['spanId']]
-                            else:
-                                scope_span['spanId'] = uuids['spanId'][scope_span['spanId']]
+                            scope_span['spanId'] = uuids['spanId'][scope_span['spanId']]
                                 
-                            if scope_span['parentSpanId'] not in uuids['spanId']:
-                                uuids['spanId'][scope_span['parentSpanId']] = os.urandom(8).hex()
-                                scope_span['parentSpanId'] = uuids['spanId'][scope_span['parentSpanId']]
-                            else:
+                            if 'parentSpanId' in scope_span and scope_span['parentSpanId'] != "":
+                                if scope_span['parentSpanId'] not in uuids['spanId']:
+                                    uuids['spanId'][scope_span['parentSpanId']] = os.urandom(8).hex()
                                 scope_span['parentSpanId'] = uuids['spanId'][scope_span['parentSpanId']]
 
                             if add_span:
@@ -171,11 +167,11 @@ def load(file, collector_url, align_to_days):
 
         if len(out_data['resourceSpans']) > 0:
             upload(collector_url, 'traces', out_data['resourceSpans'])
-        # if len(out_data['resourceMetrics']) > 0:
-        #     upload(collector_url, 'metrics', out_data['resourceMetrics'])
-        # if len(out_data['resourceLogs']) > 0:
-        #     upload(collector_url, 'logs', out_data['resourceLogs'])
+        if len(out_data['resourceMetrics']) > 0:
+            upload(collector_url, 'metrics', out_data['resourceMetrics'])
+        if len(out_data['resourceLogs']) > 0:
+            upload(collector_url, 'logs', out_data['resourceLogs'])
 
 
 load('../recorded/apm.json', 'http://127.0.0.1:4318', True)
-#load('../recorded/elasticsearch.json', 'http://127.0.0.1:4319', False)
+load('../recorded/elasticsearch.json', 'http://127.0.0.1:4319', False)
