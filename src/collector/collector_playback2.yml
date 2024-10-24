@@ -25,4 +25,4 @@ service:
   pipelines:
     traces/apm:
       receivers: [otlp/apm_out]
-      exporters: [debug]
+      exporters: [otlp/apm]

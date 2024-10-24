@@ -7,12 +7,19 @@ import json
 import gzip
 import uuid
 import random
+import html
 
 def get_day_of_week(attributes):
     for attribute in attributes:
         if attribute['key'] == 'com.example.day_of_week':
-            return attribute['value']
+            return attribute['value']['stringValue']
 
+def overwrite_datasource(attributes):
+    for attribute in attributes:
+        if attribute['key'] == 'com.example.data_source':
+            attribute['value'] = {'stringValue': 'playback'}
+            
+        
 def conform_time(parent, key, first_ts, ts_offset, last_ts):
     if key in parent:
         ts = int(parent[key])
@@ -25,13 +32,9 @@ def conform_time(parent, key, first_ts, ts_offset, last_ts):
             if ts+ts_offset > last_ts:
                 last_ts = ts+ts_offset
             return True, first_ts, last_ts
-    #print("false")
     return False, first_ts, last_ts
 
-uuids = {
-    'traceId': {},
-    'spanId': {}
-}
+
 
 def parse(file, ts_offset=0, align_to_days=False):
     first_ts = None
@@ -41,10 +44,16 @@ def parse(file, ts_offset=0, align_to_days=False):
     out_data['resourceSpans'] = []
     out_data['resourceLogs'] = []
     out_data['resourceMetrics'] = []
-        
-    with open(file) as f:
+    
+    uuids = {
+        'traceId': {},
+        'spanId': {}
+    }
+    
+    with open(file, encoding='utf-8') as f:
         datas = ndjson.load(f)
         for data in datas:
+
             if 'resourceMetrics' in data:
                 for metric in data['resourceMetrics']:
                     add_metric = True
@@ -67,11 +76,14 @@ def parse(file, ts_offset=0, align_to_days=False):
                     if add_metric:
                         out_data['resourceMetrics'].append(metric)
             if 'resourceSpans' in data:
+                
                 for span in data['resourceSpans']:
                     add_span = True
                     for scope in span['scopeSpans']:
                         for scope_span in scope['spans']:
                             
+                            overwrite_datasource(scope_span['attributes'])
+
                             if align_to_days:
                                 dow = get_day_of_week(scope_span['attributes'])
                                 if first_ts is None and dow != 'M':
@@ -84,19 +96,23 @@ def parse(file, ts_offset=0, align_to_days=False):
                                     print("LOOPED!")
                                     return first_ts, last_ts, out_data
                             
-                            # if scope_span['traceId'] not in uuids['traceId']:
-                            #     uuids['traceId'][scope_span['traceId']] = os.urandom(16).hex()#random.getrandbits(128)
-                            # else:
-                            #     scope_span['traceId'] = uuids['traceId'][scope_span['traceId']]
-                            # if scope_span['spanId'] not in uuids['spanId']:
-                            #     uuids['spanId'][scope_span['spanId']] = os.urandom(8).hex()#random.getrandbits(64)
-                            # else:
-                            #     scope_span['spanId'] = uuids['spanId'][scope_span['spanId']]
+                            if scope_span['traceId'] not in uuids['traceId']:
+                                uuids['traceId'][scope_span['traceId']] = os.urandom(16).hex()#random.getrandbits(128)
+                                scope_span['traceId'] =  uuids['traceId'][scope_span['traceId']]
+                            else:
+                                scope_span['traceId'] = uuids['traceId'][scope_span['traceId']]
                                 
-                            # if scope_span['parentSpanId'] not in uuids['spanId']:
-                            #     add_span = False
-                            # else:
-                            #     scope_span['parentSpanId'] = uuids['spanId'][scope_span['parentSpanId']]
+                            if scope_span['spanId'] not in uuids['spanId']:
+                                uuids['spanId'][scope_span['spanId']] = os.urandom(8).hex()
+                                scope_span['spanId'] = uuids['spanId'][scope_span['spanId']]
+                            else:
+                                scope_span['spanId'] = uuids['spanId'][scope_span['spanId']]
+                                
+                            if scope_span['parentSpanId'] not in uuids['spanId']:
+                                uuids['spanId'][scope_span['parentSpanId']] = os.urandom(8).hex()
+                                scope_span['parentSpanId'] = uuids['spanId'][scope_span['parentSpanId']]
+                            else:
+                                scope_span['parentSpanId'] = uuids['spanId'][scope_span['parentSpanId']]
 
                             if add_span:
                                 add_span, first_ts, last_ts = conform_time(scope_span, 'startTimeUnixNano', first_ts, ts_offset, last_ts)
@@ -121,19 +137,18 @@ def parse(file, ts_offset=0, align_to_days=False):
                         out_data['resourceLogs'].append(log)
         return first_ts, last_ts, out_data
 
-MAX_RECORDS_PER_UPLOAD = 1
+MAX_RECORDS_PER_UPLOAD = 100
 
 def upload(collector_url, signal, resources):
     if signal == 'traces':
-        payloadType = 'resourceTraces'
+        payload_type = 'resourceSpans'
     elif signal == 'metrics':
-        payloadType = 'resourceMetrics'
+        payload_type = 'resourceMetrics'
     elif signal == 'logs':
-        payloadType = 'resourceLogs'
+        payload_type = 'resourceLogs'
     for resource_spans_split in (resources[i:i + MAX_RECORDS_PER_UPLOAD] for i in range(0, len(resources), MAX_RECORDS_PER_UPLOAD)):
-        #print(resource_spans_split)
-        payload = {payloadType:resource_spans_split}
-        print(payload)
+        payload = {payload_type:resource_spans_split}
+        #print(payload)
         payload = gzip.compress(json.dumps(payload).encode('utf-8'))
         r = requests.post(f"{collector_url}/v1/{signal}", data=payload,
                         headers={'Content-Type':'application/json', 'Content-Encoding':'gzip'})
@@ -160,6 +175,7 @@ def load(file, collector_url, align_to_days):
         #     upload(collector_url, 'metrics', out_data['resourceMetrics'])
         # if len(out_data['resourceLogs']) > 0:
         #     upload(collector_url, 'logs', out_data['resourceLogs'])
+
 
 load('../recorded/apm.json', 'http://127.0.0.1:4318', True)
 #load('../recorded/elasticsearch.json', 'http://127.0.0.1:4319', False)
