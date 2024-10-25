@@ -8,6 +8,7 @@ import kibana
 import slo
 import context
 import assistant
+import playback
 
 app = Flask(__name__)
 
@@ -27,6 +28,7 @@ def init():
     context.load()
     kibana.load()
     slo.load()
+    playback.load()
 
 def maintenance_loop():
     aliases_created = False
