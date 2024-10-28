@@ -72,54 +72,68 @@ def conform_resources(*, resources, first_file_ts=None, trim_last_file_ts=None, 
         'spanId': {}
     }
     
-    last_friday_ts = None
+    trim_last_ts = None
+    trim_last_file_ts=None
 
     for resource in resources:
-                    
-        # if trim_last_file_ts is not None and last_ts > trim_last_file_ts:
-        #     return first_file_ts, last_file_ts, last_ts, out_data
-            
-        # if align_to_days and first_file_ts is not None:
-        #     if 'resourceMetrics' in resource:
-        #         for metric in resource['resourceMetrics']:
-        #             add_metric = True
-        #             for scope in metric['scopeMetrics']:
-        #                 for scope_metric in scope['metrics']:
-        #                     if 'attributes' in scope_metric:
-        #                         overwrite_datasource(scope_metric['attributes'])
+
+        if align_to_days and first_file_ts is not None:
+            if 'resourceMetrics' in resource:
+                for metric in resource['resourceMetrics']:
+                    add_metric = True
+                    for scope in metric['scopeMetrics']:
+                        for scope_metric in scope['metrics']:
+                            if 'attributes' in scope_metric:
+                                overwrite_datasource(scope_metric['attributes'])
                             
-        #                     #print(scope_metric)
-        #                     if 'sum' in scope_metric:
-        #                         metricType = 'sum'
-        #                     elif 'gauge' in scope_metric:
-        #                         metricType = 'gauge'
-        #                     elif 'histogram' in scope_metric:
-        #                         metricType = 'histogram'
-        #                     else:
-        #                         print(f'unknown metric type: {scope_metric}')
-        #                         return None, None, None, None
+                            #print(scope_metric)
+                            if 'sum' in scope_metric:
+                                metricType = 'sum'
+                            elif 'gauge' in scope_metric:
+                                metricType = 'gauge'
+                            elif 'histogram' in scope_metric:
+                                metricType = 'histogram'
+                            else:
+                                print(f'unknown metric type: {scope_metric}')
+                                return None, None, None, None
 
-        #                     for datapoint in scope_metric[metricType]['dataPoints']:
-        #                         if add_metric:
-        #                             add_metric, first_file_ts, last_file_ts, last_ts = conform_time(datapoint, 'startTimeUnixNano', first_file_ts, last_file_ts, ts_offset, last_ts, scan_for_ts)
-        #                         if add_metric:
-        #                             add_metric, first_file_ts, last_file_ts, last_ts = conform_time(datapoint, 'timeUnixNano', first_file_ts, last_file_ts, ts_offset, last_ts, scan_for_ts)
-        #             if add_metric:
-        #                 out_data['resourceMetrics'].append(metric)
+                            for datapoint in scope_metric[metricType]['dataPoints']:
+                                if add_metric:
+                                    add_metric, trim_first_file_ts, last_file_ts, last_ts = conform_time(parent=datapoint, key='startTimeUnixNano',
+                                                                                                         first_file_ts=first_file_ts, 
+                                                                                                         last_file_ts=last_file_ts,
+                                                                                                         trim_last_file_ts=trim_last_file_ts,
+                                                                                                         ts_offset=ts_offset, last_ts=last_ts)
+                                if add_metric:
+                                    add_metric, trim_first_file_ts, last_file_ts, last_ts = conform_time(parent=datapoint, key='timeUnixNano', 
+                                                                                                         first_file_ts=first_file_ts, 
+                                                                                                         last_file_ts=last_file_ts,
+                                                                                                         trim_last_file_ts=trim_last_file_ts,
+                                                                                                         ts_offset=ts_offset, last_ts=last_ts)
+                    if add_metric:
+                        out_data['resourceMetrics'].append(metric)
 
-        #     if 'resourceLogs' in resource:
-        #         for log in resource['resourceLogs']:
-        #             add_log = True
-        #             for scope_log in log['scopeLogs']:
-        #                 for log_record in scope_log['logRecords']:
-        #                     if 'attributes' in log_record:
-        #                         overwrite_datasource(log_record['attributes'])
-        #                     if add_log:
-        #                         add_log, first_file_ts, last_file_ts, last_ts = conform_time(log_record, 'timeUnixNano',  first_file_ts, last_file_ts, ts_offset, last_ts, scan_for_ts)
-        #                     if add_log:
-        #                         add_log, first_file_ts, last_file_ts, last_ts = conform_time(log_record, 'observedTimeUnixNano',  first_file_ts, last_file_ts, ts_offset, last_ts, scan_for_ts)
-        #             if add_log:
-        #                 out_data['resourceLogs'].append(log)
+            if 'resourceLogs' in resource:
+                for log in resource['resourceLogs']:
+                    add_log = True
+                    for scope_log in log['scopeLogs']:
+                        for log_record in scope_log['logRecords']:
+                            if 'attributes' in log_record:
+                                overwrite_datasource(log_record['attributes'])
+                            if add_log:
+                                add_log, trim_first_file_ts, last_file_ts, last_ts = conform_time(parent=log_record, key='timeUnixNano',
+                                                                                                         first_file_ts=first_file_ts, 
+                                                                                                         last_file_ts=last_file_ts,
+                                                                                                         trim_last_file_ts=trim_last_file_ts,
+                                                                                                         ts_offset=ts_offset, last_ts=last_ts)
+                            if add_log:
+                                add_log, trim_first_file_ts, last_file_ts, last_ts = conform_time(parent=log_record, key='observedTimeUnixNano',
+                                                                                                         first_file_ts=first_file_ts, 
+                                                                                                         last_file_ts=last_file_ts,
+                                                                                                         trim_last_file_ts=trim_last_file_ts,
+                                                                                                         ts_offset=ts_offset, last_ts=last_ts)
+                    if add_log:
+                        out_data['resourceLogs'].append(log)
                         
         if 'resourceSpans' in resource:
             #print(resource)
@@ -139,7 +153,8 @@ def conform_resources(*, resources, first_file_ts=None, trim_last_file_ts=None, 
                                 first_monday_done = True
                             elif first_monday_done is True and dow == 'M':
                                 print("week is done")
-                                last_friday_ts = last_ts
+                                trim_last_ts = last_ts
+                                trim_last_file_ts = last_file_ts
                                 first_monday_done = False
                                 #return first_file_ts, last_file_ts, last_ts, out_data
                             #print(dow)
@@ -194,16 +209,10 @@ def conform_resources(*, resources, first_file_ts=None, trim_last_file_ts=None, 
                     out_data['resourceSpans'].append(span)
 
     #print('done')
-    if align_to_days:
-        return first_file_ts, last_friday_ts, last_ts, out_data
+    if trim_last_file_ts is not None:
+        return first_file_ts, trim_last_file_ts, trim_last_ts, out_data
     else:
         return first_file_ts, last_file_ts, last_ts, out_data
-
-# def find_first_and_last_ts(file, align_to_days=False):
-#     with open(file, encoding='utf-8') as f:
-#         resources = ndjson.load(f)
-#         first_file_ts, last_file_ts, _, _ = conform_resources(resources=resources, align_to_days=align_to_days)
-#         return first_file_ts, last_file_ts
 
 MAX_RECORDS_PER_UPLOAD = 100
 UPLOAD_TIMEOUT = 5
@@ -240,7 +249,7 @@ def load_file(*, file, collector_url, backfill_days=1, first_file_ts=None, trim_
     with open(file, encoding='utf-8') as f:
         resources_file = ndjson.load(f)
  
-        first_file_ts, trim_last_file_ts, last_ts, trimmed_resources = conform_resources(resources=resources_file, align_to_days=align_to_days, first_file_ts=first_file_ts, trim_last_file_ts=trim_last_file_ts)
+        first_file_ts, trim_last_file_ts, trim_last_ts, trimmed_resources = conform_resources(resources=resources_file, align_to_days=align_to_days, first_file_ts=first_file_ts, trim_last_file_ts=trim_last_file_ts)
         #print(resources_trimmed)
         #return
         #print(trimmed_resources)
@@ -256,7 +265,7 @@ def load_file(*, file, collector_url, backfill_days=1, first_file_ts=None, trim_
 
                 print(f"> {file} loop {(now_ns - ts_offset_ns)/1e9} / {datetime.fromtimestamp(ts_offset_ns/1e9).strftime('%c')}")
                 #print(f"ts_offset_ns={ts_offset_ns}")
-                _, _, ts_offset_ns, out_data = conform_resources(resources=[resources], first_file_ts=0, ts_offset=ts_offset_ns, trim_last_file_ts=trim_last_file_ts)
+                _, _, ts_offset_ns, out_data = conform_resources(resources=[resources], first_file_ts=0, ts_offset=ts_offset_ns, trim_last_file_ts=trim_last_ts)
                 #print(f"ts_offset_ns={ts_offset_ns}")
                 
                 if len(out_data['resourceSpans']) > 0:
@@ -267,25 +276,22 @@ def load_file(*, file, collector_url, backfill_days=1, first_file_ts=None, trim_
                     upload(executor, collector_url, 'logs', out_data['resourceLogs'])
 
         executor.shutdown()
+        
+        return first_file_ts, trim_last_file_ts
             
       
 def load():
     first_file_ts = None
-    last_file_ts = None
+    trim_last_file_ts = None
     
     for file in os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "apm")):
         if file.endswith(".json"):
-            # if first_file_ts is None and last_file_ts is None:
-            #     #first_file_ts, last_file_ts = find_first_and_last_ts(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), align_to_days=True)
-            #     print(f'first_file_ts={first_file_ts}, last_file_ts={last_file_ts}')
-            #     #return
-            load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM'], 
+            first_file_ts, trim_last_file_ts = load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM'], 
                       backfill_days=DAYS_TO_PRELOAD, align_to_days=True)
-            break
             
-    # for file in os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch")):
-    #     if file.endswith(".json"):
-    #         load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH'], 
-    #                   first_file_ts=first_file_ts, last_file_ts=last_file_ts, backfill_days=DAYS_TO_PRELOAD)
+    for file in os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch")):
+        if file.endswith(".json"):
+            load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH'], 
+                      first_file_ts=first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_days=DAYS_TO_PRELOAD)
 
 load()
