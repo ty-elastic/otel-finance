@@ -330,4 +330,4 @@ def load():
             load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH'], 
                       trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_hours=HOURS_TO_PRELOAD)
 
-load()
+#load()
