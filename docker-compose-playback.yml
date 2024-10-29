@@ -1,5 +1,23 @@
 services:
 
+  resources:
+    build:
+      context: ./resources
+    restart: on-failure
+    ports:
+      - "9010:9010"
+    environment:
+      KIBANA_URL: ${KIBANA_URL}
+      ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
+      ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
+      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+      OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM: "http://collector_playback:4318"
+      OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH: "http://collector_playback:4319"
+    depends_on:
+      collector_playback:
+        condition: service_started
+
+
   collector_playback:
     image: docker.elastic.co/beats/elastic-agent:8.15.3
     restart: on-failure

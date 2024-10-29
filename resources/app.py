@@ -1,6 +1,7 @@
 from flask import Flask
 import time
 import threading
+import logging
 
 import ml
 import alias
@@ -11,6 +12,7 @@ import assistant
 import playback
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 @app.post('/load/ml/trained')
 def load_ml_trained():
@@ -23,6 +25,7 @@ def load_ml_anomaly():
     return None
 
 def init():
+    print("loading initial assets...")
     alias.load()
     assistant.load()
     context.load()

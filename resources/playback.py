@@ -258,11 +258,14 @@ def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None
     start = time.time()
     
     with open(file, encoding='utf-8') as f:
+        print(f"read {file}")
         resources_file = ndjson.load(f)
         
         if trim_first_file_ts is None or trim_last_file_ts is None:
             trim_first_file_ts, trim_last_file_ts = find_trim_points(resources=resources_file, align_to_week=align_to_days)
+            print(f"found trim points for {file}, {trim_first_file_ts}, {trim_last_file_ts}")
  
+        print(f"conforming")
         _, trimmed_resources = conform_resources(resources=resources_file, 
                                                  trim_first_file_ts=trim_first_file_ts, 
                                                  trim_last_file_ts=trim_last_file_ts)
@@ -321,13 +324,16 @@ def load():
     
     for file in os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "apm")):
         if file.endswith(".json"):
+            print(f"loading {file}")
             trim_first_file_ts, trim_last_file_ts = load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM'], 
                       backfill_hours=HOURS_TO_PRELOAD, align_to_days=True)
             print(f"trim_first_file_ts={trim_first_file_ts}, trim_last_file_ts={trim_last_file_ts}")
-            
+
     for file in os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch")):
         if file.endswith(".json"):
+            print(f"loading {file}")
             load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH'], 
                       trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_hours=HOURS_TO_PRELOAD)
 
+    print('done')
 #load()
