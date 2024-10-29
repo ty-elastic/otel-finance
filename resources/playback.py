@@ -225,8 +225,10 @@ def conform_resources(*, resources, trim_first_file_ts=0, trim_last_file_ts=None
 
     return last_ts, out_data
 
-MAX_RECORDS_PER_UPLOAD = 100
+MAX_RECORDS_PER_UPLOAD = 50
+MAX_MB_PER_UPLOAD = 4
 UPLOAD_TIMEOUT = 5
+GROUPED_TIME_MINS = 60
 
 def upload_payload(collector_url, signal, payload_type, resource_split):
     payload = {payload_type:resource_split}
@@ -243,13 +245,14 @@ def upload(executor, collector_url, signal, resources):
     elif signal == 'logs':
         payload_type = 'resourceLogs'
     
-    max_records_per_upload = 100
-    while sys.getsizeof(resources[0:max_records_per_upload]) > 4194304:
-        max_records_per_upload -= 10
-        print(f"max_records_per_upload={max_records_per_upload}")
-
-    for resource_split in (resources[i:i + MAX_RECORDS_PER_UPLOAD] for i in range(0, len(resources), MAX_RECORDS_PER_UPLOAD)):
-        executor.submit(upload_payload, collector_url, signal, payload_type, resource_split)
+    i = 0
+    max_records_per_upload = MAX_RECORDS_PER_UPLOAD
+    while i < len(resources):
+        while len(json.dumps(resources[i:i + max_records_per_upload])) > (MAX_MB_PER_UPLOAD*1024*1024) and max_records_per_upload > 10:
+            max_records_per_upload -= 10
+            print(f"max_records_per_upload={max_records_per_upload}")  
+        executor.submit(upload_payload, collector_url, signal, payload_type, resources[i:i + max_records_per_upload])
+        i += max_records_per_upload
 
 def load_file(*, file, collector_url, backfill_days=1, trim_first_file_ts=None, trim_last_file_ts=None, align_to_days=False):
     start = time.time()
@@ -268,7 +271,7 @@ def load_file(*, file, collector_url, backfill_days=1, trim_first_file_ts=None, 
         grouped_data = {'resourceSpans': [], 'resourceMetrics': [], 'resourceLogs': []}
         group_data_offset = 0
         # mux 1 hour of data in memory
-        while group_data_offset < 60*60*1e9:
+        while group_data_offset < GROUPED_TIME_MINS*60*1e9:
             resources = copy.deepcopy(trimmed_resources)
             group_data_offset, out_data = conform_resources(resources=[resources], ts_offset=group_data_offset)
             print(group_data_offset)
@@ -327,4 +330,4 @@ def load():
             load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH'], 
                       trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_days=DAYS_TO_PRELOAD)
 
-#load()
+load()
