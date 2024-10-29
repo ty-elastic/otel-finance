@@ -10,7 +10,7 @@ import copy
 import sys
 
 RECORDED_RESOURCES_PATH = 'recorded'
-DAYS_TO_PRELOAD = 1
+HOURS_TO_PRELOAD = 12
 
 def get_day_of_week(attributes):
     for attribute in attributes:
@@ -254,7 +254,7 @@ def upload(executor, collector_url, signal, resources):
         executor.submit(upload_payload, collector_url, signal, payload_type, resources[i:i + max_records_per_upload])
         i += max_records_per_upload
 
-def load_file(*, file, collector_url, backfill_days=1, trim_first_file_ts=None, trim_last_file_ts=None, align_to_days=False):
+def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None, trim_last_file_ts=None, align_to_days=False):
     start = time.time()
     
     with open(file, encoding='utf-8') as f:
@@ -287,7 +287,7 @@ def load_file(*, file, collector_url, backfill_days=1, trim_first_file_ts=None, 
         # Get the current time
         now = datetime.now(tz=timezone.utc)
         # Subtract one week (7 days)
-        ts_offset = now - timedelta(days=backfill_days)
+        ts_offset = now - timedelta(hours=backfill_hours)
         
         now_ns = int(now.timestamp() * 1e9)
         ts_offset_ns = int(ts_offset.timestamp() * 1e9)
@@ -322,12 +322,12 @@ def load():
     for file in os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "apm")):
         if file.endswith(".json"):
             trim_first_file_ts, trim_last_file_ts = load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM'], 
-                      backfill_days=DAYS_TO_PRELOAD, align_to_days=True)
+                      backfill_hours=HOURS_TO_PRELOAD, align_to_days=True)
             print(f"trim_first_file_ts={trim_first_file_ts}, trim_last_file_ts={trim_last_file_ts}")
             
     for file in os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch")):
         if file.endswith(".json"):
             load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH'], 
-                      trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_days=DAYS_TO_PRELOAD)
+                      trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_hours=HOURS_TO_PRELOAD)
 
 load()
