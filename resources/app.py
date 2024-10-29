@@ -27,8 +27,7 @@ def init():
     assistant.load()
     context.load()
     kibana.load()
-    slo.load()
-    playback.load()
+    
 
 def maintenance_loop():
     aliases_created = False
@@ -37,9 +36,18 @@ def maintenance_loop():
             aliases_created = alias.load()
         time.sleep(10)
 
+def loading():
+    playback.load()
+    slo.load()
+
 def start_maintenance_thread():
     thread = threading.Thread(target=maintenance_loop)
     thread.start()
 
+def start_loading_thread():
+    thread = threading.Thread(target=loading)
+    thread.start()
+
 init()
 start_maintenance_thread()
+start_loading_thread()

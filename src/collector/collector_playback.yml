@@ -8,6 +8,9 @@ receivers:
       http:
         endpoint: 0.0.0.0:4319
 
+processors:
+  batch:
+
 exporters:
   debug:
     verbosity: detailed
@@ -41,10 +44,12 @@ service:
   pipelines:
     traces/apm:
       receivers: [otlp/apm]
+      processors: [batch]
       exporters: [otlp/apm]
 
     metrics/apm:
       receivers: [otlp/apm]
+      processors: [batch]
       exporters: [otlp/apm]
 
     metrics/elasticsearch:
@@ -53,6 +58,7 @@ service:
 
     logs/apm:
       receivers: [otlp/apm]
+      processors: [batch]
       exporters: [otlp/apm]
 
     logs/elasticsearch:

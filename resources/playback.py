@@ -7,6 +7,7 @@ import json
 import gzip
 import concurrent.futures
 import copy
+import sys
 
 RECORDED_RESOURCES_PATH = 'recorded'
 DAYS_TO_PRELOAD = 1
@@ -241,7 +242,12 @@ def upload(executor, collector_url, signal, resources):
         payload_type = 'resourceMetrics'
     elif signal == 'logs':
         payload_type = 'resourceLogs'
-  
+    
+    max_records_per_upload = 100
+    while sys.getsizeof(resources[0:max_records_per_upload]) > 4194304:
+        max_records_per_upload -= 10
+        print(f"max_records_per_upload={max_records_per_upload}")
+
     for resource_split in (resources[i:i + MAX_RECORDS_PER_UPLOAD] for i in range(0, len(resources), MAX_RECORDS_PER_UPLOAD)):
         executor.submit(upload_payload, collector_url, signal, payload_type, resource_split)
 
@@ -321,4 +327,4 @@ def load():
             load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH'], 
                       trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_days=DAYS_TO_PRELOAD)
 
-load()
+#load()
