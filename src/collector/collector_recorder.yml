@@ -138,25 +138,16 @@ service:
   pipelines:
     traces/fromsdk:
       receivers: [otlp/fromsdk]
-      processors: [resourcedetection]
       exporters: [file/apm]
 
     metrics/fromsdk:
       receivers: [otlp/fromsdk]
-      processors: [resourcedetection]
       exporters: [file/apm]
 
     logs/fromsdk:
       receivers: [otlp/fromsdk]
-      processors: [resourcedetection]
       exporters: [file/apm]
-
-    metrics/hostmetrics:
-      receivers: [hostmetrics/system]
-      processors: [elasticinframetrics, resourcedetection, attributes/dataset, resource/process]
-      exporters: [file/elasticsearch]
 
     logs/recorder:
       receivers: [filelog/recorder]
-      processors: [resourcedetection]
       exporters: [file/elasticsearch]

@@ -233,7 +233,7 @@ def tput_symbol_delete(symbol):
 def latency_region(region, amount):
     global latency_per_region
     latency_per_region[region] = int(amount)
-    high_tput_per_region[region] = 75
+    high_tput_per_region[region] = 90
     return latency_per_region    
 @app.delete('/latency/region/<region>')
 def latency_region_delete(region):
@@ -248,7 +248,7 @@ def latency_region_delete(region):
 def err_db_region(region, amount):
     global db_error_per_region
     db_error_per_region[region] = int(amount)
-    high_tput_per_region[region] = 75
+    high_tput_per_region[region] = 90
     return db_error_per_region
 @app.delete('/err/db/region/<region>')
 def err_db_region_delete(region):
@@ -263,7 +263,7 @@ def err_db_region_delete(region):
 def err_model_region(region, amount):
     global model_error_per_region
     model_error_per_region[region] = int(amount)
-    high_tput_per_region[region] = 75
+    high_tput_per_region[region] = 90
     return model_error_per_region    
 @app.delete('/err/model/region/<region>')
 def err_model_region_delete(region):
