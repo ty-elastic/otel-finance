@@ -270,6 +270,8 @@ def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None
         _, trimmed_resources = conform_resources(resources=resources_file, 
                                                  trim_first_file_ts=trim_first_file_ts, 
                                                  trim_last_file_ts=trim_last_file_ts)
+        
+        
 
         print('grouping data...')
         grouped_data = {'resourceSpans': [], 'resourceMetrics': [], 'resourceLogs': []}
@@ -288,6 +290,8 @@ def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None
         #grouped_data = trimmed_resources
         print("done grouping")
         
+        trimmed_resources = None
+        
         # Get the current time
         now = datetime.now(tz=timezone.utc)
         # Subtract one week (7 days)
@@ -295,8 +299,6 @@ def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None
         
         now_ns = int(now.timestamp() * 1e9)
         ts_offset_ns = int(ts_offset.timestamp() * 1e9)
-        
-        
         
         while ts_offset_ns < now_ns:
             resources = copy.deepcopy(grouped_data)
@@ -313,6 +315,10 @@ def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None
                     upload(executor, collector_url, 'logs', out_data['resourceLogs'])
 
                 executor.shutdown()
+
+            resources = None
+            
+        grouped_data = None
         
         end = time.time()
         print(f'duration={end-start}')
