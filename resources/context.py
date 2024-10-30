@@ -42,18 +42,38 @@ def load_docs(parent, index):
                 body = f.read()
                 filename = Path(file).stem
 
-                resp = requests.put(f"{os.environ['ELASTICSEARCH_URL']}/{index}/_doc/${filename}?pipeline={index}",
+                resp = requests.put(f"{os.environ['ELASTICSEARCH_URL']}/{index}/_doc/{filename}?pipeline={index}",
                                      data=body, timeout=TIMEOUT,
                                      auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']),
                                      headers={"Content-Type": "application/json"})
                 print(resp.json())  
 
+
+def create_github_connector(name, index):
+    body = {
+        "index_name": index,
+        "name": name,
+        "service_type": "github"
+        }
+
+    print("create github connector")
+    resp = requests.put(f"{os.environ['ELASTICSEARCH_URL']}/_connector/{name}",
+                            json=body, timeout=TIMEOUT,
+                            auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']), 
+                            headers={"kbn-xsrf": "reporting", "Content-Type": "application/json"})
+    print(resp.json())  
+    
+    
+    
+    
 def load_indices():
     for index in os.listdir(INDICES_RESOURCES_PATH):
         load_index(os.path.join(INDICES_RESOURCES_PATH, index), index)
         load_pipelines(os.path.join(INDICES_RESOURCES_PATH, index))
         load_docs(os.path.join(INDICES_RESOURCES_PATH, index), index)
-        
+        create_github_connector(index, index)
+      
+load_indices()  
 
 def load_elser():
     body = {
@@ -63,6 +83,7 @@ def load_elser():
             "num_threads": 1
         }
     }
+    
     resp = requests.put(f"{os.environ['ELASTICSEARCH_URL']}/_inference/sparse_embedding/elser_model_2_linux-x86_64",
                             json=body, timeout=TIMEOUT,
                             auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']), 
@@ -76,7 +97,7 @@ def load_knowledge():
             with open(os.path.join(KNOWLEDGE_RESOURCES_PATH, file), "rt", encoding='utf8') as f:
                 body = f.read()
                 filename = Path(file).stem
-                resp = requests.put(f"{os.environ['ELASTICSEARCH_URL']}/.kibana-observability-ai-assistant-kb-000001/_doc/${filename}?pipeline=.kibana-observability-ai-assistant-kb-ingest-pipeline",
+                resp = requests.put(f"{os.environ['ELASTICSEARCH_URL']}/.kibana-observability-ai-assistant-kb-000001/_doc/{filename}?pipeline=.kibana-observability-ai-assistant-kb-ingest-pipeline",
                                      data=body, timeout=TIMEOUT,
                                      auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']),
                                      headers={"Content-Type": "application/json"})
