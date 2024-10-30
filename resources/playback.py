@@ -12,6 +12,12 @@ import sys
 RECORDED_RESOURCES_PATH = 'recorded'
 HOURS_TO_PRELOAD = 6
 
+MAX_RECORDS_PER_UPLOAD = 50
+MAX_MB_PER_UPLOAD = 4
+UPLOAD_TIMEOUT = 5
+GROUPED_TIME_MINS = 30
+UPLOAD_THREADS = 4
+
 def get_day_of_week(attributes):
     for attribute in attributes:
         if attribute['key'] == 'com.example.day_of_week':
@@ -225,11 +231,6 @@ def conform_resources(*, resources, trim_first_file_ts=0, trim_last_file_ts=None
 
     return last_ts, out_data
 
-MAX_RECORDS_PER_UPLOAD = 50
-MAX_MB_PER_UPLOAD = 4
-UPLOAD_TIMEOUT = 5
-GROUPED_TIME_MINS = 60
-
 def upload_payload(collector_url, signal, payload_type, resource_split):
     payload = {payload_type:resource_split}
     payload = gzip.compress(json.dumps(payload).encode('utf-8'))
@@ -295,14 +296,15 @@ def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None
         now_ns = int(now.timestamp() * 1e9)
         ts_offset_ns = int(ts_offset.timestamp() * 1e9)
         
-        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
         
-            while ts_offset_ns < now_ns:
-                resources = copy.deepcopy(grouped_data)
+        
+        while ts_offset_ns < now_ns:
+            resources = copy.deepcopy(grouped_data)
 
-                print(f"> {file} loop {(now_ns - ts_offset_ns)/1e9} / {datetime.fromtimestamp(ts_offset_ns/1e9).strftime('%c')}")
-                ts_offset_ns, out_data = conform_resources(resources=[resources], ts_offset=ts_offset_ns)
+            print(f"> {file} loop {(now_ns - ts_offset_ns)/1e9} / {datetime.fromtimestamp(ts_offset_ns/1e9).strftime('%c')}")
+            ts_offset_ns, out_data = conform_resources(resources=[resources], ts_offset=ts_offset_ns)
 
+            with concurrent.futures.ThreadPoolExecutor(max_workers=UPLOAD_THREADS) as executor:
                 if len(out_data['resourceSpans']) > 0:
                     upload(executor, collector_url, 'traces', out_data['resourceSpans'])
                 if len(out_data['resourceMetrics']) > 0:
@@ -310,7 +312,7 @@ def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None
                 if len(out_data['resourceLogs']) > 0:
                     upload(executor, collector_url, 'logs', out_data['resourceLogs'])
 
-        executor.shutdown()
+                executor.shutdown()
         
         end = time.time()
         print(f'duration={end-start}')

@@ -44,6 +44,10 @@ def set_attribute_and_baggage(key, value):
     current_span.set_attribute(key, value)
     context.attach(baggage.set_baggage(key, value))
 
+@app.route('/health')
+def health():
+    return f"KERNEL OK"
+
 @app.post('/reset')
 def reset():
     model.reset_market_data()

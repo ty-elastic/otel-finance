@@ -17,6 +17,11 @@ public class TradeController {
 
     private final TradeService tradeService;
 
+	@GetMapping("/health")
+    public ResponseEntity<String> health() {
+			return ResponseEntity.ok().body("KERNEL OK");
+    }
+
 	@PostMapping("/record")
     public ResponseEntity<Trade> trade(@RequestParam(value = "customer_id") String customerId,
 		@RequestParam(value = "trade_id") String tradeId,

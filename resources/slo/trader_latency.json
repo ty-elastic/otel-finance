@@ -19,7 +19,7 @@
     "type": "rolling"
   },
   "objective": {
-    "target": 0.99999
+    "target": 0.9999
   },
   "tags": [
     "workshop"

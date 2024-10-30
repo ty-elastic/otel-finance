@@ -25,6 +25,10 @@ const proxyMiddlewareCanary = createProxyMiddleware<Request, Response>({
 app.use('/', proxyMiddlewareCanary);
 app.use('/', proxyMiddleware);
 
+app.get('/health', (req, res) => {
+  res.send("KERNEL OK")
+});
+
 app.listen(PORT, () => {
   console.log(`Listening for requests on http://localhost:${PORT}`);
 });

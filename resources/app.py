@@ -49,11 +49,11 @@ def loading():
     slo.load()
 
 def start_maintenance_thread():
-    thread = threading.Thread(target=maintenance_loop, daemon=True)
+    thread = threading.Thread(target=maintenance_loop, daemon=False)
     thread.start()
 
 def start_loading_thread():
-    thread = threading.Thread(target=loading, daemon=True)
+    thread = threading.Thread(target=loading, daemon=False)
     thread.start()
 
 

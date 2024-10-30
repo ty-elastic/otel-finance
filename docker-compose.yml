@@ -1,26 +1,32 @@
 services:
 
-  resources:
-    build:
-      context: ./resources
-    restart: on-failure
-    ports:
-      - "9010:9010"
-    environment:
-      KIBANA_URL: ${KIBANA_URL}
-      ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
-      ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
-      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
-      OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM: "http://collector_playback:4318"
-      OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH: "http://collector_playback:4319"
-    depends_on:
-      collector_playback:
-        condition: service_started
+  # resources:
+  #   build:
+  #     context: ./resources
+  #   restart: on-failure
+  #   ports:
+  #     - "9010:9010"
+  #   environment:
+  #     KIBANA_URL: ${KIBANA_URL}
+  #     ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
+  #     ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
+  #     ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+  #     OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM: "http://collector_playback:4318"
+  #     OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH: "http://collector_playback:4319"
+  #   depends_on:
+  #     collector_playback:
+  #       condition: service_started
 
   trader:
     build:
       context: ./src/trader/
     restart: on-failure
+    healthcheck:
+      test: curl --fail http://127.0.0.1:9001/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
     ports:
       - "9001:9001"
     environment:
@@ -33,7 +39,7 @@ services:
       OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
     depends_on:
       router:
-        condition: service_started
+        condition: service_healthy
       collector:
         condition: service_started
 
@@ -41,6 +47,12 @@ services:
     build:
       context: ./src/monkey/
     restart: on-failure
+    healthcheck:
+      test: curl --fail http://127.0.0.1:9002/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
     ports:
       - "9002:9002"
     environment:
@@ -52,7 +64,7 @@ services:
       OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
     depends_on:
       trader:
-        condition: service_started
+        condition: service_healthy
       collector:
         condition: service_started
 
@@ -60,6 +72,12 @@ services:
     build:
       context: ./src/router/
     restart: on-failure
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9000/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
     ports:
       - "9000:9000"
     environment:
@@ -71,9 +89,9 @@ services:
       RECORDER_HOST_CANARY: "recorder-go"
     depends_on:
       recorder-go:
-        condition: service_started
+        condition: service_healthy
       recorder-java:
-        condition: service_started
+        condition: service_healthy
       collector:
         condition: service_started
 
@@ -84,6 +102,12 @@ services:
     volumes:
       - ./logs:/logs
     command: ["-logfile=/logs/recorder.log"]
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9004/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
     ports:
       - "9004:9004"
     environment:
@@ -95,7 +119,7 @@ services:
       POSTGRES_USER: "admin"
     depends_on:
       postgresql:
-        condition: service_started
+        condition: service_healthy
       collector:
         condition: service_started
 
@@ -103,6 +127,12 @@ services:
     build:
       context: ./src/recorder-java/
     restart: on-failure
+    healthcheck:
+      test: curl --fail http://127.0.0.1:9003/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
     ports:
       - "9003:9003"
     environment:
@@ -115,7 +145,7 @@ services:
       POSTGRES_USER: "admin"
     depends_on:
       postgresql:
-        condition: service_started
+        condition: service_healthy
       collector:
         condition: service_started
 
@@ -137,9 +167,9 @@ services:
       OTEL_SERVICE_NAME: "proxy"
     depends_on:
       monkey:
-        condition: service_started
+        condition: service_healthy
       trader:
-        condition: service_started
+        condition: service_healthy
       collector:
         condition: service_started
 
@@ -168,8 +198,15 @@ services:
       retries : 5
 
   collector:
+    platform: "linux/amd64"
     image: docker.elastic.co/beats/elastic-agent:8.15.3
     restart: on-failure
+    healthcheck:
+      test: curl --fail http://127.0.0.1:13133/ || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
     ports:
       - "4317:4317"
     volumes:
@@ -186,8 +223,15 @@ services:
       ELASTICSEARCH_APIKEY: ${ELASTICSEARCH_APIKEY}
 
   collector_playback:
+    platform: "linux/amd64"
     image: docker.elastic.co/beats/elastic-agent:8.15.3
     restart: on-failure
+    healthcheck:
+      test: curl --fail http://127.0.0.1:13133/ || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
     ports:
       - "4318:4318"
       - "4319:4319"

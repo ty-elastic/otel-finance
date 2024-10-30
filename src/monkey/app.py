@@ -135,6 +135,10 @@ def generate_trade_requests():
 
 Thread(target=generate_trade_requests, daemon=False).start()
 
+@app.route('/health')
+def health():
+    return f"KERNEL OK"
+
 @app.post('/reset/market')
 def reset_market():
     global high_tput_per_customer

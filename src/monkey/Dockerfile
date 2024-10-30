@@ -1,4 +1,5 @@
 FROM python:3.12.6-slim-bookworm
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /python-docker
 

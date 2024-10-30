@@ -22,8 +22,13 @@ func NewTradeController(tp *sdktrace.TracerProvider, tradeService *TradeService)
 	c.gin.Use(otelgin.Middleware(os.Getenv("OTEL_SERVICE_NAME"), otelgin.WithTracerProvider(tp)))
 
 	c.gin.POST("/record", c.record)
+	c.gin.GET("/health", c.health)
 
 	return &c, nil
+}
+
+func (c *TradeController) health(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{"message": "KERNEL OK"})
 }
 
 func (c *TradeController) record(ctx *gin.Context) {
