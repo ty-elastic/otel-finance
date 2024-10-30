@@ -16,6 +16,7 @@ COPY app.py .
 RUN opentelemetry-bootstrap -a install
 
 ENV TRADER_HOST="trader"
+ENV PYTHONUNBUFFERED=1
 
 EXPOSE 9002
 CMD [ "opentelemetry-instrument", "--logs_exporter", "otlp", "flask", "run", "--host=0.0.0.0", "-p", "9002" ]

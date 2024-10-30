@@ -15,5 +15,7 @@ COPY slo slo
 COPY assistant assistant
 COPY recorded recorded
 
+ENV PYTHONUNBUFFERED=1
+
 EXPOSE 9010
 CMD [ "flask", "run", "--host=0.0.0.0", "-p", "9010" ]

@@ -33,6 +33,7 @@ def init():
     
 
 def maintenance_loop():
+    print("START maintenance_loop")
     aliases_created = False
     while True:
         if not aliases_created:
@@ -40,6 +41,7 @@ def maintenance_loop():
         time.sleep(10)
 
 def loading():
+    print("START loading")
     playback.load()
     slo.load()
 

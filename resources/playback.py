@@ -10,7 +10,7 @@ import copy
 import sys
 
 RECORDED_RESOURCES_PATH = 'recorded'
-HOURS_TO_PRELOAD = 12
+HOURS_TO_PRELOAD = 6
 
 def get_day_of_week(attributes):
     for attribute in attributes:

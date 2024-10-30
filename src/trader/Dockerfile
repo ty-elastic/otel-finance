@@ -17,6 +17,7 @@ COPY model.py .
 RUN opentelemetry-bootstrap -a install
 
 ENV ROUTER_HOST="router"
+ENV PYTHONUNBUFFERED=1
 
 EXPOSE 9001
 CMD [ "opentelemetry-instrument", "--logs_exporter", "otlp", "flask", "run", "--host=0.0.0.0", "-p", "9001" ]
