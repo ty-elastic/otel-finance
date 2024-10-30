@@ -12,7 +12,7 @@ import assistant
 import playback
 
 app = Flask(__name__)
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 @app.post('/load/ml/trained')
 def load_ml_trained():
@@ -44,13 +44,15 @@ def loading():
     slo.load()
 
 def start_maintenance_thread():
-    thread = threading.Thread(target=maintenance_loop)
+    thread = threading.Thread(target=maintenance_loop, daemon=True)
     thread.start()
 
 def start_loading_thread():
-    thread = threading.Thread(target=loading)
+    thread = threading.Thread(target=loading, daemon=True)
     thread.start()
+
 
 init()
 start_maintenance_thread()
 start_loading_thread()
+
