@@ -1,21 +1,15 @@
 services:
 
-  resources:
-    build:
-      context: ./resources
-    restart: on-failure
-    ports:
-      - "9010:9010"
-    environment:
-        KIBANA_URL: ${KIBANA_URL}
-        ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
-        ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
-        ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
-
   trader:
     build:
       context: ./src/trader/
     restart: on-failure
+    healthcheck:
+      test: curl --fail http://127.0.0.1:9001/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
     ports:
       - "9001:9001"
     environment:
@@ -28,12 +22,20 @@ services:
       OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
     depends_on:
       router:
+        condition: service_healthy
+      collector:
         condition: service_started
 
   monkey:
     build:
       context: ./src/monkey/
     restart: on-failure
+    healthcheck:
+      test: curl --fail http://127.0.0.1:9002/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
     ports:
       - "9002:9002"
     environment:
@@ -45,12 +47,20 @@ services:
       OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
     depends_on:
       trader:
+        condition: service_healthy
+      collector:
         condition: service_started
 
   router:
     build:
       context: ./src/router/
     restart: on-failure
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9000/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
     ports:
       - "9000:9000"
     environment:
@@ -62,8 +72,10 @@ services:
       RECORDER_HOST_CANARY: "recorder-go"
     depends_on:
       recorder-go:
-        condition: service_started
+        condition: service_healthy
       recorder-java:
+        condition: service_healthy
+      collector:
         condition: service_started
 
   recorder-go:
@@ -73,6 +85,12 @@ services:
     volumes:
       - ./logs:/logs
     command: ["-logfile=/logs/recorder.log"]
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9004/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
     ports:
       - "9004:9004"
     environment:
@@ -84,12 +102,20 @@ services:
       POSTGRES_USER: "admin"
     depends_on:
       postgresql:
+        condition: service_healthy
+      collector:
         condition: service_started
 
   recorder-java:
     build:
       context: ./src/recorder-java/
     restart: on-failure
+    healthcheck:
+      test: curl --fail http://127.0.0.1:9003/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
     ports:
       - "9003:9003"
     environment:
@@ -102,39 +128,8 @@ services:
       POSTGRES_USER: "admin"
     depends_on:
       postgresql:
-        condition: service_started
+        condition: service_healthy
       collector:
-        condition: service_started
-
-  frontend:
-    platform: "linux/amd64"
-    build:
-      context: ./src/frontend/
-      args:
-        ELASTIC_APM_SERVER_RUM_ENDPOINT: ${ELASTIC_APM_SERVER_RUM_ENDPOINT}
-        ELASTIC_APM_SERVER_RUM_CREDENTIALS: ${ELASTIC_APM_SERVER_RUM_CREDENTIALS}
-
-        KIBANA_URL: ${KIBANA_URL}
-        ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
-        ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
-    ports:
-      - '31236:80'
-    environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_SERVICE_NAME: "proxy"
-    depends_on:
-      monkey:
-        condition: service_started
-      trader:
-        condition: service_started
-
-  instruqt_frontend:
-    build:
-      context: ./instruqt_frontend/
-    ports:
-      - '9393:80'
-    depends_on:
-      frontend:
         condition: service_started
 
   postgresql:
@@ -153,8 +148,15 @@ services:
       retries : 5
 
   collector:
+    platform: "linux/amd64"
     image: docker.elastic.co/beats/elastic-agent:8.15.3
     restart: on-failure
+    healthcheck:
+      test: curl --fail http://127.0.0.1:13133/ || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
     ports:
       - "4317:4317"
     volumes:
@@ -162,22 +164,6 @@ services:
       - ./logs:/logs
       - ./resources/recorded:/recorded
       - /:/hostfs
-    entrypoint: "/usr/share/elastic-agent/elastic-agent"
-    command: ["otel", "-c", "/collector.yml"]
-    environment:
-      ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}
-      ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
-      ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
-      ELASTICSEARCH_APIKEY: ${ELASTICSEARCH_APIKEY}
-
-  collector_playback:
-    image: docker.elastic.co/beats/elastic-agent:8.15.3
-    restart: on-failure
-    ports:
-      - "4318:4318"
-      - "4319:4319"
-    volumes:
-      - ./src/collector/collector_playback.yml:/collector.yml
     entrypoint: "/usr/share/elastic-agent/elastic-agent"
     command: ["otel", "-c", "/collector.yml"]
     environment:
