@@ -42,7 +42,10 @@ def maintenance_loop():
 
 def loading():
     print("START loading")
-    playback.load()
+    try:
+        playback.load()
+    except Exception as inst:
+        print(inst)
     slo.load()
 
 def start_maintenance_thread():

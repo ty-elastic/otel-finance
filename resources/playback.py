@@ -322,18 +322,20 @@ def load():
     trim_first_file_ts = None
     trim_last_file_ts = None
     
-    for file in os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "apm")):
-        if file.endswith(".json"):
-            print(f"loading {file}")
-            trim_first_file_ts, trim_last_file_ts = load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM'], 
-                      backfill_hours=HOURS_TO_PRELOAD, align_to_days=True)
-            print(f"trim_first_file_ts={trim_first_file_ts}, trim_last_file_ts={trim_last_file_ts}")
+    if os.path.exists(os.path.join(RECORDED_RESOURCES_PATH, "apm")):
+        for file in os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "apm")):
+            if file.endswith(".json"):
+                print(f"loading {file}")
+                trim_first_file_ts, trim_last_file_ts = load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM'], 
+                        backfill_hours=HOURS_TO_PRELOAD, align_to_days=True)
+                print(f"trim_first_file_ts={trim_first_file_ts}, trim_last_file_ts={trim_last_file_ts}")
 
-    for file in os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch")):
-        if file.endswith(".json"):
-            print(f"loading {file}")
-            load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH'], 
-                      trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_hours=HOURS_TO_PRELOAD)
+    if os.path.exists(os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch")):
+        for file in os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch")):
+            if file.endswith(".json"):
+                print(f"loading {file}")
+                load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH'], 
+                        trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_hours=HOURS_TO_PRELOAD)
 
     print('done')
 #load()
