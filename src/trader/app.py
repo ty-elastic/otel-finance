@@ -66,7 +66,8 @@ def decode_common_args():
     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.day_of_week", day_of_week)
     
     region = request.args.get('region', default="NA", type=str)
-    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.region", region)
+    # use OTel schema
+    set_attribute_and_baggage("cloud.region", region)
 
     symbol = request.args.get('symbol', default='ESTC', type=str)
     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.symbol", symbol)
