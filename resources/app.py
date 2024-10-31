@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 import time
 import threading
 import logging
@@ -10,6 +10,7 @@ import slo
 import context
 import assistant
 import playback
+
 
 app = Flask(__name__)
 #logging.basicConfig(level=logging.DEBUG)
@@ -23,6 +24,13 @@ def load_ml_trained():
 def load_ml_anomaly():
     ml.load_anomaly()
     return None
+
+@app.post('/load/slo/<slo_name>')
+def load_slo(slo_name):
+    #slo_name = request.args.get('slo_name', default=None, type=str)
+        
+    slo.load(slo_name)
+    return {'result': 'success'}
 
 def init():
     print("loading initial assets...")
@@ -46,7 +54,7 @@ def loading():
         playback.load()
     except Exception as inst:
         print(inst)
-    slo.load()
+    #slo.load_all()
 
 def start_maintenance_thread():
     thread = threading.Thread(target=maintenance_loop, daemon=False)
@@ -55,7 +63,6 @@ def start_maintenance_thread():
 def start_loading_thread():
     thread = threading.Thread(target=loading, daemon=False)
     thread.start()
-
 
 init()
 start_maintenance_thread()

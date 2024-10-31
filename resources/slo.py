@@ -50,48 +50,50 @@ def alert_exists(name):
             return rule['id']
     return None
 
-# POST kbn:/api/alerting/rule
-def load():
-    
-    slo_ids = {}
 
+def load(slo_name):
+    slo_ids = {}
+    
+    file = f"{slo_name}.json"
+        
+    with open(os.path.join(SLO_RESOURCES_PATH, "slo", file), "rt", encoding='utf8') as f:
+        body = json.load(f)
+
+        id = slo_exists(slo_name)
+        if id is not None:
+            print('found, deleting old slo')
+            delete_slo(id)
+            
+        resp = requests.post(f"{os.environ['KIBANA_URL']}/api/observability/slos",
+                                json=body, timeout=TIMEOUT,
+                                auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']),
+                                headers={"kbn-xsrf": "reporting"})
+        slo_ids[slo_name] = resp.json()['id']
+        print(slo_ids)
+        print(resp.json()) 
+
+    if os.path.exists(os.path.join(SLO_RESOURCES_PATH, "alert", file)):
+        with open(os.path.join(SLO_RESOURCES_PATH, "alert", file), "rt", encoding='utf8') as f:
+            body = json.load(f)
+            body['params']['sloId'] = slo_ids[slo_name]
+            
+            id = alert_exists(body['name'])
+            print(id)
+            if id is not None:
+                print('found, deleting old alert')
+                delete_alert(id)
+
+            resp = requests.post(f"{os.environ['KIBANA_URL']}/api/alerting/rule",
+                                    json=body, timeout=TIMEOUT,
+                                    auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']),
+                                    headers={"kbn-xsrf": "reporting"})
+            print(resp.json())  
+                    
+                
+def load_all():
     for file in os.listdir(os.path.join(SLO_RESOURCES_PATH, "slo")):
         if file.endswith(".json"):
-            with open(os.path.join(SLO_RESOURCES_PATH, "slo", file), "rt", encoding='utf8') as f:
-                body = json.load(f)
-                filename = Path(file).stem
-                
-                id = slo_exists(body['name'])
-                if id is not None:
-                    print('found, deleting old slo')
-                    delete_slo(id)
-
-                resp = requests.post(f"{os.environ['KIBANA_URL']}/api/observability/slos",
-                                     json=body, timeout=TIMEOUT,
-                                     auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']),
-                                     headers={"kbn-xsrf": "reporting"})
-                slo_ids[filename] = resp.json()['id']
-                print(slo_ids)
-                print(resp.json())  
-                
-                
-    for file in os.listdir(os.path.join(SLO_RESOURCES_PATH, "alert")):
-        if file.endswith(".json"):
-            with open(os.path.join(SLO_RESOURCES_PATH, "alert", file), "rt", encoding='utf8') as f:
-                filename = Path(file).stem
-                body = json.load(f)
-                body['params']['sloId'] = slo_ids[filename]
-                
-                id = alert_exists(body['name'])
-                print(id)
-                if id is not None:
-                    print('found, deleting old alert')
-                    delete_alert(id)
-
-                resp = requests.post(f"{os.environ['KIBANA_URL']}/api/alerting/rule",
-                                     json=body, timeout=TIMEOUT,
-                                     auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']),
-                                     headers={"kbn-xsrf": "reporting"})
-                print(resp.json())  
-                
-load()
+            filename = Path(file).stem
+            load(filename)
+                   
+#load('trader_availability')
