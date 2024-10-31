@@ -1,6 +1,7 @@
 import os
 import requests
 from pathlib import Path
+import json
 
 INDICES_RESOURCES_PATH = 'context/indices'
 KNOWLEDGE_RESOURCES_PATH = 'context/knowledge'
@@ -10,11 +11,11 @@ TIMEOUT = 10
 def load_index(parent, index):
 
     with open(os.path.join(parent, "index.json"), "rt", encoding='utf8') as f:
-        body = f.read()
+        body = json.load(f)
         resp = requests.put(f"{os.environ['ELASTICSEARCH_URL']}/{index}",
-                                data=body, timeout=TIMEOUT,
+                                json=body, timeout=TIMEOUT,
                                 auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']), 
-                                headers={"kbn-xsrf": "reporting", "Content-Type": "application/json"})
+                                headers={"kbn-xsrf": "reporting"})
         print(resp.json())
         
 def load_pipelines(parent):
@@ -23,13 +24,13 @@ def load_pipelines(parent):
     for file in os.listdir(pipelines_path):
         if file.endswith(".json"):
             with open(os.path.join(pipelines_path, file), "rt", encoding='utf8') as f:
-                body = f.read()
+                body = json.load(f)
                 filename = Path(file).stem
 
                 resp = requests.put(f"{os.environ['ELASTICSEARCH_URL']}/_ingest/pipeline/{filename}",
-                                     data=body, timeout=TIMEOUT,
+                                     json=body, timeout=TIMEOUT,
                                      auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']), 
-                                        headers={"kbn-xsrf": "reporting", "Content-Type": "application/json"})
+                                        headers={"kbn-xsrf": "reporting"})
                 print(resp.json())    
         
 
@@ -39,13 +40,12 @@ def load_docs(parent, index):
     for file in os.listdir(docs_path):
         if file.endswith(".json"):
             with open(os.path.join(docs_path, file), "rt", encoding='utf8') as f:
-                body = f.read()
+                body = json.load(f)
                 filename = Path(file).stem
 
                 resp = requests.put(f"{os.environ['ELASTICSEARCH_URL']}/{index}/_doc/{filename}?pipeline={index}",
-                                     data=body, timeout=TIMEOUT,
-                                     auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']),
-                                     headers={"Content-Type": "application/json"})
+                                     json=body, timeout=TIMEOUT,
+                                     auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']))
                 print(resp.json())  
 
 
@@ -60,7 +60,7 @@ def create_github_connector(name, index):
     resp = requests.put(f"{os.environ['ELASTICSEARCH_URL']}/_connector/{name}",
                             json=body, timeout=TIMEOUT,
                             auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']), 
-                            headers={"kbn-xsrf": "reporting", "Content-Type": "application/json"})
+                            headers={"kbn-xsrf": "reporting"})
     print(resp.json())  
     
     
@@ -73,7 +73,7 @@ def load_indices():
         load_docs(os.path.join(INDICES_RESOURCES_PATH, index), index)
         create_github_connector(index, index)
       
-load_indices()  
+#load_indices()  
 
 def load_elser():
     body = {
@@ -87,7 +87,7 @@ def load_elser():
     resp = requests.put(f"{os.environ['ELASTICSEARCH_URL']}/_inference/sparse_embedding/elser_model_2_linux-x86_64",
                             json=body, timeout=TIMEOUT,
                             auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']), 
-                            headers={"kbn-xsrf": "reporting", "Content-Type": "application/json"})
+                            headers={"kbn-xsrf": "reporting"})
     print(resp.json())  
     
 
@@ -95,12 +95,11 @@ def load_knowledge():
     for file in os.listdir(KNOWLEDGE_RESOURCES_PATH):
         if file.endswith(".json"):
             with open(os.path.join(KNOWLEDGE_RESOURCES_PATH, file), "rt", encoding='utf8') as f:
-                body = f.read()
+                body = json.load(f)
                 filename = Path(file).stem
                 resp = requests.put(f"{os.environ['ELASTICSEARCH_URL']}/.kibana-observability-ai-assistant-kb-000001/_doc/{filename}?pipeline=.kibana-observability-ai-assistant-kb-ingest-pipeline",
-                                     data=body, timeout=TIMEOUT,
-                                     auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']),
-                                     headers={"Content-Type": "application/json"})
+                                     json=body, timeout=TIMEOUT,
+                                     auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']))
                 print(f"loading knowledge {filename}: {resp.json()}")  
 
 def load():

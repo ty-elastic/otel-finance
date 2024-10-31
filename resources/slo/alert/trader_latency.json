@@ -1,0 +1,72 @@
+{
+  "params": {
+    "sloId": "2013e9a1-94dc-4107-91b9-81013cae3dad",
+    "windows": [
+      {
+        "id": "feb6b5e5-b750-4dcc-bfc5-76159de1e2cd",
+        "burnRateThreshold": 3.36,
+        "maxBurnRateThreshold": 168,
+        "longWindow": {
+          "value": 1,
+          "unit": "h"
+        },
+        "shortWindow": {
+          "value": 5,
+          "unit": "m"
+        },
+        "actionGroup": "slo.burnRate.alert"
+      },
+      {
+        "id": "09ea6b74-2d9a-4beb-af9d-da953e66e586",
+        "burnRateThreshold": 1.4,
+        "maxBurnRateThreshold": 28,
+        "longWindow": {
+          "value": 6,
+          "unit": "h"
+        },
+        "shortWindow": {
+          "value": 30,
+          "unit": "m"
+        },
+        "actionGroup": "slo.burnRate.high"
+      },
+      {
+        "id": "3a8448d7-381e-4007-9eea-83d70038a39a",
+        "burnRateThreshold": 0.7,
+        "maxBurnRateThreshold": 7,
+        "longWindow": {
+          "value": 24,
+          "unit": "h"
+        },
+        "shortWindow": {
+          "value": 120,
+          "unit": "m"
+        },
+        "actionGroup": "slo.burnRate.medium"
+      },
+      {
+        "id": "87c76113-c4f0-4604-ac37-73799a8b2415",
+        "burnRateThreshold": 0.234,
+        "maxBurnRateThreshold": 2,
+        "longWindow": {
+          "value": 72,
+          "unit": "h"
+        },
+        "shortWindow": {
+          "value": 360,
+          "unit": "m"
+        },
+        "actionGroup": "slo.burnRate.low"
+      }
+    ],
+    "dependencies": []
+  },
+  "consumer": "slo",
+  "schedule": {
+    "interval": "1m"
+  },
+  "tags": [],
+  "name": "[Trader] Latency burn rate",
+  "rule_type_id": "slo.rules.burnRate",
+  "actions": []
+}
