@@ -92,6 +92,14 @@ def load_elser():
     
 
 def load_knowledge():
+    
+    resp = requests.post(f"{os.environ['KIBANA_URL']}/internal/observability_ai_assistant/kb/setup",
+                                     timeout=TIMEOUT,
+                                     headers={"kbn-xsrf": "reporting"},
+                                     auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']))
+    print(f"setting up knowledgebase: {resp}")
+
+    
     for file in os.listdir(KNOWLEDGE_RESOURCES_PATH):
         if file.endswith(".json"):
             with open(os.path.join(KNOWLEDGE_RESOURCES_PATH, file), "rt", encoding='utf8') as f:
@@ -101,6 +109,8 @@ def load_knowledge():
                                      json=body, timeout=TIMEOUT,
                                      auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']))
                 print(f"loading knowledge {filename}: {resp.json()}")  
+
+#load_knowledge()
 
 def load():
     load_elser()
