@@ -31,7 +31,7 @@ TRAINING_TRADE_COUNT = 1000
 DAYS_OF_WEEK = ['M','Tu', 'W', 'Th', 'F']
 ACTIONS = ['buy', 'sell', 'hold']
 
-latency_per_region = {}
+latency_per_action_per_region = {}
 canary_per_region = {}
 high_tput_per_customer = {}
 high_tput_per_symbol = {}
@@ -44,13 +44,14 @@ customers = ['b.smith', 'l.johnson', 'j.casey', 'l.hall', 'q.bert', 'carol.halle
 symbols = ['MOT', 'MSI', 'GOGO', 'INTEQ', 'VID', 'ESTC']
 regions = ['NA', 'LATAM', 'EU', 'EMEA']
 
-def generate_trade_request(*, customer_id, symbol, day_of_week, region, latency, error_model, error_db, skew_market_factor, canary, data_source):
+def generate_trade_request(*, customer_id, symbol, day_of_week, region, latency_amount, latency_action, error_model, error_db, skew_market_factor, canary, data_source):
     try:
         trade_response = requests.post(f"http://{os.environ['TRADER_HOST']}:9001/trade/request", 
                                        params={'symbol': symbol, 
                                                'day_of_week': day_of_week, 
                                                'customer_id': customer_id, 
-                                               'latency': latency,
+                                               'latency_amount': latency_amount,
+                                               'latency_action': latency_action,
                                                'region': region,
                                                'error_model': error_model,
                                                'error_db': error_db,
@@ -82,10 +83,12 @@ def generate_trade_requests():
         symbol = next_symbol if next_symbol is not None else random.choice(symbols)
         customer_id = next_customer if next_customer is not None else random.choice(customers)
 
-        if region in latency_per_region:
-            latency = random.randint(latency_per_region[region]-100, latency_per_region[region]+100) / 1000.0
+        if region in latency_per_action_per_region:
+            latency_amount = random.randint(latency_per_action_per_region[region]['amount']-50, latency_per_action_per_region[region]['amount']+50) / 1000.0
+            latency_action = latency_per_action_per_region[region]['action']
         else:
-            latency = 0
+            latency_amount = 0
+            latency_action = None
 
         if region in model_error_per_region:
             error_model = True if random.randint(0, 100) > (100-model_error_per_region[region]) else False
@@ -107,10 +110,10 @@ def generate_trade_requests():
         else:
             canary = "false"
 
-        print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region} with latency {latency}, error_model={error_model}, error_db={error_db}, skew_market_factor={skew_market_factor}, canary={canary}")
+        print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region} with latency {latency_amount}, error_model={error_model}, error_db={error_db}, skew_market_factor={skew_market_factor}, canary={canary}")
 
         generate_trade_request(customer_id=customer_id, symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week], region=region,
-                    latency=latency, error_model=error_model, error_db=error_db, skew_market_factor=skew_market_factor, canary=canary,
+                    latency_amount=latency_amount, latency_action=latency_action, error_model=error_model, error_db=error_db, skew_market_factor=skew_market_factor, canary=canary,
                     data_source='monkey')
         
         if len(high_tput_per_region.keys()) > 0:
@@ -156,11 +159,11 @@ def reset_market():
 
 @app.post('/reset/error')
 def reset_error():
-    global latency_per_region
+    global latency_per_action_per_region
     global db_error_per_region
     global model_error_per_region
     
-    latency_per_region = {}
+    latency_per_action_per_region = {}
     db_error_per_region = {}
     model_error_per_region = {}
     
@@ -184,7 +187,7 @@ def get_state():
         'symbols': symbols,
         'regions': regions,
         
-        'latency_per_region': latency_per_region,
+        'latency_per_action_per_region': latency_per_action_per_region,
         'canary_per_region': canary_per_region,
         'high_tput_per_customer': high_tput_per_customer,
         'high_tput_per_symbol': high_tput_per_symbol,
@@ -231,18 +234,19 @@ def tput_symbol_delete(symbol):
 
 @app.post('/latency/region/<region>/<amount>')
 def latency_region(region, amount):
-    global latency_per_region
-    latency_per_region[region] = int(amount)
+    global latency_per_action_per_region
+    latency_action = request.args.get('latency_action', default=None, type=str)
+    latency_per_action_per_region[region] = {'action': latency_action, 'amount': int(amount)}
     high_tput_per_region[region] = 90
-    return latency_per_region    
+    return latency_per_action_per_region    
 @app.delete('/latency/region/<region>')
 def latency_region_delete(region):
-    global latency_per_region
-    if region in latency_per_region:
-        del latency_per_region[region]
+    global latency_per_action_per_region
+    if region in latency_per_action_per_region:
+        del latency_per_action_per_region[region]
     if region in high_tput_per_region:
         del high_tput_per_region[region]
-    return latency_per_region    
+    return latency_per_action_per_region    
 
 @app.post('/err/db/region/<region>/<amount>')
 def err_db_region(region, amount):

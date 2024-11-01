@@ -9,6 +9,7 @@ class ErrorLatencyRegion extends React.Component {
         this.state = {
             latency_region_amount: 0,
             latency_region: 'NA',
+            latency_region_action: 'Any'
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
@@ -32,7 +33,14 @@ class ErrorLatencyRegion extends React.Component {
             if (this.state.latency_region_amount === 0) {
                 await axios.delete(`/monkey/latency/region/${this.state.latency_region}`);
             } else {
-                await axios.post(`/monkey/latency/region/${this.state.latency_region}/${this.state.latency_region_amount}`);
+                await axios.post(`/monkey/latency/region/${this.state.latency_region}/${this.state.latency_region_amount}`,
+                    null,
+                    {
+                        params: {
+                            'latency_action': (this.state.latency_action === 'any')?null:this.state.latency_action
+                        }
+                    }
+                );
             }
         } catch (err) {
             console.log(err.message)
@@ -58,9 +66,19 @@ class ErrorLatencyRegion extends React.Component {
                         </select>
                     </label>
                     <br />
+                    <label>
+                        Action:
+                        <select name="latency_action" value={this.state.latency_action} onChange={this.handleInputChange}>
+                            <option value="any">Any</option>
+                            <option value="buy">Buy</option>
+                            <option value="sell">Sell</option>
+                            <option value="hold">Hold</option>
+                        </select>
+                    </label>
+                    <br />
                     <input data-transaction-name="ErrorLatencyRegion" type="submit" value="Submit" /> 
                 </form>
-                <State key='latency_per_region' />
+                <State key='latency_per_action_per_region' />
             </div>
         );
     }

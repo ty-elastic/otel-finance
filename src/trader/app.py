@@ -39,9 +39,15 @@ trading_volume = meter.create_counter("trading_volume", "shares")
 def conform_request_bool(value):
     return value.lower() == 'true'
 
+@app.before_request
+def hook():
+    context.attach(context.set_value('root', trace.get_current_span()))
+
 def set_attribute_and_baggage(key, value):
-    current_span = trace.get_current_span()
-    current_span.set_attribute(key, value)
+    root_span = context.get_value('root')
+    if root_span is not None and root_span != trace.get_current_span():
+        root_span.set_attribute(key, value)
+    trace.get_current_span().set_attribute(key, value)
     context.attach(baggage.set_baggage(key, value))
 
 @app.route('/health')
@@ -80,7 +86,8 @@ def decode_common_args():
         set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.classification", classification)
     
     # forced errors
-    latency = request.args.get('latency', default=0, type=float)
+    latency_amount = request.args.get('latency_amount', default=0, type=float)
+    latency_action = request.args.get('latency_action', default=None, type=str)
     error_model = request.args.get('error_model', default=False, type=conform_request_bool)
     error_db = request.args.get('error_db', default=False, type=conform_request_bool)
     skew_market_factor = request.args.get('skew_market_factor', default=0, type=int)
@@ -88,7 +95,7 @@ def decode_common_args():
     canary = request.args.get('canary', default="false", type=str)
     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.canary", canary)
     
-    return trade_id, customer_id, day_of_week, region, symbol, latency, error_model, error_db, skew_market_factor, canary, data_source, classification
+    return trade_id, customer_id, day_of_week, region, symbol, latency_amount, latency_action, error_model, error_db, skew_market_factor, canary, data_source, classification
 
 @tracer.start_as_current_span("trade")
 def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, canary, action, error_db):
@@ -96,9 +103,9 @@ def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, ca
     
     app.logger.info(f"trade requested for {symbol} on day {day_of_week}")
     
+    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.action", action)
     current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.shares", shares)
     current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.share_price", share_price)
-    current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.action", action)
     if action == 'buy' or action == 'sell':
         current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.value", shares * share_price)
         trading_revenue.add(math.ceil(share_price * shares * .001))
@@ -127,7 +134,7 @@ def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, ca
     
 @app.post('/trade/force')
 def trade_force():
-    trade_id, customer_id, day_of_week, region, symbol, latency, error_model, error_db, skew_market_factor, canary, data_source, classification = decode_common_args()
+    trade_id, customer_id, day_of_week, region, symbol, latency_amount, latency_action, error_model, error_db, skew_market_factor, canary, data_source, classification = decode_common_args()
 
     action = request.args.get('action', type=str)
     shares = request.args.get('shares', type=int)
@@ -137,20 +144,20 @@ def trade_force():
 
 @app.post('/trade/request')
 def trade_request():
-    trade_id, customer_id, day_of_week, region, symbol, latency, error_model, error_db, skew_market_factor, canary, data_source, classification = decode_common_args()
+    trade_id, customer_id, day_of_week, region, symbol, latency_amount, latency_action, error_model, error_db, skew_market_factor, canary, data_source, classification = decode_common_args()
 
     action, shares, share_price = run_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 
-                                                   error=error_model, latency=latency, skew_market_factor=skew_market_factor)
+                                                   error=error_model, latency_amount=latency_amount, latency_action=latency_action, skew_market_factor=skew_market_factor)
 
     return trade (trade_id=trade_id, symbol=symbol, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, canary=canary, action=action, error_db=error_db)
 
 @tracer.start_as_current_span("run_model")
-def run_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency=0.0, skew_market_factor=0):
+def run_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency_amount=0.0, latency_action=None, skew_market_factor=0):
     current_span = trace.get_current_span()
     
     market_factor, share_price = model.sim_market_data(symbol=symbol, day_of_week=day_of_week, skew_market_factor=skew_market_factor)
     current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.market_factor", market_factor)
     
-    action, shares = model.sim_decide(error=error, latency=latency, symbol=symbol, market_factor=market_factor)
+    action, shares = model.sim_decide(error=error, latency_amount=latency_amount, latency_action=latency_action, symbol=symbol, market_factor=market_factor)
 
     return action, shares, share_price

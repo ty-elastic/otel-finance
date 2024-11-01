@@ -1,6 +1,5 @@
 import random
 import time
-import requests
 import uuid
 
 from app import app
@@ -75,7 +74,7 @@ def sim_market_data(*, symbol, day_of_week, skew_market_factor=0):
     return market_factor, smoothed_share_price
 
 @tracer.start_as_current_span("sim_decide")
-def sim_decide(*, symbol, market_factor, error, latency):
+def sim_decide(*, symbol, market_factor, error, latency_amount, latency_action):
 
     if error:
         raise Exception(random.choice(MODEL_EXCEPTIONS))
@@ -90,15 +89,15 @@ def sim_decide(*, symbol, market_factor, error, latency):
             else:
                 shares = random.randint(1, 50)
     elif market_factor >= 25:
-        with tracer.start_as_current_span("buy") as buy:
+        with tracer.start_as_current_span("buy") as span:
             action = 'buy'
             if market_factor >= 75:
                 shares = random.randint(50, 100)
             else:
                 shares = random.randint(1, 50)
 
-    if latency > 0:
-        time.sleep(latency)
+    if latency_amount > 0 and (latency_action is None or latency_action == action):
+        time.sleep(latency_amount)
         inst = "HTTPSConnectionPool(host=market.example.com, port=443): Max retries exceeded with url: / (Caused by NameResolutionError(Failed to resolve market.example.com ([Errno -2] Name or service not known)))"
         app.logger.warn(f"unable to fetch current market data; skipping: {inst}")
 

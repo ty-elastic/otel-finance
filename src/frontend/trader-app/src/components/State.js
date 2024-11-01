@@ -1,38 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
-function State({ key }) {
-    const [loadingData, setLoadingData] = useState(true);
-    const [data, setData] = useState([]);
+class State extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            data: null,
+        };
+        this.key = props.key;
+    }
 
-    useEffect(() => {
-        async function getData() {
-            await axios
-                .get('/monkey/state')
-                .then((response) => {
-                    // check if the data is populated
-                    console.log(response.data);
-                    setData(response.data);
-                    // you tell it that you had the result
-                    setLoadingData(false);
-                });
+    async updateState() {
+        try {
+            let response = await axios.get('/monkey/state')
+            this.server_state = response[this.key]
+        } catch (err) {
+            console.log(err.message)
         }
-        if (loadingData) {
-            // if the result is not ready so you make the axios call
-            getData();
-        }
-    }, []);
+    }
+    componentDidMount() {
+        // This code runs once after the component is mounted
+        // Similar to useEffect(() => {}, [])
+    }
 
-    return (
-        <div>
-            {/* here you check if the state is loading otherwise if you wioll not call that you will get a blank page because the data is an empty array at the moment of mounting */}
-            {loadingData ? (
-                <p>Loading Please wait...</p>
-            ) : (
-                <div><pre>{ JSON.stringify(data[key], null, 2) }</pre></div>
-            )}
-        </div>
-    );
+    componentDidUpdate(prevProps, prevState) {
+        // This code runs after each render when props or state changes
+        // Similar to useEffect(() => {}, [dependency])
+        this.updateState();
+    }
+
+    componentWillUnmount() {
+        // This code runs right before the component is unmounted
+        // Similar to the cleanup function in useEffect
+    }
+
+    render() {
+        return (
+            <div>
+                {/* Render your component based on the data */}
+                {this.state.data ? (
+                <pre>{JSON.stringify(this.server_state, null, 2)}</pre>
+                ) : (
+                <p>loading...</p>
+                )}
+            </div>
+        );
+    }
 }
 
 export default State;

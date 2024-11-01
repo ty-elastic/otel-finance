@@ -161,7 +161,7 @@ services:
         ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
         ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
     ports:
-      - '31236:80'
+      - '9394:80'
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_SERVICE_NAME: "proxy"
