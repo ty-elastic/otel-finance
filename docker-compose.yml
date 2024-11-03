@@ -157,6 +157,7 @@ services:
       OTEL_SERVICE_NAME: "recorder-go-zero"
       OTEL_GO_AUTO_TARGET_EXE: "/recorder-zero"
       OTEL_PROPAGATORS: "tracecontext,baggage"
+      OTEL_LOG_LEVEL: "debug"
     volumes:
       - /proc:/host/proc
     depends_on:
