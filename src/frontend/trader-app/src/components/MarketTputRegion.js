@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
-import State from './State'
+import MonkeyState from './MonkeyState'
 
 class MarketTputRegion extends React.Component {
     constructor(props) {
@@ -10,6 +10,8 @@ class MarketTputRegion extends React.Component {
             tput_region_speed: 'default',
             tput_region: 'NA',
         };
+
+        this.monkeyState = new MonkeyState(this, 'high_tput_per_region');
 
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -34,6 +36,7 @@ class MarketTputRegion extends React.Component {
             } else {
                 await axios.post(`/monkey/tput/region/${this.state.tput_region}/${this.state.tput_region_speed}`);
             }
+            this.monkeyState.fetchData();
         } catch (err) {
             console.log(err.message)
         }
@@ -63,7 +66,7 @@ class MarketTputRegion extends React.Component {
                     <br />
                     <input data-transaction-name="MarketTputRegion" type="submit" value="Submit" />
                 </form>
-                <State key='high_tput_per_region' />
+                {this.monkeyState.render()}
             </div>
         );
     }

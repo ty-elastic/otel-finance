@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
-import State from './State'
+import MonkeyState from './MonkeyState'
 
 class MarketSkewMarketFactorSymbol extends React.Component {
     constructor(props) {
@@ -10,6 +10,8 @@ class MarketSkewMarketFactorSymbol extends React.Component {
             skew_market_factor_symbol_amount: 0,
             skew_market_factor_symbol: 'MOT',
         };
+
+        this.monkeyState = new MonkeyState(this, 'skew_market_factor_per_symbol');
 
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -34,6 +36,7 @@ class MarketSkewMarketFactorSymbol extends React.Component {
             } else {
                 await axios.post(`/monkey/skew_market_factor/symbol/${this.state.skew_market_factor_symbol}/${this.state.skew_market_factor_symbol_amount}`);
             }
+            this.monkeyState.fetchData();
         } catch (err) {
             console.log(err.message)
         }
@@ -61,9 +64,8 @@ class MarketSkewMarketFactorSymbol extends React.Component {
                     </label>
                     <br />
                     <input data-transaction-name="MarketSkewMarketFactorSymbol" type="submit" value="Submit" />
-
                 </form>
-                <State key='skew_market_factor_per_symbol' />
+                {this.monkeyState.render()}
             </div>
         );
     }

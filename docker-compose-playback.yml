@@ -17,7 +17,6 @@ services:
       collector_playback:
         condition: service_started
 
-
   collector_playback:
     image: docker.elastic.co/beats/elastic-agent:8.15.3
     restart: on-failure

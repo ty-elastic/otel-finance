@@ -46,6 +46,7 @@ regions = ['NA', 'LATAM', 'EU', 'EMEA']
 
 def generate_trade_request(*, customer_id, symbol, day_of_week, region, latency_amount, latency_action, error_model, error_db, skew_market_factor, canary, data_source):
     try:
+        print(f"canary={canary}")
         trade_response = requests.post(f"http://{os.environ['TRADER_HOST']}:9001/trade/request", 
                                        params={'symbol': symbol, 
                                                'day_of_week': day_of_week, 

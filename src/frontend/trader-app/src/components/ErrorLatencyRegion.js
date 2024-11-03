@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
-import State from './State'
+import MonkeyState from './MonkeyState';
 
 class ErrorLatencyRegion extends React.Component {
     constructor(props) {
@@ -11,6 +11,8 @@ class ErrorLatencyRegion extends React.Component {
             latency_region: 'NA',
             latency_region_action: 'Any'
         };
+
+        this.monkeyState = new MonkeyState(this, 'latency_per_action_per_region');
 
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -42,6 +44,7 @@ class ErrorLatencyRegion extends React.Component {
                     }
                 );
             }
+            this.monkeyState.fetchData();
         } catch (err) {
             console.log(err.message)
         }
@@ -78,7 +81,7 @@ class ErrorLatencyRegion extends React.Component {
                     <br />
                     <input data-transaction-name="ErrorLatencyRegion" type="submit" value="Submit" /> 
                 </form>
-                <State key='latency_per_action_per_region' />
+                {this.monkeyState.render()}
             </div>
         );
     }

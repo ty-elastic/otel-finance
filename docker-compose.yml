@@ -101,7 +101,7 @@ services:
     restart: on-failure
     volumes:
       - ./logs:/logs
-    command: ["-logfile=/logs/recorder.log"]
+    command: ["-logfile=/logs/recorder-go.log"]
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9004/health || exit 1
       interval: 10s
@@ -122,6 +122,47 @@ services:
         condition: service_healthy
       collector:
         condition: service_started
+
+  recorder-go-zero:
+    build:
+      context: ./src/recorder-go-zero/
+    restart: on-failure
+    volumes:
+      - ./logs:/logs
+      - /proc:/host/proc
+    command: ["-logfile=/logs/recorder-go-zero.log"]
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9004/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
+    ports:
+      - "9005:9004"
+    environment:
+      POSTGRES_HOST: "postgresql"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_USER: "admin"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      collector:
+        condition: service_started
+    pid: "host"
+
+  recorder-go-zero-ebpf:
+    image: otel/autoinstrumentation-go
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_SERVICE_NAME: "recorder-go-zero"
+      OTEL_GO_AUTO_TARGET_EXE: "/recorder-zero"
+      OTEL_PROPAGATORS: "tracecontext,baggage"
+    volumes:
+      - /proc:/host/proc
+    depends_on:
+      - recorder-go-zero
+    privileged: true
+    pid: "host"
 
   recorder-java:
     build:

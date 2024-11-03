@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
-import State from './State'
+import MonkeyState from './MonkeyState'
 
 class MarketTputSymbol extends React.Component {
     constructor(props) {
@@ -10,6 +10,8 @@ class MarketTputSymbol extends React.Component {
             tput_symbol_speed: 'default',
             tput_symbol: 'MOT'
         };
+
+        this.monkeyState = new MonkeyState(this, 'high_tput_per_symbol');
 
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -35,7 +37,7 @@ class MarketTputSymbol extends React.Component {
             } else {
                 await axios.post(`/monkey/tput/symbol/${this.state.tput_symbol}/${this.state.tput_symbol_speed}`);
             }
-
+            this.monkeyState.fetchData();
         } catch (err) {
             console.log(err.message)
         }
@@ -67,7 +69,7 @@ class MarketTputSymbol extends React.Component {
                     <br />
                     <input data-transaction-name="MarketTputSymbol" type="submit" value="Submit" />
                 </form>
-                <State key='high_tput_per_symbol' />
+                {this.monkeyState.render()}
             </div>
         );
     }

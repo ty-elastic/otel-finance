@@ -8,7 +8,7 @@ const PORT: number = parseInt(process.env.PORT || '9000');
 const app: Express = express();
 
 const pathFilterCanary = function (path: string, req: express.Request) {
-  return req.query.canary === 'True'
+  return req.query.canary === 'true'
 };
 
 const proxyMiddleware = createProxyMiddleware<Request, Response>({

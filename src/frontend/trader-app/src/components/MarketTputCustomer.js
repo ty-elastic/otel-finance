@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
-import State from './State'
+import MonkeyState from './MonkeyState'
 
 class MarketTputCustomer extends React.Component {
     constructor(props) {
@@ -10,6 +10,8 @@ class MarketTputCustomer extends React.Component {
             tput_customer_speed: 'default',
             tput_customer: 'q.bert'
         };
+
+        this.monkeyState = new MonkeyState(this, 'high_tput_per_customer');
 
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -34,6 +36,7 @@ class MarketTputCustomer extends React.Component {
             } else {
                 await axios.post(`/monkey/tput/customer/${this.state.tput_customer}/${this.state.tput_customer_speed}`);
             }
+            this.monkeyState.fetchData();
         } catch (err) {
             console.log(err.message)
         }
@@ -64,7 +67,7 @@ class MarketTputCustomer extends React.Component {
                     <br />
                     <input data-transaction-name="MarketTputCustomer" type="submit" value="Submit" />
                 </form>
-                <State key='high_tput_per_customer' />
+                {this.monkeyState.render()}
             </div>
         );
     }

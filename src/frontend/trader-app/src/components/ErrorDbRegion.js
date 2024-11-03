@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
-import State from './State'
+import MonkeyState from './MonkeyState'
 
 class ErrorDbRegion extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             err_db_region_amount: 0,
-            err_db_region: 'EU',
+            err_db_region: 'EU'
         };
+
+        this.monkeyState = new MonkeyState(this, 'db_error_per_region');
 
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -34,6 +36,7 @@ class ErrorDbRegion extends React.Component {
             } else {
                 await axios.post(`/monkey/err/db/region/${this.state.err_db_region}/${this.state.err_db_region_amount}`);
             }
+            this.monkeyState.fetchData();
         } catch (err) {
             console.log(err.message)
         }
@@ -60,7 +63,7 @@ class ErrorDbRegion extends React.Component {
                     <br />
                     <input data-transaction-name="ErrorDbRegion" type="submit" value="Submit" />
                 </form>
-                <State key='db_error_per_region' />
+                {this.monkeyState.render()}
             </div>
         );
     }
