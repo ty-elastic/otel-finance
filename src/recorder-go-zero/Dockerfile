@@ -11,5 +11,5 @@ FROM alpine
 
 COPY --from=builder /go/bin/recorder-zero /recorder-zero
 
-EXPOSE 9004
+EXPOSE 9003
 ENTRYPOINT [ "/recorder-zero" ]

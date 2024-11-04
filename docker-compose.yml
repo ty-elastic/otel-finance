@@ -85,8 +85,9 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
       OTEL_SERVICE_NAME: "router"
 
-      RECORDER_HOST: "recorder-java"
-      RECORDER_HOST_CANARY: "recorder-go"
+      RECORDER_HOST_1: "recorder-java"
+      RECORDER_HOST_2: "recorder-go"
+      RECORDER_HOST_CANARY: "recorder-go-zero"
     depends_on:
       recorder-go:
         condition: service_healthy
@@ -103,13 +104,11 @@ services:
       - ./logs:/logs
     command: ["-logfile=/logs/recorder-go.log"]
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9004/health || exit 1
+      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9003/health || exit 1
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 1m
-    ports:
-      - "9004:9004"
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_SERVICE_NAME: "recorder-go"
@@ -124,6 +123,7 @@ services:
         condition: service_started
 
   recorder-go-zero:
+    platform: "linux/amd64"
     build:
       context: ./src/recorder-go-zero/
     restart: on-failure
@@ -132,13 +132,11 @@ services:
       - /proc:/host/proc
     command: ["-logfile=/logs/recorder-go-zero.log"]
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9004/health || exit 1
+      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9003/health || exit 1
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 1m
-    ports:
-      - "9005:9004"
     environment:
       POSTGRES_HOST: "postgresql"
       POSTGRES_PASSWORD: "password"
@@ -151,9 +149,11 @@ services:
     pid: "host"
 
   recorder-go-zero-ebpf:
+    platform: "linux/amd64"
     image: otel/autoinstrumentation-go
     environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4318"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
       OTEL_SERVICE_NAME: "recorder-go-zero"
       OTEL_GO_AUTO_TARGET_EXE: "/recorder-zero"
       OTEL_PROPAGATORS: "tracecontext,baggage"
@@ -175,8 +175,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 1m
-    ports:
-      - "9003:9003"
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
@@ -188,6 +186,22 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
+      collector:
+        condition: service_started
+
+  notifier:
+    platform: "linux/amd64"
+    build:
+      context: ./src/notifier
+    restart: on-failure
+    entrypoint: "./out/Examples.Service --urls http://*:5000"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4318"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      OTEL_SERVICE_NAME: "notifier"
+      OTEL_DOTNET_AUTO_TRACES_ADDITIONAL_SOURCES: "Examples.Service"
+      OTEL_DOTNET_AUTO_METRICS_ADDITIONAL_SOURCES: "Examples.Service"
+    depends_on:
       collector:
         condition: service_started
 

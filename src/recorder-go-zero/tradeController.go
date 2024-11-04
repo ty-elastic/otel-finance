@@ -37,6 +37,9 @@ func (c *TradeController) record(ctx *gin.Context) {
 	trade := Trade{CustomerId: customerId, TradeId: tradeId, Symbol: symbol, Shares: shares, SharePrice: sharePrice, Action: action}
 
 	res, err := c.tradeService.RecordTrade(ctx.Request.Context(), &trade)
+
+	notify(ctx.Request.Context(), &trade)
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 	} else {
@@ -45,5 +48,5 @@ func (c *TradeController) record(ctx *gin.Context) {
 }
 
 func (c *TradeController) Run() {
-	c.gin.Run("0.0.0.0:9004")
+	c.gin.Run("0.0.0.0:9003")
 }

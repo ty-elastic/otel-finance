@@ -2,15 +2,23 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"os"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	log "github.com/sirupsen/logrus"
+
+	"go.opentelemetry.io/otel/trace"
+
+	"database/sql"
+
+	_ "github.com/lib/pq"
+
+	"github.com/XSAM/otelsql"
 )
 
 type TradeService struct {
-	postgres *pgxpool.Pool
+	db *sql.DB
 }
 
 const tradesSqlTable = `
@@ -30,22 +38,22 @@ const tradesSqlTable = `
 func NewTradeService() (*TradeService, error) {
 	c := TradeService{}
 
-	// build connection string
-	url := "postgres://" + os.Getenv("POSTGRES_USER") + ":" + os.Getenv("POSTGRES_PASSWORD") + "@" + os.Getenv("POSTGRES_HOST") + ":5432/trades"
-	cfg, err := pgxpool.ParseConfig(url)
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		os.Getenv("POSTGRES_HOST"), 5432, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), "trades")
+	db, err := otelsql.Open("postgres", psqlInfo)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
+	c.db = db
 
-	// build config
-	conn, err := pgxpool.NewWithConfig(context.Background(), cfg)
+	err = c.db.Ping()
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
-	c.postgres = conn
 
 	// try to create initial table
-	_, err = conn.Exec(context.Background(), tradesSqlTable)
+	_, err = c.db.Exec(tradesSqlTable)
 	if err != nil {
 		// if unable to connect, die and retry
 		if _, ok := err.(net.Error); ok {
@@ -67,8 +75,10 @@ func (c *TradeService) RecordTrade(context context.Context, trade *Trade) (*Trad
 	`
 
 	// insert trade
-	_, err := c.postgres.Exec(context, sqlStatement, trade.TradeId, trade.CustomerId, trade.Symbol, trade.Action, trade.Shares, trade.SharePrice)
+	_, err := c.db.Exec(sqlStatement, trade.TradeId, trade.CustomerId, trade.Symbol, trade.Action, trade.Shares, trade.SharePrice)
 	if err != nil {
+		span := trace.SpanFromContext(context)
+		span.RecordError(err, trace.WithStackTrace(true))
 		return nil, err
 	}
 

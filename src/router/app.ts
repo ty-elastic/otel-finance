@@ -7,22 +7,26 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 const PORT: number = parseInt(process.env.PORT || '9000');
 const app: Express = express();
 
-const pathFilterCanary = function (path: string, req: express.Request) {
-  return req.query.canary === 'true'
+function getRandomBoolean() {
+  return Math.random() < 0.5;
+}
+
+function customRouter(req: any) {
+  if (req.query.canary === 'true')
+    return `http://${process.env.RECORDER_HOST_CANARY}:9003`;
+  else {
+    if (getRandomBoolean())
+      return `http://${process.env.RECORDER_HOST_1}:9003`;
+    else
+      return `http://${process.env.RECORDER_HOST_2}:9003`;
+  }
 };
 
 const proxyMiddleware = createProxyMiddleware<Request, Response>({
-  target: `http://${process.env.RECORDER_HOST}:9003`,
-  changeOrigin: false,
+  router: customRouter,
+  changeOrigin: false
 })
 
-const proxyMiddlewareCanary = createProxyMiddleware<Request, Response>({
-  target: `http://${process.env.RECORDER_HOST_CANARY}:9004`,
-  pathFilter: pathFilterCanary,
-  changeOrigin: false,
-})
-
-app.use('/', proxyMiddlewareCanary);
 app.use('/', proxyMiddleware);
 
 app.get('/health', (req, res) => {

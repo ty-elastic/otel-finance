@@ -6,15 +6,20 @@ import (
 	"net"
 	"os"
 
-	"github.com/exaring/otelpgx"
-	"github.com/jackc/pgx/v5/pgxpool"
 	log "github.com/sirupsen/logrus"
 
 	"go.opentelemetry.io/otel/trace"
+
+	"database/sql"
+
+	_ "github.com/lib/pq"
+
+	"github.com/XSAM/otelsql"
+	semconv "go.opentelemetry.io/otel/semconv/v1.18.0"
 )
 
 type TradeService struct {
-	postgres *pgxpool.Pool
+	db *sql.DB
 }
 
 const tradesSqlTable = `
@@ -34,28 +39,26 @@ const tradesSqlTable = `
 func NewTradeService() (*TradeService, error) {
 	c := TradeService{}
 
-	// build connection string
-	url := "postgres://" + os.Getenv("POSTGRES_USER") + ":" + os.Getenv("POSTGRES_PASSWORD") + "@" + os.Getenv("POSTGRES_HOST") + ":5432/trades"
-	cfg, err := pgxpool.ParseConfig(url)
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		os.Getenv("POSTGRES_HOST"), 5432, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), "trades")
+	db, err := otelsql.Open("postgres", psqlInfo, otelsql.WithAttributes(
+		semconv.DBSystemPostgreSQL,
+	))
 	if err != nil {
-		return nil, err
+		log.Fatal("unable to connect to database: ", err)
+		os.Exit(1)
 	}
+	c.db = db
 
-	// connect in OTel tracer as middleware
-	cfg.ConnConfig.Tracer = otelpgx.NewTracer(otelpgx.WithTrimSQLInSpanName(), otelpgx.WithDisableQuerySpanNamePrefix())
-	if cfg.ConnConfig.Tracer == nil {
-		return nil, fmt.Errorf("unable to create otelpgx tracer")
-	}
-
-	// build config
-	conn, err := pgxpool.NewWithConfig(context.Background(), cfg)
+	err = c.db.Ping()
 	if err != nil {
-		return nil, err
+		log.Fatal("unable to connect to database: ", err)
+		os.Exit(1)
 	}
-	c.postgres = conn
 
 	// try to create initial table
-	_, err = conn.Exec(context.Background(), tradesSqlTable)
+	_, err = c.db.Exec(tradesSqlTable)
 	if err != nil {
 		// if unable to connect, die and retry
 		if _, ok := err.(net.Error); ok {
@@ -77,7 +80,7 @@ func (c *TradeService) RecordTrade(context context.Context, trade *Trade) (*Trad
 	`
 
 	// insert trade
-	_, err := c.postgres.Exec(context, sqlStatement, trade.TradeId, trade.CustomerId, trade.Symbol, trade.Action, trade.Shares, trade.SharePrice)
+	_, err := c.db.ExecContext(context, sqlStatement, trade.TradeId, trade.CustomerId, trade.Symbol, trade.Action, trade.Shares, trade.SharePrice)
 	if err != nil {
 		span := trace.SpanFromContext(context)
 		span.RecordError(err, trace.WithStackTrace(true))
