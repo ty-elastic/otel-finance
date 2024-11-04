@@ -123,7 +123,6 @@ services:
         condition: service_started
 
   recorder-go-zero:
-    platform: "linux/amd64"
     build:
       context: ./src/recorder-go-zero/
     restart: on-failure
@@ -149,7 +148,6 @@ services:
     pid: "host"
 
   recorder-go-zero-ebpf:
-    platform: "linux/amd64"
     image: otel/autoinstrumentation-go
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4318"
@@ -158,6 +156,7 @@ services:
       OTEL_GO_AUTO_TARGET_EXE: "/recorder-zero"
       OTEL_PROPAGATORS: "tracecontext,baggage"
       OTEL_LOG_LEVEL: "debug"
+      OTEL_GO_AUTO_INCLUDE_DB_STATEMENT: "true"
     volumes:
       - /proc:/host/proc
     depends_on:

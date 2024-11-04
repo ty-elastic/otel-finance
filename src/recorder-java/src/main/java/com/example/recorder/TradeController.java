@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.recorder.Trade;
 import com.example.recorder.TradeService;
+import com.example.recorder.TradeNotifier;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,6 +17,7 @@ import com.example.recorder.TradeService;
 public class TradeController {
 
     private final TradeService tradeService;
+	private final TradeNotifier tradeNotifier;
 
 	@GetMapping("/health")
     public ResponseEntity<String> health() {
@@ -30,6 +32,11 @@ public class TradeController {
 		@RequestParam(value = "share_price") float sharePrice,
 		@RequestParam(value = "action") String action) {
 			Trade trade = new Trade(tradeId, customerId, symbol, shares, sharePrice, action);
-			return ResponseEntity.ok().body(tradeService.recordTrade(trade));
+
+			Trade resp = tradeService.recordTrade(trade);
+
+			tradeNotifier.notify(trade);
+
+			return ResponseEntity.ok().body(resp);
     }
 }

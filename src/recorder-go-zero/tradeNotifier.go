@@ -9,7 +9,7 @@ import (
 func notify(context context.Context, trade *Trade) {
 	fmt.Println("Notifying...")
 
-	apiUrl := "http://notifier:5000/"
+	apiUrl := "http://notifier:5000/notify"
 
 	client := http.Client{}
 
