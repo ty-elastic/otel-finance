@@ -253,8 +253,7 @@ services:
       retries : 5
 
   collector:
-    platform: "linux/amd64"
-    image: docker.elastic.co/beats/elastic-agent:8.15.3
+    image: docker.elastic.co/beats/elastic-agent:8.16.0-SNAPSHOT
     restart: on-failure
     healthcheck:
       test: curl --fail http://127.0.0.1:13133/ || exit 1
@@ -272,14 +271,16 @@ services:
     entrypoint: "/usr/share/elastic-agent/elastic-agent"
     command: ["otel", "-c", "/collector.yml"]
     environment:
+      ELASTIC_AGENT_OTEL: "true"
       ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}
       ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
       ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
       ELASTICSEARCH_APIKEY: ${ELASTICSEARCH_APIKEY}
+    privileged: true
+    pid: "host"
 
   collector_playback:
-    platform: "linux/amd64"
-    image: docker.elastic.co/beats/elastic-agent:8.15.3
+    image: docker.elastic.co/beats/elastic-agent:8.16.0-SNAPSHOT
     restart: on-failure
     healthcheck:
       test: curl --fail http://127.0.0.1:13133/ || exit 1
@@ -295,6 +296,7 @@ services:
     entrypoint: "/usr/share/elastic-agent/elastic-agent"
     command: ["otel", "-c", "/collector.yml"]
     environment:
+      ELASTIC_AGENT_OTEL: "true"
       ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}
       ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
       ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
