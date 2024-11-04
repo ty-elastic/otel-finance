@@ -278,6 +278,7 @@ services:
       ELASTICSEARCH_APIKEY: ${ELASTICSEARCH_APIKEY}
     privileged: true
     pid: "host"
+    user: root
 
   collector_playback:
     image: docker.elastic.co/beats/elastic-agent:8.16.0-SNAPSHOT
