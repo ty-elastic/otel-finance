@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "dgSpecHash": "k59lOZiSB5M=",
+  "success": true,
+  "projectFilePath": "/Users/tbekiares/src/ty-elastic/otel-apm/otel-apm-ml/src/notifier/Notifier.csproj",
+  "expectedPackageFiles": [
+    "/Users/tbekiares/.nuget/packages/microsoft.extensions.configuration/8.0.0/microsoft.extensions.configuration.8.0.0.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/microsoft.extensions.configuration.abstractions/8.0.0/microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/microsoft.extensions.configuration.binder/8.0.0/microsoft.extensions.configuration.binder.8.0.0.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/microsoft.extensions.dependencyinjection/8.0.0/microsoft.extensions.dependencyinjection.8.0.0.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.0/microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/microsoft.extensions.diagnostics.abstractions/8.0.0/microsoft.extensions.diagnostics.abstractions.8.0.0.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/microsoft.extensions.logging/8.0.0/microsoft.extensions.logging.8.0.0.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/microsoft.extensions.logging.abstractions/8.0.0/microsoft.extensions.logging.abstractions.8.0.0.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/microsoft.extensions.logging.configuration/8.0.0/microsoft.extensions.logging.configuration.8.0.0.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/microsoft.extensions.options/8.0.0/microsoft.extensions.options.8.0.0.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/microsoft.extensions.options.configurationextensions/8.0.0/microsoft.extensions.options.configurationextensions.8.0.0.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/microsoft.extensions.primitives/8.0.0/microsoft.extensions.primitives.8.0.0.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/opentelemetry/1.8.1/opentelemetry.1.8.1.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/opentelemetry.api/1.8.1/opentelemetry.api.1.8.1.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/opentelemetry.api.providerbuilderextensions/1.8.1/opentelemetry.api.providerbuilderextensions.1.8.1.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/opentelemetry.extensions/1.0.0-beta.5/opentelemetry.extensions.1.0.0-beta.5.nupkg.sha512",
+    "/Users/tbekiares/.nuget/packages/system.diagnostics.diagnosticsource/8.0.0/system.diagnostics.diagnosticsource.8.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

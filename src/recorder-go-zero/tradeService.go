@@ -75,8 +75,6 @@ func (c *TradeService) RecordTrade(context context.Context, trade *Trade) (*Trad
 	// insert trade
 	_, err := c.db.ExecContext(context, sqlStatement, trade.TradeId, trade.CustomerId, trade.Symbol, trade.Action, trade.Shares, trade.SharePrice)
 	if err != nil {
-		span := trace.SpanFromContext(context)
-		span.RecordError(err, trace.WithStackTrace(true))
 		return nil, err
 	}
 

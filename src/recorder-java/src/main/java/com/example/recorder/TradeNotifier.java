@@ -30,7 +30,7 @@ public class TradeNotifier {
             String body = mapper.writeValueAsString(trade);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI("http://notifier/notify"))
+                    .uri(new URI("http://notifier:5000/notify"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build();
@@ -40,7 +40,7 @@ public class TradeNotifier {
                     .send(request, BodyHandlers.ofString());
         }
         catch (Exception e) {
-
+            log.warn("unable to notify", e);
         }
     }
 }

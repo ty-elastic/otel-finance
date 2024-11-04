@@ -193,13 +193,13 @@ services:
     build:
       context: ./src/notifier
     restart: on-failure
-    entrypoint: "./out/Examples.Service --urls http://*:5000"
+    entrypoint: "./out/Notifier --urls http://*:5000"
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4318"
       OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
       OTEL_SERVICE_NAME: "notifier"
-      OTEL_DOTNET_AUTO_TRACES_ADDITIONAL_SOURCES: "Examples.Service"
-      OTEL_DOTNET_AUTO_METRICS_ADDITIONAL_SOURCES: "Examples.Service"
+      OTEL_DOTNET_AUTO_TRACES_ADDITIONAL_SOURCES: "Notifier"
+      OTEL_DOTNET_AUTO_METRICS_ADDITIONAL_SOURCES: "Notifier"
     depends_on:
       collector:
         condition: service_started

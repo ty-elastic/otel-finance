@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -10,16 +12,24 @@ func notify(context context.Context, trade *Trade) {
 	fmt.Println("Notifying...")
 
 	apiUrl := "http://notifier:5000/notify"
+	jsonTrade, err := json.Marshal(trade)
+	if err != nil {
+		logger.WithContext(context).Warnf("failure to marshall trade: %s", err)
+		return
+	}
 
 	client := http.Client{}
 
-	req, _ := http.NewRequestWithContext(context, "GET", apiUrl, nil)
-	res, error := client.Do(req)
-	if error != nil {
-		fmt.Println(error)
+	req, err := http.NewRequestWithContext(context, "POST", apiUrl, bytes.NewReader(jsonTrade))
+	if err != nil {
+		logger.WithContext(context).Warnf("failure to create http req: %s", err)
 		return
 	}
-	_ = res.Body.Close()
 
-	fmt.Println("Status: ", res.Status)
+	res, err := client.Do(req)
+	defer res.Body.Close()
+
+	if err != nil {
+		logger.WithContext(context).Warnf("notification error: %s", err)
+	}
 }

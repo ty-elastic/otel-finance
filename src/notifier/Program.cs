@@ -5,10 +5,10 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
 // .NET Diagnostics: create the span factory
-using var activitySource = new ActivitySource("Examples.Service");
+using var activitySource = new ActivitySource("Notifier");
 
 // .NET Diagnostics: create a metric
-using var meter = new Meter("Examples.Service", "1.0");
+using var meter = new Meter("Notifier", "1.0");
 var successCounter = meter.CreateCounter<long>("srv.successes.count", description: "Number of successful responses");
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,7 +34,7 @@ async Task<string> NotifyHandler(ILogger<Program> logger)
     }
 
     // .NET ILogger: create a log
-    logger.LogInformation("Success! Today is: {Date:MMMM dd, yyyy}", DateTimeOffset.UtcNow);
+    logger.LogInformation("notified");
 
     return "Notified";
 }
