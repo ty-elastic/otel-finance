@@ -14,7 +14,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/XSAM/otelsql"
+	semconv "go.opentelemetry.io/otel/semconv/v1.18.0"
 )
 
 type TradeService struct {
@@ -41,15 +41,19 @@ func NewTradeService() (*TradeService, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		os.Getenv("POSTGRES_HOST"), 5432, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), "trades")
-	db, err := otelsql.Open("postgres", psqlInfo)
+	db, err := sql.Open("postgres", psqlInfo, otelsql.WithAttributes(
+		semconv.DBSystemPostgreSQL,
+	))
 	if err != nil {
-		panic(err)
+		log.Fatal("unable to connect to database: ", err)
+		os.Exit(1)
 	}
 	c.db = db
 
 	err = c.db.Ping()
 	if err != nil {
-		panic(err)
+		log.Fatal("unable to connect to database: ", err)
+		os.Exit(1)
 	}
 
 	// try to create initial table
@@ -75,7 +79,7 @@ func (c *TradeService) RecordTrade(context context.Context, trade *Trade) (*Trad
 	`
 
 	// insert trade
-	_, err := c.db.Exec(sqlStatement, trade.TradeId, trade.CustomerId, trade.Symbol, trade.Action, trade.Shares, trade.SharePrice)
+	_, err := c.db.ExecContext(context, sqlStatement, trade.TradeId, trade.CustomerId, trade.Symbol, trade.Action, trade.Shares, trade.SharePrice)
 	if err != nil {
 		span := trace.SpanFromContext(context)
 		span.RecordError(err, trace.WithStackTrace(true))

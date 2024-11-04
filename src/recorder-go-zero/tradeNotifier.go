@@ -14,9 +14,12 @@ func notify(context context.Context, trade *Trade) {
 	client := http.Client{}
 
 	req, _ := http.NewRequestWithContext(context, "GET", apiUrl, nil)
-	response, error := client.Do(req)
+	res, error := client.Do(req)
 	if error != nil {
 		fmt.Println(error)
+		return
 	}
-	fmt.Println("Status: ", response.Status)
+	_ = res.Body.Close()
+
+	fmt.Println("Status: ", res.Status)
 }

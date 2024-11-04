@@ -21,7 +21,6 @@ func notify(context context.Context, trade *Trade) {
 		fmt.Println(error)
 		return
 	}
-	//_, _ = io.ReadAll(res.Body)
 	_ = res.Body.Close()
 
 	fmt.Println("Status: ", res.Status)
