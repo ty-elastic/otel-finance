@@ -97,3 +97,5 @@ def load_all():
             load(filename)
                    
 #load('trader_availability')
+
+#delete_all_slos()
