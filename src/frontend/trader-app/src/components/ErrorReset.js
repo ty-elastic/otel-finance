@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import axios from "axios";
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
 
 class ErrorReset extends React.Component {
     constructor(props) {
@@ -19,11 +21,20 @@ class ErrorReset extends React.Component {
 
     render() {
         return (
-            <div>
+
                 <form name="error_reset" onSubmit={this.handleSubmit}>
-                    <input data-transaction-name="ErrorReset" type="submit" value="Submit" />
+                    <Stack
+                    direction="column"
+                    spacing={1}
+                    sx={{
+                        justifyContent: "flex-start",
+                        alignItems: "flex-start",
+                    }}
+                >
+                    <Button variant="contained" data-transaction-name="ErrorReset" type="submit">Reset</Button>
+                </Stack>
                 </form>
-            </div>
+
         );
     }
 }

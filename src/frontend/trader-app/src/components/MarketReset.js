@@ -23,17 +23,17 @@ class MarketReset extends React.Component {
         return (
 
             <form name="market_reset" onSubmit={this.handleSubmit}>
-        <Stack
-        direction="column"
-        spacing={1}
-        sx={{
-            justifyContent: "flex-start",
-            alignItems: "flex-start",
-        }}
-        >
-            <Button variant="contained" data-transaction-name="MarketReset" type="submit">Reset</Button>
-        </Stack>
-        </form>
+                <Stack
+                    direction="column"
+                    spacing={1}
+                    sx={{
+                        justifyContent: "flex-start",
+                        alignItems: "flex-start",
+                    }}
+                >
+                    <Button variant="contained" data-transaction-name="MarketReset" type="submit">Reset</Button>
+                </Stack>
+            </form>
         );
     }
 }

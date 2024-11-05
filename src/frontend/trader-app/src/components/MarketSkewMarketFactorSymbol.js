@@ -11,6 +11,7 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Slider from '@mui/material/Slider';
+import Typography from '@mui/material/Typography';
 
 class MarketSkewMarketFactorSymbol extends React.Component {
     constructor(props) {
@@ -55,21 +56,20 @@ class MarketSkewMarketFactorSymbol extends React.Component {
         return (
             <form name="skew_market_factor_symbol" onSubmit={this.handleSubmit}>
                 <Grid container spacing={2}>
-                <Grid size={4}>
-
+                <Grid size={3}>
+                        <Typography gutterBottom>Market Factor</Typography>
                         <Slider onChange={this.handleInputChange}
-                        track={false}
-                        name="skew_market_factor_symbol_amount"
-                        aria-label="Amount"
-                        getAriaValueText={() => this.state.skew_market_factor_symbol_amount}
-                        valueLabelDisplay="auto"
-                        shiftStep={30}
-                        step={10}
-                        marks
-                        min={-100}
-                        max={100}
+                            name="skew_market_factor_symbol_amount"
+                            aria-label="Factor"
+                            getAriaValueText={() => this.state.skew_market_factor_symbol_amount}
+                            valueLabelDisplay="on"
+                            shiftStep={30}
+                            step={10}
+                            marks
+                            min={-100}
+                            max={100}
+                            value={this.state.skew_market_factor_symbol_amount}
                         />
-
                     </Grid>
                     <FormControl>
                         <InputLabel id="label_symbol">Symbol</InputLabel>

@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import axios from "axios";
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
 
 class TestReset extends React.Component {
     constructor(props) {
@@ -19,11 +21,18 @@ class TestReset extends React.Component {
 
     render() {
         return (
-            <div>
-                <form name="test_reset" onSubmit={this.handleSubmit}>
-                    <input data-transaction-name="TestReset" type="submit" value="Submit" />
-                </form>
-            </div>
+            <form name="test_reset" onSubmit={this.handleSubmit}>
+                <Stack
+                    direction="column"
+                    spacing={1}
+                    sx={{
+                        justifyContent: "flex-start",
+                        alignItems: "flex-start",
+                    }}
+                >
+                    <Button variant="contained" data-transaction-name="TestReset" type="submit">Reset</Button>
+                </Stack>
+            </form>
         );
     }
 }

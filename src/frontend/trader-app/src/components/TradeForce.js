@@ -123,6 +123,7 @@ class TradeForce extends React.Component {
                             marks
                             min={0}
                             max={10000}
+                            value={this.state.shares}
                         />
                     </Grid>
                     <Grid size={4}>
@@ -137,6 +138,7 @@ class TradeForce extends React.Component {
                             marks
                             min={0}
                             max={1000}
+                            value={this.state.share_price}
                         />
                     </Grid>
                     <FormControl>

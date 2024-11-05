@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
 
 import ErrorLatencyRegion from './ErrorLatencyRegion'
-import CanaryRegion from './CanaryRegion'
+import Page from './Page'
 
 import ErrorModelRegion from './ErrorModelRegion'
 import ErrorDbRegion from './ErrorDbRegion'
 import ErrorReset from './ErrorReset'
 import ErrorLocal from './ErrorLocal'
+
+const sections = [
+  { label: 'Reset', desc: 'Reset error conditions', element: ErrorReset }, 
+  { label: 'Browser', desc: 'Browser (Javascript) error', element: ErrorLocal },
+  { label: 'Model', desc: 'Model error by region', element: ErrorModelRegion },
+  { label: 'DB', desc: 'Database error by region', element: ErrorDbRegion },
+  { label: 'Latency', desc: 'Latency by region', element: ErrorLatencyRegion }
+];
 
 class Error extends React.Component {
     constructor(props) {
@@ -17,35 +25,11 @@ class Error extends React.Component {
     handleBrowserException(event) {
         throw new Error('Intentional Exception!');
     }
-
     render() {
         return (
-            <div>
-                <h1>Generate Errors</h1>
-
-                <h2>Reset Conditions</h2>
-                <ErrorReset></ErrorReset>
-                <hr></hr>
-
-                <h2>Browser (Javascript) Error</h2>
-                <ErrorLocal/>
-                <hr></hr>
-
-                <h2>Model Error by Region</h2>
-                <ErrorModelRegion/>
-                <hr></hr>
-
-                <h2>DB Error by Region</h2>
-                <ErrorDbRegion/>
-                <hr></hr>
-
-                <h2>Latency by Region</h2>
-                <ErrorLatencyRegion/>
-                <hr></hr>
-
-            </div>
+          <Page sections={sections}></Page>
         );
-    }
+      }
 }
 
 export default Error;

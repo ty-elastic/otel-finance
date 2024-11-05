@@ -1,7 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import axios from "axios";
 
-import MonkeyState from './MonkeyState';
+import MonkeyState from './MonkeyState'
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Grid from '@mui/material/Grid2';
+import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
+import Slider from '@mui/material/Slider';
+import Typography from '@mui/material/Typography';
 
 class ErrorModelRegion extends React.Component {
     constructor(props) {
@@ -44,27 +54,43 @@ class ErrorModelRegion extends React.Component {
 
     render() {
         return (
-            <div>
-                <form name="err_model_region" onSubmit={this.handleSubmit}>
-                    <label>
-                        Amount (%):
-                        <input type="number" name="err_model_region_amount" value={this.state.err_model_region_amount} min="0" max="100" onChange={this.handleInputChange} />
-                    </label>
-                    <br />
-                    <label>
-                        Region:
-                        <select name="err_model_region" value={this.state.err_model_region} onChange={this.handleInputChange}>
-                            <option value="EMEA">EMEA</option>
-                            <option value="EU">EU</option>
-                            <option value="LATAM">LATAM</option>
-                            <option value="NA">NA</option>
-                        </select>
-                    </label>
-                    <br />
-                    <input data-transaction-name="ErrorModelRegion" type="submit" value="Submit" />
-                </form>
-                {this.monkeyState.render()}
-            </div>
+
+            <form name="err_model_region" onSubmit={this.handleSubmit}>
+                <Grid container spacing={2}>
+                    <FormControl>
+                        <InputLabel id="label_region">Region</InputLabel>
+                        <Select
+                            labelId="label_region"
+                            name="err_model_region"
+                            value={this.state.err_model_region}
+                            label="Region"
+                            onChange={this.handleInputChange}
+                        >
+                            <MenuItem value="EMEA">EMEA</MenuItem>
+                            <MenuItem value="EU">EU</MenuItem>
+                            <MenuItem value="LATAM">LATAM</MenuItem>
+                            <MenuItem value="NA">NA</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <Grid size={3}>
+                        <Typography gutterBottom>Amount (%)</Typography>
+                        <Slider onChange={this.handleInputChange}
+                            name="err_model_region_amount"
+                            aria-label="Amount (%)"
+                            getAriaValueText={() => this.state.err_model_region_amount}
+                            valueLabelDisplay="on"
+                            shiftStep={30}
+                            step={1}
+                            marks
+                            min={0}
+                            max={100}
+                            value={this.state.err_model_region_amount}
+                        />
+                    </Grid>
+                    <Button variant="contained" data-transaction-name="ErrorModelRegion" type="submit">Submit</Button>
+                    <Box width="100%"><Paper variant="outlined">{this.monkeyState.render()}</Paper></Box>
+                </Grid>
+            </form>
         );
     }
 }
