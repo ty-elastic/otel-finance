@@ -1,7 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import axios from "axios";
 
 import MonkeyState from './MonkeyState'
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Grid from '@mui/material/Grid2';
+import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
 
 class MarketTputRegion extends React.Component {
     constructor(props) {
@@ -21,6 +29,8 @@ class MarketTputRegion extends React.Component {
         const target = event.target;
         const value = target.type === 'checkbox' ? target.checked : target.value;
         const name = target.name;
+
+        console.log(target.name)
 
         this.setState({
             [name]: value
@@ -44,30 +54,40 @@ class MarketTputRegion extends React.Component {
 
     render() {
         return (
-            <div>
-                <form name="tput_region" onSubmit={this.handleSubmit}>
-                    <label>
-                        Speed:
-                        <select name="tput_region_speed" value={this.state.tput_region_speed} onChange={this.handleInputChange}>
-                            <option value="high">High</option>
-                            <option value="default">Default</option>
-                        </select>
-                    </label>
-                    <br />
-                    <label>
-                        Region:
-                        <select name="tput_region" value={this.state.tput_region} onChange={this.handleInputChange}>
-                            <option value="EMEA">EMEA</option>
-                            <option value="EU">EU</option>
-                            <option value="LATAM">LATAM</option>
-                            <option value="NA">NA</option>
-                        </select>
-                    </label>
-                    <br />
-                    <input data-transaction-name="MarketTputRegion" type="submit" value="Submit" />
-                </form>
-                {this.monkeyState.render()}
-            </div>
+            <form name="tput_region" onSubmit={this.handleSubmit}>
+                <Grid container spacing={2}>
+                    <FormControl>
+                        <InputLabel id="label_speed">Speed</InputLabel>
+                        <Select
+                            labelId="label_speed"
+                            name="tput_region_speed"
+                            value={this.state.tput_region_speed}
+                            label="Speed"
+                            onChange={this.handleInputChange}
+                        >
+                            <MenuItem value="high">High</MenuItem>
+                            <MenuItem value="default">Default</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <FormControl>
+                        <InputLabel id="label_region">Region</InputLabel>
+                        <Select
+                            labelId="label_region"
+                            name="tput_region"
+                            value={this.state.tput_region}
+                            label="Region"
+                            onChange={this.handleInputChange}
+                        >
+                            <MenuItem value="EMEA">EMEA</MenuItem>
+                            <MenuItem value="EU">EU</MenuItem>
+                            <MenuItem value="LATAM">LATAM</MenuItem>
+                            <MenuItem value="NA">NA</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <Button variant="contained" data-transaction-name="MarketTputRegion" type="submit">Submit</Button>
+                    <Box width="100%"><Paper variant="outlined">{this.monkeyState.render()}</Paper></Box>
+                </Grid>
+            </form>
         );
     }
 }

@@ -1,7 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import axios from "axios";
 
 import MonkeyState from './MonkeyState'
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Grid from '@mui/material/Grid2';
+import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
 
 class MarketTputCustomer extends React.Component {
     constructor(props) {
@@ -44,33 +52,44 @@ class MarketTputCustomer extends React.Component {
 
     render() {
         return (
-            <div>
-                <form name="tput_region" onSubmit={this.handleSubmit}>
-                    <label>
-                        Speed:
-                        <select name="tput_customer_speed" value={this.state.tput_customer_speed} onChange={this.handleInputChange}>
-                            <option value="high">High</option>
-                            <option value="default">Default</option>
-                        </select>
-                    </label>
-                    <br />
-                    <label>
-                        Customer:
-                        <select name="tput_customer" value={this.state.tput_customer} onChange={this.handleInputChange}>
-                            <option value="b.smith">b.smith</option>
-                            <option value="l.johnson">l.johnson</option>
-                            <option value="j.casey">j.casey</option>
-                            <option value="l.hall">l.hall</option>
-                            <option value="q.bert">q.bert</option>
-                        </select>
-                    </label>
-                    <br />
-                    <input data-transaction-name="MarketTputCustomer" type="submit" value="Submit" />
-                </form>
-                {this.monkeyState.render()}
-            </div>
+            <form name="tput_customer" onSubmit={this.handleSubmit}>
+                <Grid container spacing={2}>
+                    <FormControl>
+                        <InputLabel id="label_speed">Speed</InputLabel>
+                        <Select
+                            labelId="label_speed"
+                            name="tput_customer_speed"
+                            value={this.state.tput_customer_speed}
+                            label="Speed"
+                            onChange={this.handleInputChange}
+                        >
+                            <MenuItem value="high">High</MenuItem>
+                            <MenuItem value="default">Default</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <FormControl>
+                        <InputLabel id="label_customer">Customer</InputLabel>
+                        <Select
+                            labelId="label_customer"
+                            name="tput_customer"
+                            value={this.state.tput_customer}
+                            label="Customer"
+                            onChange={this.handleInputChange}
+                        >
+                            <MenuItem value="b.smith">b.smith</MenuItem>
+                            <MenuItem value="l.johnson">l.johnson</MenuItem>
+                            <MenuItem value="j.casey">j.casey</MenuItem>
+                            <MenuItem value="l.hall">l.hall</MenuItem>
+                            <MenuItem value="q.bert">q.bert</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <Button variant="contained" data-transaction-name="MarketTputCustomer" type="submit">Submit</Button>
+                    <Box width="100%"><Paper variant="outlined">{this.monkeyState.render()}</Paper></Box>
+                </Grid>
+            </form>
         );
     }
+
 }
 
 export default MarketTputCustomer;

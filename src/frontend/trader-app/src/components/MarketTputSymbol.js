@@ -1,7 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import axios from "axios";
 
 import MonkeyState from './MonkeyState'
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Grid from '@mui/material/Grid2';
+import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
 
 class MarketTputSymbol extends React.Component {
     constructor(props) {
@@ -45,32 +53,42 @@ class MarketTputSymbol extends React.Component {
 
     render() {
         return (
-            <div>
-                <form name="tput_symbol" onSubmit={this.handleSubmit}>
-                    <label>
-                        Speed:
-                        <select name="tput_symbol_speed" value={this.state.tput_symbol_speed} onChange={this.handleInputChange}>
-                            <option value="high">High</option>
-                            <option value="default">Default</option>
-                        </select>
-                    </label>
-                    <br />
-                    <label>
-                        Symbol:
-                        <select name="tput_symbol" value={this.state.tput_symbol} onChange={this.handleInputChange}>
-                            <option value="MOT">MOT</option>
-                            <option value="MSI">MSI</option>
-                            <option value="GOGO">GOGO</option>
-                            <option value="INTEQ">INTEQ</option>
-                            <option value="VID">VID</option>
-                            <option value="ESTC">ESTC</option>
-                        </select>
-                    </label>
-                    <br />
-                    <input data-transaction-name="MarketTputSymbol" type="submit" value="Submit" />
-                </form>
-                {this.monkeyState.render()}
-            </div>
+            <form name="tput_symbol" onSubmit={this.handleSubmit}>
+                <Grid container spacing={2}>
+                    <FormControl>
+                        <InputLabel id="label_speed">Speed</InputLabel>
+                        <Select
+                            labelId="label_speed"
+                            name="tput_symbol_speed"
+                            value={this.state.tput_symbol_speed}
+                            label="Speed"
+                            onChange={this.handleInputChange}
+                        >
+                            <MenuItem value="high">High</MenuItem>
+                            <MenuItem value="default">Default</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <FormControl>
+                        <InputLabel id="label_region">Symbol</InputLabel>
+                        <Select
+                            labelId="label_region"
+                            name="tput_symbol"
+                            value={this.state.tput_symbol}
+                            label="Symbol"
+                            onChange={this.handleInputChange}
+                        >
+                            <MenuItem value="MOT">MOT</MenuItem>
+                            <MenuItem value="MSI">MSI</MenuItem>
+                            <MenuItem value="GOGO">GOGO</MenuItem>
+                            <MenuItem value="INTEQ">INTEQ</MenuItem>
+                            <MenuItem value="VID">VID</MenuItem>
+                            <MenuItem value="ESTC">ESTC</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <Button variant="contained" data-transaction-name="MarketTputSymbol" type="submit">Submit</Button>
+                    <Box width="100%"><Paper variant="outlined">{this.monkeyState.render()}</Paper></Box>
+                </Grid>
+            </form>
         );
     }
 }

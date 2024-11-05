@@ -1,16 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import axios from "axios";
+
+import MonkeyState from './MonkeyState'
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import FormLabel from '@mui/material/FormLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Grid from '@mui/material/Grid2';
+import Button from '@mui/material/Button';
+import Slider from '@mui/material/Slider';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
 
 class TradeForce extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             symbol: 'MOT',
-            dayOfWeek: 'M',
-            customerId: "tb93",
+            day_of_week: 'M',
+            customer_id: "tb93",
             region: 'NA',
             shares: 93,
-            sharePrice: 107.10,
+            share_price: 107.10,
             action: 'buy'
         };
 
@@ -30,17 +42,17 @@ class TradeForce extends React.Component {
 
     async handleSubmit(event) {
         event.preventDefault();
-        
+
         try {
             await axios.post("/trader/trade/force", null, {
                 params: {
                     'symbol': this.state.symbol,
-                    'day_of_week': this.state.dayOfWeek,
-                    'customer_id': this.state.customerId,
+                    'day_of_week': this.state.day_of_week,
+                    'customer_id': this.state.customer_id,
                     'region': this.state.region,
                     'action': this.state.action,
                     'shares': this.state.shares,
-                    'share_price': this.state.sharePrice,
+                    'share_price': this.state.share_price,
                     'data_source': 'customer'
                 }
             });
@@ -52,65 +64,97 @@ class TradeForce extends React.Component {
     render() {
         return (
             <form onSubmit={this.handleSubmit}>
-                <label>
-                    Symbol:
-                    <input
+                <Grid container spacing={2}>
+
+                    <TextField
+                        id="outlined-error"
                         name="symbol"
-                        type="text"
                         value={this.state.symbol}
-                        onChange={this.handleInputChange} />
-                </label>
-                <br />
-                <label>
-                    Day of week:
-                    <select name="dayOfWeek" value={this.state.dayOfWeek} onChange={this.handleInputChange}>
-                        <option value="M">Monday</option>
-                        <option value="Tu">Tuesday</option>
-                        <option value="W">Wednesday</option>
-                        <option value="Th">Thursday</option>
-                        <option value="F">Friday</option>
-                    </select>
-                </label>
-                <br />
-                <label>
-                    Customer ID:
-                    <input
-                        name="customerId"
-                        type="text"
-                        value={this.state.customerId}
-                        onChange={this.handleInputChange} />
-                </label>
-                <br />
-                <label>
-                    Region:
-                    <select name="region" value={this.state.region} onChange={this.handleInputChange}>
-                        <option value="EMEA">EMEA</option>
-                        <option value="EU">EU</option>
-                        <option value="LATAM">LATAM</option>
-                        <option value="NA">NA</option>
-                    </select>
-                </label>
-                <br />
-                <label>
-                    Shares:
-                    <input type="number" name="shares" value={this.state.shares} min="0" max="10000" onChange={this.handleInputChange}/>
-                </label>
-                <br />
-                <label>
-                    Share Price:
-                    <input type="number" step="0.01" name="sharePrice" value={this.state.sharePrice} min="0" max="1000" onChange={this.handleInputChange}/>
-                </label>
-                <br />
-                <label>
-                    Action:
-                    <select name="action" value={this.state.action} onChange={this.handleInputChange}>
-                        <option value="buy">Buy</option>
-                        <option value="sell">Sell</option>
-                        <option value="hold">Hold</option>
-                    </select>
-                </label>
-                <br />
-                <input data-transaction-name="TradeForce" type="submit" value="Submit" />
+                        onChange={this.handleInputChange}
+                        label="Symbol"
+                    />
+                    <FormControl>
+                        <InputLabel id="label_dow">Day of Week</InputLabel>
+                        <Select
+                            labelId="label_dow"
+                            name="day_of_week"
+                            value={this.state.day_of_week}
+                            label="Day of Week"
+                            onChange={this.handleInputChange}
+                        >
+                            <MenuItem value="M">Monday</MenuItem>
+                            <MenuItem value="Tu">Tuesday</MenuItem>
+                            <MenuItem value="W">Wednesday</MenuItem>
+                            <MenuItem value="Th">Thursday</MenuItem>
+                            <MenuItem value="F">Friday</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <TextField
+                        id="outlined-error"
+                        name="customer_id"
+                        value={this.state.customer_id}
+                        onChange={this.handleInputChange}
+                        label="Customer ID"
+                    />
+                    <FormControl>
+                        <InputLabel id="label_region">Region</InputLabel>
+                        <Select
+                            labelId="label_region"
+                            name="region"
+                            value={this.state.region}
+                            label="Region"
+                            onChange={this.handleInputChange}
+                        >
+                            <MenuItem value="EMEA">EMEA</MenuItem>
+                            <MenuItem value="EU">EU</MenuItem>
+                            <MenuItem value="LATAM">LATAM</MenuItem>
+                            <MenuItem value="NA">NA</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <Grid size={4}>
+                        <Typography gutterBottom>Shares</Typography>
+                        <Slider onChange={this.handleInputChange}
+                            name="shares"
+                            aria-label="Amount"
+                            getAriaValueText={() => this.state.shares}
+                            valueLabelDisplay="on"
+                            shiftStep={30}
+                            step={10}
+                            marks
+                            min={0}
+                            max={10000}
+                        />
+                    </Grid>
+                    <Grid size={4}>
+                        <Typography gutterBottom>Share Price</Typography>
+                        <Slider onChange={this.handleInputChange}
+                            name="share_price"
+                            aria-label="Share Price"
+                            getAriaValueText={() => this.state.share_price}
+                            valueLabelDisplay="on"
+                            shiftStep={30}
+                            step={1}
+                            marks
+                            min={0}
+                            max={1000}
+                        />
+                    </Grid>
+                    <FormControl>
+                        <InputLabel id="label_action">Action</InputLabel>
+                        <Select
+                            labelId="label_action"
+                            name="action"
+                            value={this.state.action}
+                            label="Action"
+                            onChange={this.handleInputChange}
+                        >
+                        <MenuItem value="buy">Buy</MenuItem>
+                        <MenuItem value="sell">Sell</MenuItem>
+                        <MenuItem value="hold">Hold</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <Button variant="contained" data-transaction-name="TradeForce" type="submit">Submit</Button>
+                </Grid>
             </form>
         );
     }

@@ -2,19 +2,17 @@ import React, { Component } from "react";
 import TradeRequest from './TradeRequest'
 import TradeForce from './TradeForce'
 
+import Page from './Page'
+
+const sections = [
+  { label: 'Request Trade', desc: 'Make a trade request', element: TradeRequest }, 
+  { label: 'Force Trade', desc: 'Force a trade ', element: TradeForce }
+];
+
 class Trade extends Component {
   render() {
     return (
-      <div>
-        <h1>Make Trades</h1>
-
-        <h2>Request Trade</h2>
-        <TradeRequest/>
-        <hr></hr>
-
-        <h2>Force Trade</h2>
-        <TradeForce/>
-      </div>
+      <Page sections={sections}></Page>
     );
   }
 }

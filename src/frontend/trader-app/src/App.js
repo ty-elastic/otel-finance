@@ -5,12 +5,17 @@ import Error from './components/Error'
 import Test from './components/Test'
 import Train from './components/Train'
 
+import ResponsiveAppBar from './components/ResponsiveAppBar'
+
 import './App.css';
 import { v4 as uuidv4 } from 'uuid';
 import axios from "axios";
 import { Route, NavLink, HashRouter, BrowserRouter, Routes } from "react-router-dom";
 
 import { ApmRoutes } from '@elastic/apm-rum-react'
+
+import * as React from 'react';
+import Button from '@mui/material/Button';
 
 // set sessionId on OTel baggage
 var sessionId = uuidv4();
@@ -20,13 +25,7 @@ function App() {
   return (
     <HashRouter>
       <div className="App">
-        <h1>Trader</h1>
-        <NavLink to="/">Trade</NavLink> | 
-        <NavLink to="/market">Manipulate Market</NavLink> | 
-        <NavLink to="/error">Generate Errors</NavLink> | 
-        <NavLink to="/test">Test</NavLink> | 
-        <NavLink to="/train">Train Model</NavLink>
-        <hr/>
+        <ResponsiveAppBar></ResponsiveAppBar>
         <div className="content">
           <ApmRoutes>
             <Route exact path="/" element={<Trade/>} />

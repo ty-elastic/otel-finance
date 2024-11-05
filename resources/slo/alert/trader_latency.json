@@ -3,8 +3,8 @@
     "sloId": "2013e9a1-94dc-4107-91b9-81013cae3dad",
     "windows": [
       {
-        "id": "feb6b5e5-b750-4dcc-bfc5-76159de1e2cd",
-        "burnRateThreshold": 3.36,
+        "id": "b1e58d45-2282-44bd-b8bd-1aacc90788a9",
+        "burnRateThreshold": 1.68,
         "maxBurnRateThreshold": 168,
         "longWindow": {
           "value": 1,

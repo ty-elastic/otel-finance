@@ -7,29 +7,20 @@ import MarketTputCustomer from './MarketTputCustomer'
 import MarketReset from './MarketReset'
 import MarketSkewMarketFactorSymbol from './MarketSkewMarketFactorSymbol'
 
+import Page from './Page'
+
+const sections = [
+    { label: 'Reset', desc: 'Reset market conditions', element: MarketReset },
+    { label: 'Throughput by Region', desc: 'High throughput by region', element: MarketTputRegion },
+    { label: 'Throughput by Symbol', desc: 'High throughput by symbol', element: MarketTputSymbol },
+    { label: 'Throughput by Customer', desc: 'High throughput by customer', element: MarketTputCustomer },
+    { label: 'Skew Market Factor', desc: 'Skew market factor by symbol', element: MarketSkewMarketFactorSymbol }
+];
+
 class Market extends React.Component {
     render() {
         return (
-            <div>
-                <h1>Manipulate Market</h1>
-
-                <h2>Reset Conditions</h2>
-                <MarketReset></MarketReset>
-                <hr></hr>
-                
-                <h2>Throughput by Region</h2>
-                <MarketTputRegion/>
-                <hr></hr>
-                <h2>Throughput by Symbol</h2>
-                <MarketTputSymbol/>
-                <hr></hr>
-                <h2>Throughput by Customer</h2>
-                <MarketTputCustomer/>
-                <hr></hr>
-
-                <h2>Skew Market Factor by Symbol</h2>
-                <MarketSkewMarketFactorSymbol/>
-            </div>
+            <Page sections={sections}></Page>
         );
     }
 }

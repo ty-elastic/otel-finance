@@ -1,7 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import axios from "axios";
 
 import MonkeyState from './MonkeyState'
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Grid from '@mui/material/Grid2';
+import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
+import Slider from '@mui/material/Slider';
 
 class MarketSkewMarketFactorSymbol extends React.Component {
     constructor(props) {
@@ -44,31 +53,48 @@ class MarketSkewMarketFactorSymbol extends React.Component {
 
     render() {
         return (
-            <div>
-                <form name="skew_market_factor_symbol" onSubmit={this.handleSubmit}>
-                    <label>
-                        Amount:
-                        <input type="number" name="skew_market_factor_symbol_amount" value={this.state.skew_market_factor_symbol_amount} min="-100" max="100" onChange={this.handleInputChange} />
-                    </label>
-                    <br />
-                    <label>
-                        Symbol:
-                        <select name="skew_market_factor_symbol" value={this.state.skew_market_factor_symbol} onChange={this.handleInputChange}>
-                            <option value="MOT">MOT</option>
-                            <option value="MSI">MSI</option>
-                            <option value="GOGO">GOGO</option>
-                            <option value="INTEQ">INTEQ</option>
-                            <option value="VID">VID</option>
-                            <option value="ESTC">ESTC</option>
-                        </select>
-                    </label>
-                    <br />
-                    <input data-transaction-name="MarketSkewMarketFactorSymbol" type="submit" value="Submit" />
-                </form>
-                {this.monkeyState.render()}
-            </div>
+            <form name="skew_market_factor_symbol" onSubmit={this.handleSubmit}>
+                <Grid container spacing={2}>
+                <Grid size={4}>
+
+                        <Slider onChange={this.handleInputChange}
+                        track={false}
+                        name="skew_market_factor_symbol_amount"
+                        aria-label="Amount"
+                        getAriaValueText={() => this.state.skew_market_factor_symbol_amount}
+                        valueLabelDisplay="auto"
+                        shiftStep={30}
+                        step={10}
+                        marks
+                        min={-100}
+                        max={100}
+                        />
+
+                    </Grid>
+                    <FormControl>
+                        <InputLabel id="label_symbol">Symbol</InputLabel>
+                        <Select
+                            labelId="label_symbol"
+                            name="skew_market_factor_symbol"
+                            value={this.state.skew_market_factor_symbol}
+                            label="Symbol"
+                            onChange={this.handleInputChange}
+                        >
+                            <MenuItem value="MOT">MOT</MenuItem>
+                            <MenuItem value="MSI">MSI</MenuItem>
+                            <MenuItem value="GOGO">GOGO</MenuItem>
+                            <MenuItem value="INTEQ">INTEQ</MenuItem>
+                            <MenuItem value="VID">VID</MenuItem>
+                            <MenuItem value="ESTC">ESTC</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <Button variant="contained" data-transaction-name="MarketSkewMarketFactorSymbol" type="submit">Submit</Button>
+                    <Box width="100%"><Paper variant="outlined">{this.monkeyState.render()}</Paper></Box>
+                </Grid>
+            </form>
         );
     }
+
 }
 
 export default MarketSkewMarketFactorSymbol;

@@ -12,24 +12,24 @@ class MonkeyState {
 
     fetchData() {
         axios.get('/monkey/state')
-        .then(response => {
-            this.parent.setState({ data: response.data });
-            console.log(response.data);
-        })
-        .catch(error => {
-            // Handle error
-            console.error(error);
-        });
+            .then(response => {
+                this.parent.setState({ data: response.data });
+                console.log(response.data);
+            })
+            .catch(error => {
+                // Handle error
+                console.error(error);
+            });
     }
 
     render() {
         return (
-            <div>
+            <div align="left">
                 {/* Render your component based on the data */}
                 {this.parent.state.data ? (
-                <pre>{JSON.stringify(this.parent.state.data[this.key], null, 2)}</pre>
+                    <pre style={{ fontFamily: 'monospace' }}>{JSON.stringify(this.parent.state.data[this.key], null, 2)}</pre>
                 ) : (
-                <p>loading...</p>
+                    <pre style={{ fontFamily: 'monospace' }}>loading...</pre>
                 )}
             </div>
         );
