@@ -1,6 +1,5 @@
 extensions:
   health_check:
-    endpoint: "0.0.0.0:13133"
     check_collector_pipeline:
         enabled: false
 
@@ -46,9 +45,10 @@ receivers:
       processes:
       load:
 
-  filelog/recorder:
+  filelog/json:
     # ingest app log (proprietary format)
-    include: [ logs/recorder.log ]
+    include: [ /logs/*.json ]
+    include_file_name: true
     operators:
       # parse JSON logs from app
       - type: json_parser
@@ -70,10 +70,15 @@ receivers:
           span_id:
             parse_from: attributes.span_id
 
+      # default get from servicename filename
+      - type: add
+        field: resource["service.name"]
+        value: 'EXPR(trimSuffix(attributes["log.file.name"], ".json"))'
       # service.name attribute needs to be on the resource
       - type: move
         from: attributes.service_name
         to: resource["service.name"]
+        if: attributes.service_name != nil
 
       # clean up raw attributes parsed above
       - type: remove
@@ -162,14 +167,17 @@ service:
   pipelines:
     traces/fromsdk:
       receivers: [otlp/fromsdk]
+      processors: [resourcedetection]
       exporters: [otlp/apm]
 
     metrics/fromsdk:
       receivers: [otlp/fromsdk]
+      processors: [resourcedetection]
       exporters: [otlp/apm]
 
     logs/fromsdk:
       receivers: [otlp/fromsdk]
+      processors: [resourcedetection]
       exporters: [otlp/apm]
 
     metrics/hostmetrics:
@@ -177,6 +185,7 @@ service:
       processors: [elasticinframetrics, resourcedetection, attributes/dataset, resource/process]
       exporters: [elasticsearch]
 
-    logs/recorder:
-      receivers: [filelog/recorder]
+    logs/file:
+      receivers: [filelog/json]
+      processors: [resourcedetection]
       exporters: [elasticsearch]

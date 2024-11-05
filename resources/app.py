@@ -1,7 +1,7 @@
 from flask import Flask, request
 import time
 import threading
-import logging
+import os
 
 import ml
 import alias
@@ -66,5 +66,6 @@ def start_loading_thread():
 
 init()
 start_maintenance_thread()
-start_loading_thread()
 
+if os.environ['BACKLOAD_DATA'] == 'true':
+    start_loading_thread()

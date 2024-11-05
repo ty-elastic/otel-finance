@@ -14,12 +14,17 @@ var successCounter = meter.CreateCounter<long>("srv.successes.count", descriptio
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
+app.MapGet("/health", HealthHandler);
 app.MapPost("/notify", NotifyHandler);
 app.Run();
 
+async Task<string> HealthHandler(ILogger<Program> logger)
+{
+    return "KERNEL OK";
+}
+
 async Task<string> NotifyHandler(ILogger<Program> logger)
 {
-
     // .NET Diagnostics: create a manual span
     using (var activity = activitySource.StartActivity("Notify"))
     {

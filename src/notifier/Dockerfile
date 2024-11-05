@@ -18,3 +18,5 @@ ENV DOTNET_ADDITIONAL_DEPS="/otel-dotnet-auto/AdditionalDeps"
 ENV DOTNET_SHARED_STORE="/otel-dotnet-auto/store"
 ENV DOTNET_STARTUP_HOOKS="/otel-dotnet-auto/net/OpenTelemetry.AutoInstrumentation.StartupHook.dll"
 ENV OTEL_DOTNET_AUTO_HOME="/otel-dotnet-auto"
+
+ENTRYPOINT [ "./out/Notifier", "--urls", "http://*:5000" ]

@@ -13,7 +13,6 @@ import (
 func notify(context context.Context, trade *Trade) {
 	fmt.Println("Notifying...")
 
-	apiUrl := "http://notifier:5000/notify"
 	jsonTrade, err := json.Marshal(trade)
 	if err != nil {
 		logger.WithContext(context).Warnf("failure to marshall trade: %s", err)
@@ -22,6 +21,7 @@ func notify(context context.Context, trade *Trade) {
 
 	client := http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
 
+	apiUrl := "http://notifier:5000/notify"
 	req, err := http.NewRequestWithContext(context, "POST", apiUrl, bytes.NewReader(jsonTrade))
 	if err != nil {
 		logger.WithContext(context).Warnf("failure to create http req: %s", err)
