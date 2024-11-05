@@ -54,7 +54,8 @@ def loading():
         playback.load()
     except Exception as inst:
         print(inst)
-    #slo.load_all()
+    if os.environ['SOLVE_ALL'] == 'true':
+        slo.load_all()
 
 def start_maintenance_thread():
     thread = threading.Thread(target=maintenance_loop, daemon=False)
