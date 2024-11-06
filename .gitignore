@@ -13,3 +13,4 @@ node_modules
 *.log
 _lib
 otel-workshop-trading-instruqt
+_frontend

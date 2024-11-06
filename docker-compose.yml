@@ -7,7 +7,7 @@ services:
     ports:
       - "9010:9010"
     environment:
-      BACKLOAD_DATA: "true"
+      BACKLOAD_DATA: "false"
       SOLVE_ALL: "true"
       KIBANA_URL: ${KIBANA_URL}
       ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
@@ -218,7 +218,6 @@ services:
         condition: service_started
 
   frontend:
-    platform: "linux/amd64"
     build:
       context: ./src/frontend/
       args:
@@ -228,6 +227,22 @@ services:
         KIBANA_URL: ${KIBANA_URL}
         ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
         ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+    volumes:
+      - ./_frontend:/frontend
+
+  proxy:
+    platform: "linux/amd64"
+    build:
+      context: ./src/proxy/
+      args:
+        ELASTIC_APM_SERVER_RUM_ENDPOINT: ${ELASTIC_APM_SERVER_RUM_ENDPOINT}
+        ELASTIC_APM_SERVER_RUM_CREDENTIALS: ${ELASTIC_APM_SERVER_RUM_CREDENTIALS}
+
+        KIBANA_URL: ${KIBANA_URL}
+        ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
+        ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+    volumes:
+      - ./_frontend:/usr/share/nginx/html
     ports:
       - '9394:80'
     environment:
@@ -240,6 +255,8 @@ services:
         condition: service_healthy
       collector:
         condition: service_started
+      frontend:
+        condition: service_completed_successfully
 
   instruqt_frontend:
     build:
@@ -247,7 +264,7 @@ services:
     ports:
       - '9393:80'
     depends_on:
-      frontend:
+      proxy:
         condition: service_started
 
   postgresql:
