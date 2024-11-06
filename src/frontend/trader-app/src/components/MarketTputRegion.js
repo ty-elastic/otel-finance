@@ -84,8 +84,8 @@ class MarketTputRegion extends React.Component {
                             <MenuItem value="NA">NA</MenuItem>
                         </Select>
                     </FormControl>
-                    <Button variant="contained" data-transaction-name="MarketTputRegion" type="submit">Submit</Button>
-                    <Box width="100%"><Paper variant="outlined">{this.monkeyState.render()}</Paper></Box>
+                    <Box width="100%"><Button variant="contained" data-transaction-name="MarketTputRegion" type="submit">Submit</Button></Box>
+                    {this.monkeyState.render()}
                 </Grid>
             </form>
         );

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
+import Grid from '@mui/material/Grid2';
+import Box from '@mui/material/Box';
 
 class ErrorLocal extends React.Component {
     constructor(props) {
@@ -14,16 +15,9 @@ class ErrorLocal extends React.Component {
 
     render() {
         return (
-            <Stack
-                direction="column"
-                spacing={1}
-                sx={{
-                    justifyContent: "flex-start",
-                    alignItems: "flex-start",
-                }}
-            >
-                <Button variant="contained" data-transaction-name="ErrorLocal" type="submit" onClick={this.handleBrowserException}>Browser Exception</Button>
-            </Stack>
+            <Grid container spacing={2}>
+                <Box width="100%"><Button variant="contained" data-transaction-name="ErrorLocal" type="submit">Submit</Button></Box>
+            </Grid>
         );
     }
 }

@@ -87,8 +87,8 @@ class ErrorDbRegion extends React.Component {
                             value={this.state.err_db_region_amount}
                         />
                     </Grid>
-                    <Button variant="contained" data-transaction-name="ErrorDbRegion" type="submit">Submit</Button>
-                    <Box width="100%"><Paper variant="outlined">{this.monkeyState.render()}</Paper></Box>
+                    <Box width="100%"><Button variant="contained" data-transaction-name="ErrorDbRegion" type="submit">Submit</Button></Box>
+                    {this.monkeyState.render()}
                 </Grid>
             </form>
         );

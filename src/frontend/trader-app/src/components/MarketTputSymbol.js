@@ -85,8 +85,8 @@ class MarketTputSymbol extends React.Component {
                             <MenuItem value="ESTC">ESTC</MenuItem>
                         </Select>
                     </FormControl>
-                    <Button variant="contained" data-transaction-name="MarketTputSymbol" type="submit">Submit</Button>
-                    <Box width="100%"><Paper variant="outlined">{this.monkeyState.render()}</Paper></Box>
+                    <Box width="100%"><Button variant="contained" data-transaction-name="MarketTputSymbol" type="submit">Submit</Button></Box>
+                    {this.monkeyState.render()}
                 </Grid>
             </form>
         );

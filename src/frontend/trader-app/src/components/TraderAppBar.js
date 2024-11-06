@@ -13,9 +13,9 @@ import Savings from '@mui/icons-material/Savings';
 
 import { NavLink } from "react-router-dom";
 
-const pages = [{label: 'Trade', nav: '/'}, {label: 'Market', nav: '/market'}, {label: 'Error', nav: '/error'}, {label: 'Test', nav: '/test'}, {label: 'Train', nav: '/train'}];
+const pages = [{ label: 'Trade', nav: '/' }, { label: 'Market', nav: '/market' }, { label: 'Error', nav: '/error' }, { label: 'Test', nav: '/test' }, { label: 'Train', nav: '/train' }];
 
-function ResponsiveAppBar() {
+function TraderAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
 
   const handleOpenNavMenu = (event) => {
@@ -78,12 +78,12 @@ function ResponsiveAppBar() {
             >
               {pages.map((page) => (
                 <NavLink to={page.nav}><MenuItem key={page.label} onClick={handleCloseNavMenu}>
-                    <Typography sx={{ textAlign: 'center' }}>{page.label}</Typography>
-                  </MenuItem></NavLink>
+                  <Typography sx={{ textAlign: 'center' }}>{page.label}</Typography>
+                </MenuItem></NavLink>
               ))}
             </Menu>
           </Box>
-          
+
           <Savings sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
           <Typography
             variant="h5"
@@ -119,4 +119,4 @@ function ResponsiveAppBar() {
     </AppBar>
   );
 }
-export default ResponsiveAppBar;
+export default TraderAppBar;

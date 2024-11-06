@@ -109,8 +109,8 @@ class ErrorLatencyRegion extends React.Component {
                             <MenuItem value="hold">Hold</MenuItem>
                         </Select>
                     </FormControl>
-                    <Button variant="contained" data-transaction-name="ErrorLatencyRegion" type="submit">Submit</Button>
-                    <Box width="100%"><Paper variant="outlined">{this.monkeyState.render()}</Paper></Box>
+                    <Box width="100%"><Button variant="contained" data-transaction-name="ErrorLatencyRegion" type="submit">Submit</Button></Box>
+                    {this.monkeyState.render()}
                 </Grid>
             </form>
         );

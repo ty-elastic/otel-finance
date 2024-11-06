@@ -10,7 +10,7 @@ export default function Page(props) {
 
     const handleChange = (panel) => (event, newExpanded) => {
         setExpanded(newExpanded ? panel : false);
-      };
+    };
 
     function Element(section) {
         // Correct! JSX type can be a capitalized variable.
@@ -20,7 +20,6 @@ export default function Page(props) {
 
     return (
         <div>
-
             {props.sections.map((section) => (
                 <Accordion expanded={expanded === section.label} onChange={handleChange(section.label)}>
                     <AccordionSummary

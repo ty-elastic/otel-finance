@@ -5,7 +5,7 @@ import TradeForce from './TradeForce'
 import Page from './Page'
 
 const sections = [
-  { label: 'Request Trade', desc: 'Make a trade request', element: TradeRequest }, 
+  { label: 'Request Trade', desc: 'Make a trade request', element: TradeRequest },
   { label: 'Force Trade', desc: 'Force a trade ', element: TradeForce }
 ];
 

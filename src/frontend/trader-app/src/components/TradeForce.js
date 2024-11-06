@@ -12,6 +12,7 @@ import Button from '@mui/material/Button';
 import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
 
 class TradeForce extends React.Component {
     constructor(props) {
@@ -155,7 +156,7 @@ class TradeForce extends React.Component {
                         <MenuItem value="hold">Hold</MenuItem>
                         </Select>
                     </FormControl>
-                    <Button variant="contained" data-transaction-name="TradeForce" type="submit">Submit</Button>
+                    <Box width="100%"><Button variant="contained" data-transaction-name="TradeForce" type="submit">Submit</Button></Box>
                 </Grid>
             </form>
         );

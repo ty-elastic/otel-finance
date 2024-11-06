@@ -228,21 +228,14 @@ services:
         ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
         ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
     volumes:
-      - ./_frontend:/frontend
+      - ./src/frontend/trader-app/build:/build
 
   proxy:
     platform: "linux/amd64"
     build:
       context: ./src/proxy/
-      args:
-        ELASTIC_APM_SERVER_RUM_ENDPOINT: ${ELASTIC_APM_SERVER_RUM_ENDPOINT}
-        ELASTIC_APM_SERVER_RUM_CREDENTIALS: ${ELASTIC_APM_SERVER_RUM_CREDENTIALS}
-
-        KIBANA_URL: ${KIBANA_URL}
-        ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
-        ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
     volumes:
-      - ./_frontend:/usr/share/nginx/html
+      - ./src/frontend/trader-app/build:/usr/share/nginx/html
     ports:
       - '9394:80'
     environment:

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
+
 class MonkeyState {
     constructor(parent, key) {
         this.parent = parent;
@@ -24,6 +27,7 @@ class MonkeyState {
 
     render() {
         return (
+            <Box width="100%"><Paper variant="outlined">
             <div align="left">
                 {/* Render your component based on the data */}
                 {this.parent.state.data ? (
@@ -32,6 +36,7 @@ class MonkeyState {
                     <pre style={{ fontFamily: 'monospace' }}>loading...</pre>
                 )}
             </div>
+            </Paper></Box>
         );
     }
 }

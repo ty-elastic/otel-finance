@@ -5,7 +5,7 @@ import Error from './components/Error'
 import Test from './components/Test'
 import Train from './components/Train'
 
-import ResponsiveAppBar from './components/ResponsiveAppBar'
+import TraderAppBar from './components/TraderAppBar'
 
 import './App.css';
 import { v4 as uuidv4 } from 'uuid';
@@ -25,14 +25,14 @@ function App() {
   return (
     <HashRouter>
       <div className="App">
-        <ResponsiveAppBar></ResponsiveAppBar>
+        <TraderAppBar />
         <div className="content">
           <ApmRoutes>
-            <Route exact path="/" element={<Trade/>} />
-            <Route path="/market" element={<Market/>} />
-            <Route path="/error" element={<Error/>} />
-            <Route path="/test" element={<Test/>} />
-            <Route path="/train" element={<Train/>} />
+            <Route exact path="/" element={<Trade />} />
+            <Route path="/market" element={<Market />} />
+            <Route path="/error" element={<Error />} />
+            <Route path="/test" element={<Test />} />
+            <Route path="/train" element={<Train />} />
           </ApmRoutes>
         </div>
       </div>

@@ -41,4 +41,4 @@ COPY upload_source_map.sh build/
 RUN cd build && \
     ./upload_source_map.sh
 
-CMD cp -r /app/build/. /frontend/
+CMD rm -rf /build/* && cp -r /app/build/. /build/
