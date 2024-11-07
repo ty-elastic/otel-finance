@@ -12,13 +12,19 @@ function getRandomBoolean() {
 }
 
 function customRouter(req: any) {
-  if (req.query.canary === 'true')
-    return `http://${process.env.RECORDER_HOST_CANARY}:9003`;
+  if (req.query.service != null) {
+    console.log("FORCED ROUTING to" + req.query.service)
+    return `http://${req.query.service}:9003`;
+  }
   else {
-    if (getRandomBoolean())
-      return `http://${process.env.RECORDER_HOST_1}:9003`;
-    else
-      return `http://${process.env.RECORDER_HOST_2}:9003`;
+    if (req.query.canary === 'true')
+      return `http://${process.env.RECORDER_HOST_CANARY}:9003`;
+    else {
+      if (getRandomBoolean())
+        return `http://${process.env.RECORDER_HOST_1}:9003`;
+      else
+        return `http://${process.env.RECORDER_HOST_2}:9003`;
+    }
   }
 };
 

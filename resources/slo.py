@@ -14,7 +14,7 @@ def delete_slo(id):
                                     headers={"kbn-xsrf": "reporting", "Content-Type": "application/json"})
     print(res)
 
-def delete_all_slos():
+def delete_all():
     slos = requests.get(f"{os.environ['KIBANA_URL']}/api/observability/slos",
                                      timeout=TIMEOUT,
                                      auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']),

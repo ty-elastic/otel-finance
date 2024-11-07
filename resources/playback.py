@@ -7,10 +7,10 @@ import json
 import gzip
 import concurrent.futures
 import copy
-import sys
+from elasticsearch import Elasticsearch
 
 RECORDED_RESOURCES_PATH = 'recorded'
-HOURS_TO_PRELOAD = 6
+HOURS_TO_PRELOAD = 12
 
 MAX_RECORDS_PER_UPLOAD = 50
 MAX_MB_PER_UPLOAD = 4
@@ -18,6 +18,17 @@ UPLOAD_TIMEOUT = 5
 GROUPED_TIME_MINS = 30
 UPLOAD_THREADS = 4
 
+def delete_all():
+    with Elasticsearch(os.environ['ELASTICSEARCH_URL'], basic_auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD'])) as client:
+        resp = client.indices.get_data_stream(name="*apm*", expand_wildcards="all")
+        #print(resp)
+        for ds in resp['data_streams']:
+            print(f"deleting ds {ds['name']}")
+            resp = client.indices.delete_data_stream(name=ds['name'])
+            print(resp)
+        
+#delete_all()
+        
 def get_day_of_week(attributes):
     for attribute in attributes:
         if attribute['key'] == 'com.example.day_of_week':
@@ -130,7 +141,7 @@ def conform_resources(*, resources, trim_first_file_ts=0, trim_last_file_ts=None
                             metricType = 'histogram'
                         else:
                             print(f'unknown metric type: {scope_metric}')
-                            return None, None, None, None
+                            return None, None
 
                         new_datapoints = []
                         for datapoint in scope_metric[metricType]['dataPoints']:
@@ -327,6 +338,7 @@ def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None
             
       
 def load():
+
     trim_first_file_ts = None
     trim_last_file_ts = None
     

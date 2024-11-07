@@ -11,7 +11,6 @@ import context
 import assistant
 import playback
 
-
 app = Flask(__name__)
 #logging.basicConfig(level=logging.DEBUG)
 
@@ -28,18 +27,20 @@ def load_ml_anomaly():
 @app.post('/load/slo/<slo_name>')
 def load_slo(slo_name):
     #slo_name = request.args.get('slo_name', default=None, type=str)
-        
     slo.load(slo_name)
     return {'result': 'success'}
 
 def init():
-    print("loading initial assets...")
+    print("resetting initial assets...")
+    
+    slo.delete_all()
+    playback.delete_all()
+
     alias.load()
     assistant.load()
     context.load()
     kibana.load()
     
-
 def maintenance_loop():
     print("START maintenance_loop")
     aliases_created = False
@@ -49,6 +50,7 @@ def maintenance_loop():
         time.sleep(10)
 
 def loading():
+    time.sleep(5)
     print("START loading")
     try:
         playback.load()

@@ -16,3 +16,7 @@
 
 ## java
 * integrate profiling
+
+## instruqt
+
+* changepoint for market conditions change

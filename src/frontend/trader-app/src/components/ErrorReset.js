@@ -18,6 +18,7 @@ class ErrorReset extends React.Component {
         } catch (err) {
             console.log(err.message)
         }
+        window.location.reload();
     }
 
     render() {

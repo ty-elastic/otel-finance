@@ -13,7 +13,8 @@ COPY trader-app/package*.json ./
 # Install dependencies
 RUN npm install
 
-COPY trader-app/ .
+COPY trader-app/src src
+COPY trader-app/public public
 
 ENV SERVICE_VERSION=1.0.0
 ENV SERVICE_NAME=trader-app

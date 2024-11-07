@@ -12,12 +12,15 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 
 class ErrorModelRegion extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            err_model_region_amount: 0,
+            err_model_region_on: false,
             err_model_region: 'EU'
         };
 
@@ -41,10 +44,10 @@ class ErrorModelRegion extends React.Component {
         event.preventDefault();
 
         try {
-            if (this.state.err_model_region_amount === 0) {
+            if (this.state.canary_region_on === false) {
                 await axios.delete(`/monkey/err/model/region/${this.state.err_model_region}`);
             } else {
-                await axios.post(`/monkey/err/model/region/${this.state.err_model_region}/${this.state.err_model_region_amount}`);
+                await axios.post(`/monkey/err/model/region/${this.state.err_model_region}/100`);
             }
             this.monkeyState.fetchData();
         } catch (err) {
@@ -72,21 +75,14 @@ class ErrorModelRegion extends React.Component {
                             <MenuItem value="NA">NA</MenuItem>
                         </Select>
                     </FormControl>
-                    <Grid size={3}>
-                        <Typography gutterBottom>Amount (%)</Typography>
-                        <Slider onChange={this.handleInputChange}
-                            name="err_model_region_amount"
-                            aria-label="Amount (%)"
-                            getAriaValueText={() => this.state.err_model_region_amount}
-                            valueLabelDisplay="on"
-                            shiftStep={30}
-                            step={1}
-                            marks
-                            min={0}
-                            max={100}
-                            value={this.state.err_model_region_amount}
-                        />
-                    </Grid>
+                    <FormGroup>
+                        <FormControlLabel control={<Checkbox
+                            name='err_model_region_on'
+                            checked={this.state.err_model_region_on}
+                            onChange={this.handleInputChange}
+                            inputProps={{ 'aria-label': 'controlled' }}
+                        />} label="Enable Errors" />
+                    </FormGroup>
                     <Box width="100%"><Button variant="contained" data-transaction-name="ErrorModelRegion" type="submit">Submit</Button></Box>
                     {this.monkeyState.render()}
                 </Grid>
