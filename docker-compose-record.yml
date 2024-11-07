@@ -68,8 +68,9 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
       OTEL_SERVICE_NAME: "router"
 
-      RECORDER_HOST: "recorder-java"
-      RECORDER_HOST_CANARY: "recorder-go"
+      RECORDER_HOST_1: "recorder-java"
+      RECORDER_HOST_2: "recorder-go"
+      RECORDER_HOST_CANARY: "recorder-go-zero"
     depends_on:
       recorder-go:
         condition: service_healthy
@@ -84,15 +85,13 @@ services:
     restart: on-failure
     volumes:
       - ./logs:/logs
-    command: ["-logfile=/logs/recorder.log"]
+    command: ["-logfile=/logs/recorder-go.json"]
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9004/health || exit 1
+      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9003/health || exit 1
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 1m
-    ports:
-      - "9004:9004"
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_SERVICE_NAME: "recorder-go"
@@ -105,6 +104,8 @@ services:
         condition: service_healthy
       collector:
         condition: service_started
+      notifier:
+        condition: service_healthy
 
   recorder-java:
     build:
@@ -116,8 +117,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 1m
-    ports:
-      - "9003:9003"
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
@@ -129,6 +128,29 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
+      collector:
+        condition: service_started
+      notifier:
+        condition: service_healthy
+
+  notifier:
+    platform: "linux/amd64"
+    build:
+      context: ./src/notifier
+    healthcheck:
+      test: curl --fail http://127.0.0.1:5000/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
+    restart: on-failure
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4318"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      OTEL_SERVICE_NAME: "notifier"
+      OTEL_DOTNET_AUTO_TRACES_ADDITIONAL_SOURCES: "Notifier"
+      OTEL_DOTNET_AUTO_METRICS_ADDITIONAL_SOURCES: "Notifier"
+    depends_on:
       collector:
         condition: service_started
 
@@ -148,7 +170,6 @@ services:
       retries : 5
 
   collector:
-    platform: "linux/amd64"
     image: docker.elastic.co/beats/elastic-agent:8.15.3
     restart: on-failure
     healthcheck:
@@ -160,14 +181,18 @@ services:
     ports:
       - "4317:4317"
     volumes:
-      - ./src/collector/collector_recorder.yml:/collector.yml
+      - ./src/collector/collector-recorder.yml:/collector.yml
       - ./logs:/logs
       - ./resources/recorded:/recorded
       - /:/hostfs
     entrypoint: "/usr/share/elastic-agent/elastic-agent"
     command: ["otel", "-c", "/collector.yml"]
     environment:
+      ELASTIC_AGENT_OTEL: "true"
       ELASTIC_APM_SERVER_ENDPOINT: ${ELASTIC_APM_SERVER_ENDPOINT}
       ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
       ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
       ELASTICSEARCH_APIKEY: ${ELASTICSEARCH_APIKEY}
+    privileged: true
+    pid: "host"
+    user: root

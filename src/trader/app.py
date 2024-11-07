@@ -91,7 +91,7 @@ def decode_common_args():
     error_model = request.args.get('error_model', default=False, type=conform_request_bool)
     error_db = request.args.get('error_db', default=False, type=conform_request_bool)
     error_db_service = request.args.get('error_db_service', default=None, type=str)
-    
+
     skew_market_factor = request.args.get('skew_market_factor', default=0, type=int)
 
     canary = request.args.get('canary', default="false", type=str)
@@ -121,8 +121,8 @@ def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, ca
     
     params={'canary': canary, 'customer_id': customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action}
     if error_db is True:
-        share_price = -share_price
-        shares = -shares
+        params['share_price'] = -share_price
+        params['shares'] = -shares
         if error_db_service is not None:
             params['service'] = error_db_service
         
@@ -155,7 +155,7 @@ def trade_request():
     action, shares, share_price = run_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 
                                                    error=error_model, latency_amount=latency_amount, latency_action=latency_action, skew_market_factor=skew_market_factor)
 
-    return trade (trade_id=trade_id, symbol=symbol, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, canary=canary, action=action, error_db=error_db)
+    return trade (trade_id=trade_id, symbol=symbol, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, canary=canary, action=action, error_db=error_db, error_db_service=error_db_service)
 
 @tracer.start_as_current_span("run_model")
 def run_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency_amount=0.0, latency_action=None, skew_market_factor=0):
