@@ -159,6 +159,9 @@ def conform_resources(*, resources, trim_first_file_ts=0, trim_last_file_ts=None
                             if (found1 and add_metric1 and found2 and add_metric2) or (not found1 and add_metric2) or (not found2 and add_metric1):
                                 new_datapoints.append(datapoint)
                                 add_resource_metric = True
+                            else:
+                                if scope_metric['name'] == 'trading_revenue':
+                                    print(f"SKIPPING IMP, {found1}, {add_metric1}, {found2}, {add_metric2}")
                         scope_metric[metricType]['dataPoints'] = new_datapoints
                 if add_resource_metric:
                     out_data['resourceMetrics'].append(metric)

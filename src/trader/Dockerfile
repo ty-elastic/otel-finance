@@ -20,5 +20,7 @@ RUN opentelemetry-bootstrap -a install
 ENV ROUTER_HOST="router"
 ENV PYTHONUNBUFFERED=1
 
+ENV OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE="delta"
+
 EXPOSE 9001
 CMD [ "opentelemetry-instrument", "--logs_exporter", "otlp", "flask", "run", "--host=0.0.0.0", "-p", "9001" ]

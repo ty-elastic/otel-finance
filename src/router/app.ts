@@ -13,7 +13,6 @@ function getRandomBoolean() {
 
 function customRouter(req: any) {
   if (req.query.service != null) {
-    console.log("FORCED ROUTING to" + req.query.service)
     return `http://${req.query.service}:9003`;
   }
   else {
