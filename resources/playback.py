@@ -404,4 +404,4 @@ def load(to_file=False):
                         trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_hours=HOURS_TO_PRELOAD)
 
     print('done')
-load(to_file=True)
+#load(to_file=True)
