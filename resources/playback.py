@@ -306,7 +306,7 @@ def save_trimmed_file(file, output_path, trim_first_file_ts=None, trim_last_file
         
         return trim_first_file_ts, trim_last_file_ts
 
-def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None, trim_last_file_ts=None, align_to_days=False):
+def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None, trim_last_file_ts=None):
     start = time.time()
     
     with open(file, encoding='utf-8') as f:
@@ -314,7 +314,7 @@ def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None
         resources_file = ndjson.load(f)
         
         if trim_first_file_ts is None or trim_last_file_ts is None:
-            trim_first_file_ts, trim_last_file_ts = find_trim_points(resources=resources_file, align_to_week=align_to_days)
+            trim_first_file_ts, trim_last_file_ts = find_trim_points(resources=resources_file)
             print(f"found trim points for {file}, {trim_first_file_ts}, {trim_last_file_ts}")
  
         print(f"conforming")
@@ -390,7 +390,7 @@ def load(to_file=False):
                     trim_first_file_ts, trim_last_file_ts = save_trimmed_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), output_path=os.path.join(RECORDED_RESOURCES_PATH, "trimmed"), align_to_days=True)
                 else:
                     trim_first_file_ts, trim_last_file_ts = load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM'], 
-                        backfill_hours=HOURS_TO_PRELOAD, align_to_days=True)
+                        backfill_hours=HOURS_TO_PRELOAD)
                 print(f"trim_first_file_ts={trim_first_file_ts}, trim_last_file_ts={trim_last_file_ts}")
 
     if os.path.exists(os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch")):
@@ -404,4 +404,4 @@ def load(to_file=False):
                         trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_hours=HOURS_TO_PRELOAD)
 
     print('done')
-#load(to_file=True)
+load(to_file=False)
