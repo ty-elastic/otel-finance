@@ -8,6 +8,7 @@ import gzip
 import concurrent.futures
 import copy
 from elasticsearch import Elasticsearch
+from pathlib import Path
 
 RECORDED_RESOURCES_PATH = 'recorded'
 HOURS_TO_PRELOAD = 12
@@ -39,10 +40,10 @@ def overwrite_datasource(attributes):
         if attribute['key'] == 'com.example.data_source':
             attribute['value'] = {'stringValue': 'playback'}
 
-def check_ts_for_key(parent, key, first_file_ts, last_file_ts):
+def check_ts_for_key(parent, key, first_file_ts, last_file_ts, align_to_week=False):
     if key in parent:
         file_ts = int(parent[key])
-        if first_file_ts is None or file_ts < first_file_ts:
+        if first_file_ts is None or (align_to_week is False and file_ts < first_file_ts):
             first_file_ts = file_ts
         if last_file_ts is None or file_ts > last_file_ts:
             last_file_ts = file_ts
@@ -76,10 +77,12 @@ def find_trim_points(*, resources, align_to_week=False):
                             
                         first_file_ts, last_file_ts = check_ts_for_key(parent=scope_span, key='startTimeUnixNano',
                                                                                first_file_ts=first_file_ts, 
-                                                                                last_file_ts=last_file_ts)
+                                                                                last_file_ts=last_file_ts,
+                                                                                align_to_week=align_to_week)
                         first_file_ts, last_file_ts = check_ts_for_key(parent=scope_span, key='endTimeUnixNano',
                                                                                first_file_ts=first_file_ts, 
-                                                                                last_file_ts=last_file_ts)
+                                                                                last_file_ts=last_file_ts,
+                                                                                align_to_week=align_to_week)
 
     if rewind_last_file_ts is not None:
         return first_file_ts, rewind_last_file_ts
@@ -159,9 +162,6 @@ def conform_resources(*, resources, trim_first_file_ts=0, trim_last_file_ts=None
                             if (found1 and add_metric1 and found2 and add_metric2) or (not found1 and add_metric2) or (not found2 and add_metric1):
                                 new_datapoints.append(datapoint)
                                 add_resource_metric = True
-                            else:
-                                if scope_metric['name'] == 'trading_revenue':
-                                    print(f"SKIPPING IMP, {found1}, {add_metric1}, {found2}, {add_metric2}")
                         scope_metric[metricType]['dataPoints'] = new_datapoints
                 if add_resource_metric:
                     out_data['resourceMetrics'].append(metric)
@@ -269,6 +269,43 @@ def upload(executor, collector_url, signal, resources):
         executor.submit(upload_payload, collector_url, signal, payload_type, resources[i:i + max_records_per_upload])
         i += max_records_per_upload
 
+def save_trimmed_file(file, output_path, trim_first_file_ts=None, trim_last_file_ts=None, align_to_days=False):
+    with open(file, encoding='utf-8') as f:
+        print(f"read {file}")
+        resources_file = ndjson.load(f)
+        
+        filename = Path(file).stem
+        
+        if trim_first_file_ts is None or trim_last_file_ts is None:
+            trim_first_file_ts, trim_last_file_ts = find_trim_points(resources=resources_file, align_to_week=align_to_days)
+            print(f"found trim points for {file}, {trim_first_file_ts}, {trim_last_file_ts}")
+ 
+        print(f"conforming for file output")
+        _, trimmed_resources = conform_resources(resources=resources_file, 
+                                                 trim_first_file_ts=trim_first_file_ts, 
+                                                 trim_last_file_ts=trim_last_file_ts)
+        
+        #print(trimmed_resources)
+        with open(os.path.join(output_path, f"{filename}-metrics.json"), 'w') as f:
+            for resource in trimmed_resources['resourceMetrics']:
+                w = {'resourceMetrics': [resource]}
+                json.dump(w, f)
+                f.write('\r\n')
+            
+        with open(os.path.join(output_path, f"{filename}-traces.json"), 'w') as f:
+            for resource in trimmed_resources['resourceSpans']:
+                w = {'resourceSpans': [resource]}
+                json.dump(w, f)
+                f.write('\r\n')
+            
+        with open(os.path.join(output_path, f"{filename}-logs.json"), 'w') as f:
+            for resource in trimmed_resources['resourceLogs']:
+                w = {'resourceLogs': [resource]}
+                json.dump(w, f)
+                f.write('\r\n')
+        
+        return trim_first_file_ts, trim_last_file_ts
+
 def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None, trim_last_file_ts=None, align_to_days=False):
     start = time.time()
     
@@ -340,7 +377,7 @@ def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None
         return trim_first_file_ts, trim_last_file_ts
             
       
-def load():
+def load(to_file=False):
 
     trim_first_file_ts = None
     trim_last_file_ts = None
@@ -349,7 +386,10 @@ def load():
         for file in os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "apm")):
             if file.endswith(".json"):
                 print(f"loading {file}")
-                trim_first_file_ts, trim_last_file_ts = load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM'], 
+                if to_file:
+                    trim_first_file_ts, trim_last_file_ts = save_trimmed_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), output_path=os.path.join(RECORDED_RESOURCES_PATH, "trimmed"), align_to_days=True)
+                else:
+                    trim_first_file_ts, trim_last_file_ts = load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM'], 
                         backfill_hours=HOURS_TO_PRELOAD, align_to_days=True)
                 print(f"trim_first_file_ts={trim_first_file_ts}, trim_last_file_ts={trim_last_file_ts}")
 
@@ -357,8 +397,11 @@ def load():
         for file in os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch")):
             if file.endswith(".json"):
                 print(f"loading {file}")
-                load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH'], 
+                if to_file:
+                    save_trimmed_file(file=os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch", file), output_path=os.path.join(RECORDED_RESOURCES_PATH, "trimmed"), trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts)
+                else:
+                    load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH'], 
                         trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_hours=HOURS_TO_PRELOAD)
 
     print('done')
-#load()
+load(to_file=True)

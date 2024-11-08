@@ -181,7 +181,7 @@ services:
     ports:
       - "4317:4317"
     volumes:
-      - ./src/collector/collector-recorder.yml:/collector.yml
+      - ./src/collector/collector_recorder.yml:/collector.yml
       - ./logs:/logs
       - ./resources/recorded:/recorded
       - /:/hostfs
