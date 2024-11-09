@@ -42,24 +42,27 @@ def init_otel():
     metrics_provider = MeterProvider(metric_readers=[PeriodicExportingMetricReader(OTLPMetricExporter(), export_interval_millis=5000)])  # Export every 5 seconds
     metrics.set_meter_provider(metrics_provider)
     meter = metrics_provider.get_meter("trader")
-    trading_revenue = meter.create_counter("trading_revenue", "units")
-    trading_volume = meter.create_counter("trading_volume", "shares")
-    return tracer, trading_revenue, trading_volume
+    trading_revenue = meter.create_counter("trading_revenue", "dollars")
+    return tracer, trading_revenue
 
-tracer, trading_revenue, trading_volume = init_otel()
+tracer, trading_revenue = init_otel()
 
 def conform_request_bool(value):
     return value.lower() == 'true'
 
 @app.before_request
 def hook():
+    # set the root span in otel context so we can reference it later from same-process child spans
     context.attach(context.set_value('root', trace.get_current_span()))
 
 def set_attribute_and_baggage(key, value):
+    # get the root span and set the attribute there, if possible
     root_span = context.get_value('root')
     if root_span is not None and root_span != trace.get_current_span():
         root_span.set_attribute(key, value)
+    # always set it on the current span
     trace.get_current_span().set_attribute(key, value)
+    # and attach it to baggage
     context.attach(baggage.set_baggage(key, value))
 
 @app.route('/health')
@@ -112,7 +115,7 @@ def decode_common_args():
     return trade_id, customer_id, day_of_week, region, symbol, latency_amount, latency_action, error_model, error_db, error_db_service, skew_market_factor, canary, data_source, classification
 
 @tracer.start_as_current_span("trade")
-def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, canary, action, error_db, error_db_service=None):
+def trade(*, region, trade_id, customer_id, symbol, day_of_week, shares, share_price, canary, action, error_db, error_db_service=None):
     current_span = trace.get_current_span()
     
     app.logger.info(f"trade requested for {symbol} on day {day_of_week}")
@@ -122,8 +125,7 @@ def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, ca
     current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.share_price", share_price)
     if action == 'buy' or action == 'sell':
         current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.value", shares * share_price)
-        trading_revenue.add(math.ceil(share_price * shares * .001))
-        trading_volume.add(shares)
+        trading_revenue.add(math.ceil(share_price * shares * .001), attributes={"cloud.region": region} )
     else:
         current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.value", 0)
 
@@ -158,7 +160,7 @@ def trade_force():
     shares = request.args.get('shares', type=int)
     share_price = request.args.get('share_price', type=float)
 
-    return trade (trade_id=trade_id, symbol=symbol, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, canary=canary, action=action, error_db=False)
+    return trade (region=region, trade_id=trade_id, symbol=symbol, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, canary=canary, action=action, error_db=False)
 
 @app.post('/trade/request')
 def trade_request():
@@ -167,7 +169,7 @@ def trade_request():
     action, shares, share_price = run_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 
                                                    error=error_model, latency_amount=latency_amount, latency_action=latency_action, skew_market_factor=skew_market_factor)
 
-    return trade (trade_id=trade_id, symbol=symbol, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, canary=canary, action=action, error_db=error_db, error_db_service=error_db_service)
+    return trade (region=region, trade_id=trade_id, symbol=symbol, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, canary=canary, action=action, error_db=error_db, error_db_service=error_db_service)
 
 @tracer.start_as_current_span("run_model")
 def run_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency_amount=0.0, latency_action=None, skew_market_factor=0):

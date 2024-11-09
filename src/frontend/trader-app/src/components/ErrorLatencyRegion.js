@@ -80,7 +80,7 @@ class ErrorLatencyRegion extends React.Component {
                         </Select>
                     </FormControl>
                     <Grid size={3}>
-                        <Typography gutterBottom>Amount (%)</Typography>
+                        <Typography gutterBottom>Amount (ms)</Typography>
                         <Slider onChange={this.handleInputChange}
                             name="latency_region_amount"
                             aria-label="Amount (ms)"
