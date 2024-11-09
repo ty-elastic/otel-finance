@@ -1,0 +1,7 @@
+{
+    "text": "For ES|QL (Elasticsearch Query Language), use the '*' character for wildcards, not '%'.",
+    "is_correction": false,
+    "public": true,
+    "confidence": "high",
+    "doc_id": "ES|QL"
+}
