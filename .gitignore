@@ -14,3 +14,5 @@ node_modules
 _lib
 otel-workshop-trading-instruqt
 _frontend
+obj
+*.sln
