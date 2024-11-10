@@ -5,7 +5,7 @@ While this workshop has been designed to work inside on the Instruqt execution e
 ## Requirements
 
 ### Execution
-* working, modern docker compose stack
+* working, modern docker compose stack on modern Linux, Windows, or Mac (x86 or ARM)
 
 ### Elasticsearch
 * >=8.15.3
