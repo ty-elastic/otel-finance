@@ -16,7 +16,7 @@ class ErrorLocal extends React.Component {
     render() {
         return (
             <Grid container spacing={2}>
-                <Box width="100%"><Button variant="contained" data-transaction-name="ErrorLocal" type="submit">Submit</Button></Box>
+                <Box width="100%"><Button variant="contained" data-transaction-name="ErrorLocal" onClick={this.handleBrowserException} type="submit">Submit</Button></Box>
             </Grid>
         );
     }
