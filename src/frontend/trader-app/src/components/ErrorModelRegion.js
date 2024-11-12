@@ -81,7 +81,7 @@ class ErrorModelRegion extends React.Component {
                             checked={this.state.err_model_region_on}
                             onChange={this.handleInputChange}
                             inputProps={{ 'aria-label': 'controlled' }}
-                        />} label="Enable Errors" />
+                        />} label="Enable errors" />
                     </FormGroup>
                     <Box width="100%"><Button variant="contained" data-transaction-name="ErrorModelRegion" type="submit">Submit</Button></Box>
                     {this.monkeyState.render()}

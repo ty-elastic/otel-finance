@@ -17,7 +17,7 @@ class ErrorLatencyRegion extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            latency_region_amount: 0,
+            latency_region_on: false,
             latency_region: 'NA',
             latency_action: 'any'
         };
@@ -42,10 +42,10 @@ class ErrorLatencyRegion extends React.Component {
         event.preventDefault();
 
         try {
-            if (this.state.latency_region_amount === 0) {
+            if (this.state.latency_region_on === false) {
                 await axios.delete(`/monkey/latency/region/${this.state.latency_region}`);
             } else {
-                await axios.post(`/monkey/latency/region/${this.state.latency_region}/${this.state.latency_region_amount}`,
+                await axios.post(`/monkey/latency/region/${this.state.latency_region}/800`,
                     null,
                     {
                         params: {
@@ -79,21 +79,14 @@ class ErrorLatencyRegion extends React.Component {
                             <MenuItem value="NA">NA</MenuItem>
                         </Select>
                     </FormControl>
-                    <Grid size={3}>
-                        <Typography gutterBottom>Amount (ms)</Typography>
-                        <Slider onChange={this.handleInputChange}
-                            name="latency_region_amount"
-                            aria-label="Amount (ms)"
-                            getAriaValueText={() => this.state.latency_region_amount}
-                            valueLabelDisplay="on"
-                            shiftStep={30}
-                            step={1}
-                            marks
-                            min={0}
-                            max={1000}
-                            value={this.state.latency_region_amount}
-                        />
-                    </Grid>
+                    <FormGroup>
+                        <FormControlLabel control={<Checkbox
+                            name='latency_region_on'
+                            checked={this.state.latency_region_on}
+                            onChange={this.handleInputChange}
+                            inputProps={{ 'aria-label': 'controlled' }}
+                        />} label="Enable errors" />
+                    </FormGroup>
                     <FormControl>
                         <InputLabel id="label_action">Action</InputLabel>
                         <Select
