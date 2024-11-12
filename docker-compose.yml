@@ -7,7 +7,7 @@ services:
     ports:
       - "9010:9010"
     environment:
-      BACKLOAD_DATA: "true"
+      BACKLOAD_DATA: "false"
       SOLVE_ALL: "false"
       KIBANA_URL: ${KIBANA_URL}
       ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
