@@ -87,9 +87,9 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
       OTEL_SERVICE_NAME: "router"
 
-      RECORDER_HOST_1: "recorder-java"
-      RECORDER_HOST_2: "recorder-go"
-      RECORDER_HOST_CANARY: "recorder-go-zero"
+      RECORDER_HOST: "recorder-java"
+      RECORDER_HOST_CANARY_1: "recorder-go"
+      RECORDER_HOST_CANARY_2: "recorder-go-zero"
     depends_on:
       recorder-go:
         condition: service_healthy
