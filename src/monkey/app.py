@@ -5,6 +5,7 @@ import random
 import time
 import os
 from threading import Thread
+import concurrent.futures
 
 from opentelemetry import trace, baggage, context
 from opentelemetry.metrics import get_meter
@@ -27,11 +28,12 @@ if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
 TRADE_TIMEOUT = 5
 S_PER_DAY = 60
 TRAINING_TRADE_COUNT = 1000
-HIGH_TPUT_PCT = 90
+HIGH_TPUT_PCT = 100
 LATENCY_SWING_MS = 10
-HIGH_TPUT_SLEEP_MS = [2,3]
+HIGH_TPUT_SLEEP_MS = [1,1]
 NORMAL_TPUT_SLEEP_MS = [200,300]
-ERROR_TIMEOUT_S = 20
+ERROR_TIMEOUT_S = 30
+CONCURRENT_TRADE_REQUESTS = 8
 
 DAYS_OF_WEEK = ['M','Tu', 'W', 'Th', 'F']
 ACTIONS = ['buy', 'sell', 'hold']
@@ -76,89 +78,92 @@ def generate_trade_requests():
     next_customer = None
     next_symbol = None
     
-    while True:
-        now = time.time()
-        if now - day_start >= S_PER_DAY:
-            idx_of_week = (idx_of_week + 1) % len(DAYS_OF_WEEK)
-            print(f"advance to {DAYS_OF_WEEK[idx_of_week]}")
-            day_start = now
+    with concurrent.futures.ThreadPoolExecutor(max_workers=CONCURRENT_TRADE_REQUESTS) as executor:
+        while True:
+            now = time.time()
+            if now - day_start >= S_PER_DAY:
+                idx_of_week = (idx_of_week + 1) % len(DAYS_OF_WEEK)
+                print(f"advance to {DAYS_OF_WEEK[idx_of_week]}")
+                day_start = now
 
-        sleep = float(random.randint(NORMAL_TPUT_SLEEP_MS[0], NORMAL_TPUT_SLEEP_MS[1]) / 1000)
-        
-        region = next_region if next_region is not None else random.choice(regions)
-        symbol = next_symbol if next_symbol is not None else random.choice(symbols)
-        customer_id = next_customer if next_customer is not None else random.choice(customers)
+            sleep = float(random.randint(NORMAL_TPUT_SLEEP_MS[0], NORMAL_TPUT_SLEEP_MS[1]) / 1000)
+            
+            region = next_region if next_region is not None else random.choice(regions)
+            symbol = next_symbol if next_symbol is not None else random.choice(symbols)
+            customer_id = next_customer if next_customer is not None else random.choice(customers)
 
-        if region in latency_per_action_per_region:
-            latency_amount = random.randint(latency_per_action_per_region[region]['amount']-LATENCY_SWING_MS, latency_per_action_per_region[region]['amount']+LATENCY_SWING_MS) / 1000.0
-            latency_action = latency_per_action_per_region[region]['action']
-            if time.time() - latency_per_action_per_region[region]['start'] >= ERROR_TIMEOUT_S:
-                app.logger.info(f"latency_per_action_per_region timeout")
-                latency_region_delete(region)
-        else:
-            latency_amount = 0
-            latency_action = None
-
-        if region in model_error_per_region:
-            error_model = "true" if random.randint(0, 100) > (100-model_error_per_region[region]['amount']) else "false"
-            if time.time() - model_error_per_region[region]['start'] >= ERROR_TIMEOUT_S:
-                app.logger.info(f"db_error_per_region timeout")
-                err_model_region_delete(region)
-        else:
-            error_model = "false"
-
-        if region in db_error_per_region:
-            error_db = "true" if random.randint(0, 100) > (100-db_error_per_region[region]['amount']) else "false"
-            if 'service' in db_error_per_region[region]:
-                error_db_service = db_error_per_region[region]['service']
+            if region in latency_per_action_per_region:
+                latency_amount = random.randint(latency_per_action_per_region[region]['amount']-LATENCY_SWING_MS, latency_per_action_per_region[region]['amount']+LATENCY_SWING_MS) / 1000.0
+                latency_action = latency_per_action_per_region[region]['action']
+                if time.time() - latency_per_action_per_region[region]['start'] >= ERROR_TIMEOUT_S:
+                    app.logger.info(f"latency_per_action_per_region timeout")
+                    latency_region_delete(region)
             else:
+                latency_amount = 0
+                latency_action = None
+
+            if region in model_error_per_region:
+                error_model = "true" if random.randint(0, 100) > (100-model_error_per_region[region]['amount']) else "false"
+                if time.time() - model_error_per_region[region]['start'] >= ERROR_TIMEOUT_S:
+                    app.logger.info(f"db_error_per_region timeout")
+                    err_model_region_delete(region)
+            else:
+                error_model = "false"
+
+            if region in db_error_per_region:
+                error_db = "true" if random.randint(0, 100) > (100-db_error_per_region[region]['amount']) else "false"
+                if 'service' in db_error_per_region[region]:
+                    error_db_service = db_error_per_region[region]['service']
+                else:
+                    error_db_service = None
+                if time.time() - db_error_per_region[region]['start'] >= ERROR_TIMEOUT_S:
+                    app.logger.info(f"db_error_per_region timeout")
+                    err_db_region_delete(region)
+            else:
+                error_db = "false"
                 error_db_service = None
-            if time.time() - db_error_per_region[region]['start'] >= ERROR_TIMEOUT_S:
-                app.logger.info(f"db_error_per_region timeout")
-                err_db_region_delete(region)
-        else:
-            error_db = "false"
-            error_db_service = None
 
-        if symbol in skew_market_factor_per_symbol:
-            skew_market_factor = skew_market_factor_per_symbol[symbol]
-        else:
-            skew_market_factor = 0
+            if symbol in skew_market_factor_per_symbol:
+                skew_market_factor = skew_market_factor_per_symbol[symbol]
+            else:
+                skew_market_factor = 0
 
-        if region in canary_per_region:
-            canary = "true"
-        else:
-            canary = "false"
+            if region in canary_per_region:
+                canary = "true"
+            else:
+                canary = "false"
 
-        print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region} with latency {latency_amount}, error_model={error_model}, error_db={error_db}, skew_market_factor={skew_market_factor}, canary={canary}")
+            print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region} with latency {latency_amount}, error_model={error_model}, error_db={error_db}, skew_market_factor={skew_market_factor}, canary={canary}")
 
-        generate_trade_request(customer_id=customer_id, symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week], region=region,
-                    latency_amount=latency_amount, latency_action=latency_action, 
-                    error_model=error_model, 
-                    error_db=error_db, error_db_service=error_db_service,
-                    skew_market_factor=skew_market_factor, canary=canary,
-                    data_source='monkey')
-        
-        if len(high_tput_per_region.keys()) > 0:
-            next_high_tput_region = random.choice(list(high_tput_per_region.keys()))
-            next_region = next_high_tput_region if random.randint(0, 100) > (100-high_tput_per_region[next_high_tput_region]) else None
-            if next_region is not None:
-                sleep = float(random.randint(HIGH_TPUT_SLEEP_MS[0], HIGH_TPUT_SLEEP_MS[1]) / 1000)
-        
-        if len(high_tput_per_customer.keys()) > 0:
-            next_high_tput_customer = random.choice(list(high_tput_per_customer.keys()))
-            next_customer = next_high_tput_customer if random.randint(0, 100) > (100-high_tput_per_customer[next_high_tput_customer]) else None
-            if next_customer is not None:
-                sleep = float(random.randint(HIGH_TPUT_SLEEP_MS[0], HIGH_TPUT_SLEEP_MS[1]) / 1000)
+            executor.submit(generate_trade_request, customer_id=customer_id, symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week], region=region,
+                        latency_amount=latency_amount, latency_action=latency_action, 
+                        error_model=error_model, 
+                        error_db=error_db, error_db_service=error_db_service,
+                        skew_market_factor=skew_market_factor, canary=canary,
+                        data_source='monkey')
 
-        if len(high_tput_per_symbol.keys()) > 0:
-            next_high_tput_symbol = random.choice(list(high_tput_per_symbol.keys()))
-            next_symbol = next_high_tput_symbol if random.randint(0, 100) > (100-high_tput_per_symbol[next_high_tput_symbol]) else None
-            if next_symbol is not None:
-                sleep = float(random.randint(HIGH_TPUT_SLEEP_MS[0], HIGH_TPUT_SLEEP_MS[1]) / 1000)
+            next_region = None
+            if len(high_tput_per_region.keys()) > 0:
+                next_high_tput_region = random.choice(list(high_tput_per_region.keys()))
+                next_region = next_high_tput_region if random.randint(0, 100) > (100-high_tput_per_region[next_high_tput_region]) else None
+                if next_region is not None:
+                    sleep = float(random.randint(HIGH_TPUT_SLEEP_MS[0], HIGH_TPUT_SLEEP_MS[1]) / 1000)
+            
+            next_customer = None
+            if len(high_tput_per_customer.keys()) > 0:
+                next_high_tput_customer = random.choice(list(high_tput_per_customer.keys()))
+                next_customer = next_high_tput_customer if random.randint(0, 100) > (100-high_tput_per_customer[next_high_tput_customer]) else None
+                if next_customer is not None:
+                    sleep = float(random.randint(HIGH_TPUT_SLEEP_MS[0], HIGH_TPUT_SLEEP_MS[1]) / 1000)
 
-        print(sleep)
-        time.sleep(sleep)
+            next_symbol = None
+            if len(high_tput_per_symbol.keys()) > 0:
+                next_high_tput_symbol = random.choice(list(high_tput_per_symbol.keys()))
+                next_symbol = next_high_tput_symbol if random.randint(0, 100) > (100-high_tput_per_symbol[next_high_tput_symbol]) else None
+                if next_symbol is not None:
+                    sleep = float(random.randint(HIGH_TPUT_SLEEP_MS[0], HIGH_TPUT_SLEEP_MS[1]) / 1000)
+
+            time.sleep(sleep)
 
 @app.route('/health')
 def health():
