@@ -27,8 +27,11 @@ if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
 TRADE_TIMEOUT = 5
 S_PER_DAY = 60
 TRAINING_TRADE_COUNT = 1000
-HIGH_TPUT = 80
-LATENCY_SWING_MS = 20
+HIGH_TPUT_PCT = 90
+LATENCY_SWING_MS = 10
+HIGH_TPUT_SLEEP_MS = [2,3]
+NORMAL_TPUT_SLEEP_MS = [200,300]
+ERROR_TIMEOUT_S = 20
 
 DAYS_OF_WEEK = ['M','Tu', 'W', 'Th', 'F']
 ACTIONS = ['buy', 'sell', 'hold']
@@ -80,7 +83,7 @@ def generate_trade_requests():
             print(f"advance to {DAYS_OF_WEEK[idx_of_week]}")
             day_start = now
 
-        sleep = float(random.randint(1, 1000) / 1000)
+        sleep = float(random.randint(NORMAL_TPUT_SLEEP_MS[0], NORMAL_TPUT_SLEEP_MS[1]) / 1000)
         
         region = next_region if next_region is not None else random.choice(regions)
         symbol = next_symbol if next_symbol is not None else random.choice(symbols)
@@ -89,12 +92,18 @@ def generate_trade_requests():
         if region in latency_per_action_per_region:
             latency_amount = random.randint(latency_per_action_per_region[region]['amount']-LATENCY_SWING_MS, latency_per_action_per_region[region]['amount']+LATENCY_SWING_MS) / 1000.0
             latency_action = latency_per_action_per_region[region]['action']
+            if time.time() - latency_per_action_per_region[region]['start'] >= ERROR_TIMEOUT_S:
+                app.logger.info(f"latency_per_action_per_region timeout")
+                latency_region_delete(region)
         else:
             latency_amount = 0
             latency_action = None
 
         if region in model_error_per_region:
-            error_model = "true" if random.randint(0, 100) > (100-model_error_per_region[region]) else "false"
+            error_model = "true" if random.randint(0, 100) > (100-model_error_per_region[region]['amount']) else "false"
+            if time.time() - model_error_per_region[region]['start'] >= ERROR_TIMEOUT_S:
+                app.logger.info(f"db_error_per_region timeout")
+                err_model_region_delete(region)
         else:
             error_model = "false"
 
@@ -104,6 +113,9 @@ def generate_trade_requests():
                 error_db_service = db_error_per_region[region]['service']
             else:
                 error_db_service = None
+            if time.time() - db_error_per_region[region]['start'] >= ERROR_TIMEOUT_S:
+                app.logger.info(f"db_error_per_region timeout")
+                err_db_region_delete(region)
         else:
             error_db = "false"
             error_db_service = None
@@ -131,20 +143,21 @@ def generate_trade_requests():
             next_high_tput_region = random.choice(list(high_tput_per_region.keys()))
             next_region = next_high_tput_region if random.randint(0, 100) > (100-high_tput_per_region[next_high_tput_region]) else None
             if next_region is not None:
-                sleep = float(random.randint(1, 4) / 1000)
+                sleep = float(random.randint(HIGH_TPUT_SLEEP_MS[0], HIGH_TPUT_SLEEP_MS[1]) / 1000)
         
         if len(high_tput_per_customer.keys()) > 0:
             next_high_tput_customer = random.choice(list(high_tput_per_customer.keys()))
             next_customer = next_high_tput_customer if random.randint(0, 100) > (100-high_tput_per_customer[next_high_tput_customer]) else None
             if next_customer is not None:
-                sleep = float(random.randint(1, 4) / 1000)
+                sleep = float(random.randint(HIGH_TPUT_SLEEP_MS[0], HIGH_TPUT_SLEEP_MS[1]) / 1000)
 
         if len(high_tput_per_symbol.keys()) > 0:
             next_high_tput_symbol = random.choice(list(high_tput_per_symbol.keys()))
             next_symbol = next_high_tput_symbol if random.randint(0, 100) > (100-high_tput_per_symbol[next_high_tput_symbol]) else None
             if next_symbol is not None:
-                sleep = float(random.randint(1, 4) / 1000)
+                sleep = float(random.randint(HIGH_TPUT_SLEEP_MS[0], HIGH_TPUT_SLEEP_MS[1]) / 1000)
 
+        print(sleep)
         time.sleep(sleep)
 
 @app.route('/health')
@@ -210,7 +223,7 @@ def get_state():
 @app.post('/tput/region/<region>/<speed>')
 def tput_region(region, speed):
     global high_tput_per_region
-    high_tput_per_region[region] = HIGH_TPUT
+    high_tput_per_region[region] = HIGH_TPUT_PCT
     return high_tput_per_region
 @app.delete('/tput/region/<region>')
 def tput_region_delete(region):
@@ -221,7 +234,7 @@ def tput_region_delete(region):
 @app.post('/tput/customer/<customer>/<speed>')
 def tput_customer(customer, speed):
     global high_tput_per_customer
-    high_tput_per_customer[customer] = HIGH_TPUT
+    high_tput_per_customer[customer] = HIGH_TPUT_PCT
     return high_tput_per_customer
 @app.delete('/tput/customer/<customer>')
 def tput_customer_delete(customer):
@@ -232,7 +245,7 @@ def tput_customer_delete(customer):
 @app.post('/tput/symbol/<symbol>/<speed>')
 def tput_symbol(symbol, speed):
     global high_tput_per_symbol
-    high_tput_per_symbol[symbol] = HIGH_TPUT
+    high_tput_per_symbol[symbol] = HIGH_TPUT_PCT
     return high_tput_per_symbol
 @app.delete('/tput/symbol/<symbol>')
 def tput_symbol_delete(symbol):
@@ -245,8 +258,8 @@ def tput_symbol_delete(symbol):
 def latency_region(region, amount):
     global latency_per_action_per_region
     latency_action = request.args.get('latency_action', default=None, type=str)
-    latency_per_action_per_region[region] = {'action': latency_action, 'amount': int(amount)}
-    high_tput_per_region[region] = HIGH_TPUT
+    latency_per_action_per_region[region] = {'action': latency_action, 'amount': int(amount), 'start': time.time()}
+    high_tput_per_region[region] = HIGH_TPUT_PCT
     return latency_per_action_per_region    
 @app.delete('/latency/region/<region>')
 def latency_region_delete(region):
@@ -261,8 +274,8 @@ def latency_region_delete(region):
 def err_db_region(region, amount):
     global db_error_per_region
     err_db_service = request.args.get('err_db_service', default=None, type=str)
-    db_error_per_region[region] = {'service': err_db_service, 'amount': int(amount)}
-    high_tput_per_region[region] = HIGH_TPUT
+    db_error_per_region[region] = {'service': err_db_service, 'amount': int(amount), 'start': time.time()}
+    high_tput_per_region[region] = HIGH_TPUT_PCT
     return db_error_per_region
 @app.delete('/err/db/region/<region>')
 def err_db_region_delete(region):
@@ -276,8 +289,8 @@ def err_db_region_delete(region):
 @app.post('/err/model/region/<region>/<amount>')
 def err_model_region(region, amount):
     global model_error_per_region
-    model_error_per_region[region] = int(amount)
-    high_tput_per_region[region] = HIGH_TPUT
+    model_error_per_region[region] = {'amount': int(amount), 'start': time.time()}
+    high_tput_per_region[region] = HIGH_TPUT_PCT
     return model_error_per_region    
 @app.delete('/err/model/region/<region>')
 def err_model_region_delete(region):

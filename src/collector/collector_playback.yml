@@ -1,8 +1,5 @@
 extensions:
   health_check:
-    endpoint: "0.0.0.0:13133"
-    check_collector_pipeline:
-        enabled: false
 
 receivers:
   otlp/apm:
@@ -18,6 +15,37 @@ processors:
   batch:
     send_batch_size: 1000
     send_batch_max_size: 2000
+  resourcedetection:
+    detectors: ["system"]
+    system:
+      hostname_sources: ["os"]
+      resource_attributes:
+        host.name:
+          enabled: true
+        host.id:
+          enabled: false
+        host.arch:
+          enabled: true
+        host.ip:
+          enabled: true
+        host.mac:
+          enabled: true
+        host.cpu.vendor.id:
+          enabled: true
+        host.cpu.family:
+          enabled: true
+        host.cpu.model.id:
+          enabled: true
+        host.cpu.model.name:
+          enabled: true
+        host.cpu.stepping:
+          enabled: true
+        host.cpu.cache.l2.size:
+          enabled: true
+        os.description:
+          enabled: true
+        os.type:
+          enabled: true
 
 exporters:
   debug:
@@ -47,17 +75,17 @@ service:
   pipelines:
     traces/apm:
       receivers: [otlp/apm]
-      processors: [batch]
+      processors: [resourcedetection, batch]
       exporters: [otlp/apm]
 
     metrics/apm:
       receivers: [otlp/apm]
-      processors: [batch]
+      processors: [resourcedetection, batch]
       exporters: [otlp/apm]
 
     logs/apm:
       receivers: [otlp/apm]
-      processors: [batch]
+      processors: [resourcedetection, batch]
       exporters: [otlp/apm]
 
     logs/elasticsearch:

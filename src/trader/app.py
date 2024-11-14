@@ -88,7 +88,7 @@ def decode_common_args():
     
     region = request.args.get('region', default="NA", type=str)
     # use OTel schema
-    set_attribute_and_baggage("cloud.region", region)
+    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.region", region)
 
     symbol = request.args.get('symbol', default='ESTC', type=str)
     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.symbol", symbol)

@@ -30,6 +30,12 @@ def load_slo(slo_name):
     slo.load(slo_name)
     return {'result': 'success'}
 
+@app.post('/reset')
+def reset():
+    slo.delete_all()
+    playback.delete_all()
+    return {'result': 'success'}
+
 def init():
     print("resetting initial assets...")
     

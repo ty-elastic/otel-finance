@@ -1,7 +1,5 @@
 extensions:
   health_check:
-    check_collector_pipeline:
-        enabled: false
 
 receivers:
   otlp/fromsdk:

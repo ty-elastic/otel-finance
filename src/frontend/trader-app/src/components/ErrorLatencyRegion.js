@@ -8,10 +8,10 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Grid from '@mui/material/Grid2';
 import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
+import Checkbox from '@mui/material/Checkbox';
 import Box from '@mui/material/Box';
-import Slider from '@mui/material/Slider';
-import Typography from '@mui/material/Typography';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup';
 
 class ErrorLatencyRegion extends React.Component {
     constructor(props) {
