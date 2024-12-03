@@ -16,3 +16,7 @@ otel-workshop-trading-instruqt
 _frontend
 obj
 *.sln
+
+pyproject.toml
+uv.lock
+.python-version

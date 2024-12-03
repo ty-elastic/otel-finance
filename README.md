@@ -49,3 +49,4 @@ The `front-end` app will be available locally at `http://127.0.0.1:9394`.
 
 ## workshop
 * use changepoint detection for market conditions change
+* TBS

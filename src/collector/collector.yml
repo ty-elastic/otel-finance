@@ -14,14 +14,7 @@ receivers:
     root_path: /hostfs
     collection_interval: 30s
     scrapers:
-      disk:
       filesystem:
-      cpu:
-        metrics:
-          system.cpu.utilization:
-            enabled: true
-          system.cpu.logical.count:
-            enabled: true
       memory:
         metrics:
           system.memory.utilization:
@@ -162,6 +155,7 @@ exporters:
       Authorization: "Bearer ${ELASTIC_APM_SERVER_SECRET}"
 
 service:
+  extensions: [health_check]
   pipelines:
     traces/fromsdk:
       receivers: [otlp/fromsdk]

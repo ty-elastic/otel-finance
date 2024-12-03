@@ -14,7 +14,7 @@ receivers:
 processors:
   batch:
     send_batch_size: 1000
-    send_batch_max_size: 2000
+    send_batch_max_size: 1000
   resourcedetection:
     detectors: ["system"]
     system:
@@ -72,6 +72,7 @@ exporters:
       Authorization: "Bearer ${ELASTIC_APM_SERVER_SECRET}"
 
 service:
+  extensions: [health_check]
   pipelines:
     traces/apm:
       receivers: [otlp/apm]
@@ -90,4 +91,5 @@ service:
 
     logs/elasticsearch:
       receivers: [otlp/elasticsearch]
+      processors: [resourcedetection]
       exporters: [elasticsearch]

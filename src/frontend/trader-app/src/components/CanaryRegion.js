@@ -18,7 +18,7 @@ class CanaryRegion extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            canary_region_on: false,
+            canary_region_build: 'A',
             canary_region: 'EU'
         };
 
@@ -45,7 +45,7 @@ class CanaryRegion extends React.Component {
             if (this.state.canary_region_on === false) {
                 await axios.delete(`/monkey/canary/region/${this.state.canary_region}`);
             } else {
-                await axios.post(`/monkey/canary/region/${this.state.canary_region}`);
+                await axios.post(`/monkey/canary/region/${this.state.canary_region}/${this.state.canary_region_build}`);
             }
             this.monkeyState.fetchData();
         } catch (err) {
@@ -78,6 +78,19 @@ class CanaryRegion extends React.Component {
                             <MenuItem value="EU">EU</MenuItem>
                             <MenuItem value="LATAM">LATAM</MenuItem>
                             <MenuItem value="NA">NA</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <FormControl>
+                        <InputLabel id="label_build">Build</InputLabel>
+                        <Select
+                            labelId="label_build"
+                            name="canary_region_build"
+                            value={this.state.canary_region_build}
+                            label="Build"
+                            onChange={this.handleInputChange}
+                        >
+                            <MenuItem value="A">A</MenuItem>
+                            <MenuItem value="B">B</MenuItem>
                         </Select>
                     </FormControl>
                     <Box width="100%"><Button variant="contained" data-transaction-name="CanaryRegion" type="submit">Submit</Button></Box>

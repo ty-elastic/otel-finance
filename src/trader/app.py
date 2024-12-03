@@ -83,12 +83,12 @@ def decode_common_args():
     
     day_of_week = request.args.get('day_of_week', default=None, type=str)
     if day_of_week is None:
-        day_of_week = random.choice(['M','Tu', 'W', 'Th', 'F'])
+        day_of_week = random.choice(['M', 'Tu', 'W', 'Th', 'F'])
     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.day_of_week", day_of_week)
     
     region = request.args.get('region', default="NA", type=str)
     # use OTel schema
-    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.region", region)
+    set_attribute_and_baggage(f"cloud.region", region)
 
     symbol = request.args.get('symbol', default='ESTC', type=str)
     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.symbol", symbol)
@@ -109,8 +109,9 @@ def decode_common_args():
 
     skew_market_factor = request.args.get('skew_market_factor', default=0, type=int)
 
-    canary = request.args.get('canary', default="false", type=str)
-    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.canary", canary)
+    canary = request.args.get('canary', default=None, type=str)
+    if canary is not None:
+        set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.canary", canary)
     
     return trade_id, customer_id, day_of_week, region, symbol, latency_amount, latency_action, error_model, error_db, error_db_service, skew_market_factor, canary, data_source, classification
 
@@ -133,7 +134,9 @@ def trade(*, region, trade_id, customer_id, symbol, day_of_week, shares, share_p
     response['id'] = trade_id
     response['symbol']= symbol
     
-    params={'canary': canary, 'customer_id': customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action}
+    params={'customer_id': customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action}
+    if canary is not None:
+        params['canary'] = canary
     if error_db is True:
         params['share_price'] = -share_price
         params['shares'] = -shares

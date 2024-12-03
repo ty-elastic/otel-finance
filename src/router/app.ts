@@ -16,15 +16,12 @@ function customRouter(req: any) {
     return `http://${req.query.service}:9003`;
   }
   else {
-    if (req.query.canary === 'true') {
-      if (getRandomBoolean())
-        return `http://${process.env.RECORDER_HOST_CANARY_1}:9003`;
-      else
-        return `http://${process.env.RECORDER_HOST_CANARY_2}:9003`;
-    }
-    else {
+    if (req.query.canary === 'A')
+        return `http://${process.env.RECORDER_HOST_CANARY_A}:9003`;
+    else if (req.query.canary === 'B')
+        return `http://${process.env.RECORDER_HOST_CANARY_B}:9003`;
+    else
       return `http://${process.env.RECORDER_HOST}:9003`;
-    }
   }
 }
 

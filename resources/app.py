@@ -1,4 +1,5 @@
 from flask import Flask, request
+import logging
 import time
 import threading
 import os
@@ -12,7 +13,7 @@ import assistant
 import playback
 
 app = Flask(__name__)
-#logging.basicConfig(level=logging.DEBUG)
+app.logger.setLevel(logging.INFO)
 
 @app.post('/load/ml/trained')
 def load_ml_trained():
@@ -56,7 +57,7 @@ def maintenance_loop():
         time.sleep(10)
 
 def loading():
-    time.sleep(5)
+    time.sleep(10)
     print("START loading")
     try:
         playback.load()
@@ -73,6 +74,7 @@ def start_loading_thread():
     thread = threading.Thread(target=loading, daemon=False)
     thread.start()
 
+logging.info("starting up...")
 init()
 start_maintenance_thread()
 

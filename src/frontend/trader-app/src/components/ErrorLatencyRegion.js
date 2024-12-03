@@ -85,9 +85,9 @@ class ErrorLatencyRegion extends React.Component {
                             checked={this.state.latency_region_on}
                             onChange={this.handleInputChange}
                             inputProps={{ 'aria-label': 'controlled' }}
-                        />} label="Enable errors" />
+                        />} label="Enable latency" />
                     </FormGroup>
-                    <FormControl>
+                    {/* <FormControl>
                         <InputLabel id="label_action">Action</InputLabel>
                         <Select
                             labelId="label_action"
@@ -101,7 +101,7 @@ class ErrorLatencyRegion extends React.Component {
                             <MenuItem value="sell">Sell</MenuItem>
                             <MenuItem value="hold">Hold</MenuItem>
                         </Select>
-                    </FormControl>
+                    </FormControl> */}
                     <Box width="100%"><Button variant="contained" data-transaction-name="ErrorLatencyRegion" type="submit">Submit</Button></Box>
                     {this.monkeyState.render()}
                 </Grid>

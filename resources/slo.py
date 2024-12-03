@@ -19,17 +19,21 @@ def delete_all():
                                      timeout=TIMEOUT,
                                      auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']),
                                      headers={"kbn-xsrf": "reporting", "Content-Type": "application/json"})
-    for slo in slos.json()['results']:
-        delete_slo(slo['id'])
+    if 'results' in slos.json():
+        for slo in slos.json()['results']:
+            delete_slo(slo['id'])
+    else:
+        print(slos)
 
 def slo_exists(name):
     slos = requests.get(f"{os.environ['KIBANA_URL']}/api/observability/slos",
                                      timeout=TIMEOUT,
                                      auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']),
                                      headers={"kbn-xsrf": "reporting", "Content-Type": "application/json"})
-    for slo in slos.json()['results']:
-        if slo['name'] == name:
-            return slo['id']
+    if 'results' in slos.json():
+        for slo in slos.json()['results']:
+            if slo['name'] == name:
+                return slo['id']
     return None
                
 def delete_alert(id):
@@ -97,5 +101,3 @@ def load_all():
             load(filename)
                    
 #load('trader_availability')
-
-#delete_all_slos()

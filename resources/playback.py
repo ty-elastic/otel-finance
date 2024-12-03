@@ -11,13 +11,13 @@ from elasticsearch import Elasticsearch
 from pathlib import Path
 
 RECORDED_RESOURCES_PATH = 'recorded'
-HOURS_TO_PRELOAD = 12
+HOURS_TO_PRELOAD = 2
 
 MAX_RECORDS_PER_UPLOAD = 50
 MAX_MB_PER_UPLOAD = 4
 UPLOAD_TIMEOUT = 5
-GROUPED_TIME_MINS = 30
-UPLOAD_THREADS = 4
+GROUPED_TIME_MINS = 15
+UPLOAD_THREADS = 2
 
 def delete_all():
     with Elasticsearch(os.environ['ELASTICSEARCH_URL'], basic_auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD'])) as client:
