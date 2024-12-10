@@ -1,3 +1,6 @@
+extensions:
+  health_check:
+  
 receivers:
   otlp/fromsdk:
     protocols:
@@ -62,6 +65,7 @@ exporters:
     path: /recorded/elasticsearch.json
 
 service:
+  extensions: [health_check]
   pipelines:
     traces/fromsdk:
       receivers: [otlp/fromsdk]

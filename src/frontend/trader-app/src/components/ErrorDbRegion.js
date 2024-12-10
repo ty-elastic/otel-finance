@@ -105,7 +105,7 @@ class ErrorDbRegion extends React.Component {
                             checked={this.state.err_db_region_on}
                             onChange={this.handleInputChange}
                             inputProps={{ 'aria-label': 'controlled' }}
-                        />} label="Enable errors" />
+                        />} label="Generate errors" />
                     </FormGroup>
                     <Box width="100%"><Button variant="contained" data-transaction-name="ErrorDbRegion" type="submit">Submit</Button></Box>
                     {this.monkeyState.render()}

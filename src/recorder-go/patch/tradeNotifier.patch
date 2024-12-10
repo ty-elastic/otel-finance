@@ -1,0 +1,19 @@
+--- src/recorder-go-clean/tradeNotifier.go	2024-12-10 12:29:38
++++ src/recorder-go/tradeNotifier.go	2024-12-10 07:43:54
+@@ -7,11 +7,15 @@
+ 	"net/http"
+ 
+ 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
++	"go.opentelemetry.io/otel"
+ )
+ 
+ func notify(context context.Context, trade *Trade) {
+-	logger.WithContext(context).Info("notifying...")
++	context, span := otel.Tracer("notifier").Start(context, "notify")
++	defer span.End()
+ 
++	span.AddEvent("notifying...")
++
+ 	jsonTrade, err := json.Marshal(trade)
+ 	if err != nil {
+ 		logger.WithContext(context).Warnf("failure to marshall trade: %s", err)

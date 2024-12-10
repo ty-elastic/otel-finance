@@ -50,16 +50,7 @@ tracer, trading_revenue = init_otel()
 def conform_request_bool(value):
     return value.lower() == 'true'
 
-@app.before_request
-def hook():
-    # set the root span in otel context so we can reference it later from same-process child spans
-    context.attach(context.set_value('root', trace.get_current_span()))
-
 def set_attribute_and_baggage(key, value):
-    # get the root span and set the attribute there, if possible
-    root_span = context.get_value('root')
-    if root_span is not None and root_span != trace.get_current_span():
-        root_span.set_attribute(key, value)
     # always set it on the current span
     trace.get_current_span().set_attribute(key, value)
     # and attach it to baggage
@@ -109,10 +100,9 @@ def decode_common_args():
 
     skew_market_factor = request.args.get('skew_market_factor', default=0, type=int)
 
-    canary = request.args.get('canary', default=None, type=str)
-    if canary is not None:
-        set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.canary", canary)
-    
+    canary = request.args.get('canary', default="false", type=str)
+    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.canary", canary)
+
     return trade_id, customer_id, day_of_week, region, symbol, latency_amount, latency_action, error_model, error_db, error_db_service, skew_market_factor, canary, data_source, classification
 
 @tracer.start_as_current_span("trade")
@@ -121,7 +111,7 @@ def trade(*, region, trade_id, customer_id, symbol, day_of_week, shares, share_p
     
     app.logger.info(f"trade requested for {symbol} on day {day_of_week}")
     
-    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.action", action)
+    current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.action", action)
     current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.shares", shares)
     current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.share_price", share_price)
     if action == 'buy' or action == 'sell':
@@ -134,9 +124,7 @@ def trade(*, region, trade_id, customer_id, symbol, day_of_week, shares, share_p
     response['id'] = trade_id
     response['symbol']= symbol
     
-    params={'customer_id': customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action}
-    if canary is not None:
-        params['canary'] = canary
+    params={'canary': canary, 'customer_id': customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action}
     if error_db is True:
         params['share_price'] = -share_price
         params['shares'] = -shares

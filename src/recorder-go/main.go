@@ -5,13 +5,18 @@ import (
 	"flag"
 	"os"
 	"sync"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/baggage"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/metric"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 	sdkresource "go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
@@ -84,7 +89,7 @@ func initResource() *sdkresource.Resource {
 	return resource
 }
 
-func initTracerProvider() *sdktrace.TracerProvider {
+func newTracerProvider() *sdktrace.TracerProvider {
 	ctx := context.Background()
 
 	exporter, err := otlptracegrpc.New(ctx)
@@ -105,22 +110,62 @@ func initTracerProvider() *sdktrace.TracerProvider {
 	return tp
 }
 
-func main() {
+func deltaSelector(kind metric.InstrumentKind) metricdata.Temporality {
+	switch kind {
+	case metric.InstrumentKindCounter,
+		metric.InstrumentKindGauge,
+		metric.InstrumentKindHistogram,
+		metric.InstrumentKindObservableGauge,
+		metric.InstrumentKindObservableCounter:
+		return metricdata.DeltaTemporality
+	case metric.InstrumentKindUpDownCounter,
+		metric.InstrumentKindObservableUpDownCounter:
+		return metricdata.CumulativeTemporality
+	}
+	panic("unknown instrument kind")
+}
 
+func newMeterProvider() *sdkmetric.MeterProvider {
+	ctx := context.Background()
+
+	exporter, err := otlpmetricgrpc.New(ctx, otlpmetricgrpc.WithTemporalitySelector(deltaSelector))
+	if err != nil {
+		log.Fatalf("OTLP Trace gRPC Creation: %v", err)
+	}
+
+	mp := sdkmetric.NewMeterProvider(
+		sdkmetric.WithResource(initResource()),
+		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exporter,
+			// Default is 1m. Set to 3s for demonstrative purposes.
+			sdkmetric.WithInterval(3*time.Second))),
+	)
+
+	otel.SetMeterProvider(mp)
+	return mp
+}
+
+func main() {
 	logfileOption := flag.String("logfile", "", "logfile path")
 	flag.Parse()
 
 	initLogrus(logfileOption)
 
-	tp := initTracerProvider()
+	tp := newTracerProvider()
 	defer func() {
 		if err := tp.Shutdown(context.Background()); err != nil {
 			log.Fatalf("Tracer Provider Shutdown: %v", err)
 		}
 	}()
 
+	mp := newMeterProvider()
+	defer func() {
+		if err := mp.Shutdown(context.Background()); err != nil {
+			log.Fatalf("Tracer Provider Shutdown: %v", err)
+		}
+	}()
+
 	tradeService, _ := NewTradeService()
-	tradeController, _ := NewTradeController(tp, tradeService)
+	tradeController, _ := NewTradeController(tradeService)
 
 	tradeController.Run()
 }

@@ -11,7 +11,7 @@ from elasticsearch import Elasticsearch
 from pathlib import Path
 
 RECORDED_RESOURCES_PATH = 'recorded'
-HOURS_TO_PRELOAD = 2
+HOURS_TO_PRELOAD = 1
 
 MAX_RECORDS_PER_UPLOAD = 50
 MAX_MB_PER_UPLOAD = 4
@@ -383,14 +383,23 @@ def load(to_file=False):
     trim_last_file_ts = None
     
     if os.path.exists(os.path.join(RECORDED_RESOURCES_PATH, "apm")):
-        for file in os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "apm")):
+        apm_files = os.listdir(os.path.join(RECORDED_RESOURCES_PATH, "apm"))
+        apm_files_reordered = []
+        for apm_file in apm_files:
+            if apm_file.find('apm-traces') != -1:
+                apm_files_reordered.insert(0, apm_file)
+            else:
+                apm_files_reordered.append(apm_file)
+        print(apm_files_reordered)
+
+        for file in apm_files_reordered:
             if file.endswith(".json"):
                 print(f"loading {file}")
                 if to_file:
                     trim_first_file_ts, trim_last_file_ts = save_trimmed_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), output_path=os.path.join(RECORDED_RESOURCES_PATH, "trimmed"), align_to_days=True)
                 else:
                     trim_first_file_ts, trim_last_file_ts = load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM'], 
-                        backfill_hours=HOURS_TO_PRELOAD)
+                        trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_hours=HOURS_TO_PRELOAD)
                 print(f"trim_first_file_ts={trim_first_file_ts}, trim_last_file_ts={trim_last_file_ts}")
 
     if os.path.exists(os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch")):
@@ -405,3 +414,7 @@ def load(to_file=False):
 
     print('done')
 #load(to_file=False)
+
+if __name__ == "__main__":
+    load(to_file=True)
+    # combine

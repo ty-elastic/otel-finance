@@ -1,5 +1,6 @@
 services:
 
+
   trader:
     build:
       context: ./src/trader/
@@ -24,7 +25,7 @@ services:
       router:
         condition: service_healthy
       collector:
-        condition: service_started
+        condition: service_healthy
 
   monkey:
     build:
@@ -49,7 +50,7 @@ services:
       trader:
         condition: service_healthy
       collector:
-        condition: service_started
+        condition: service_healthy
 
   router:
     build:
@@ -77,7 +78,7 @@ services:
       recorder-java:
         condition: service_healthy
       collector:
-        condition: service_started
+        condition: service_healthy
 
   recorder-go:
     build:
@@ -103,9 +104,53 @@ services:
       postgresql:
         condition: service_healthy
       collector:
-        condition: service_started
+        condition: service_healthy
       notifier:
         condition: service_healthy
+
+  recorder-go-zero:
+    build:
+      context: ./src/recorder-go-zero/
+    restart: on-failure
+    volumes:
+      - ./logs:/logs
+      - /proc:/host/proc
+    command: ["-logfile=/logs/recorder-go-zero.json"]
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9003/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
+    environment:
+      POSTGRES_HOST: "postgresql"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_USER: "admin"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      collector:
+        condition: service_healthy
+      notifier:
+        condition: service_healthy
+    pid: "host"
+
+  recorder-go-zero-ebpf:
+    image: otel/autoinstrumentation-go
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4318"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      OTEL_SERVICE_NAME: "recorder-go-zero"
+      OTEL_GO_AUTO_TARGET_EXE: "/recorder-zero"
+      OTEL_PROPAGATORS: "tracecontext,baggage"
+      OTEL_LOG_LEVEL: "debug"
+      OTEL_GO_AUTO_INCLUDE_DB_STATEMENT: "true"
+    volumes:
+      - /proc:/host/proc
+    depends_on:
+      - recorder-go-zero
+    privileged: true
+    pid: "host"
 
   recorder-java:
     build:
@@ -129,7 +174,7 @@ services:
       postgresql:
         condition: service_healthy
       collector:
-        condition: service_started
+        condition: service_healthy
       notifier:
         condition: service_healthy
 
@@ -152,7 +197,7 @@ services:
       OTEL_DOTNET_AUTO_METRICS_ADDITIONAL_SOURCES: "Notifier"
     depends_on:
       collector:
-        condition: service_started
+        condition: service_healthy
 
   postgresql:
     image: postgres:latest

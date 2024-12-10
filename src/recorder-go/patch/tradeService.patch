@@ -1,0 +1,45 @@
+--- src/recorder-go-clean/tradeService.go	2024-12-10 12:30:04
++++ src/recorder-go/tradeService.go	2024-12-10 09:40:17
+@@ -8,7 +8,9 @@
+ 
+ 	log "github.com/sirupsen/logrus"
+ 
++	"go.opentelemetry.io/otel"
+ 	"go.opentelemetry.io/otel/attribute"
++	"go.opentelemetry.io/otel/metric"
+ 	"go.opentelemetry.io/otel/trace"
+ 
+ 	"database/sql"
+@@ -20,7 +22,8 @@
+ )
+ 
+ type TradeService struct {
+-	db *sql.DB
++	db                 *sql.DB
++	transactionCounter metric.Int64Counter
+ }
+ 
+ const tradesSqlTable = `
+@@ -70,6 +73,14 @@
+ 		}
+ 	}
+ 
++	meter := otel.Meter("tradeService")
++	transactionCounter, err := meter.Int64Counter(
++		"sql_transaction.counter",
++		metric.WithDescription("Number of SQL transactions"),
++		metric.WithUnit("{transaction}"),
++	)
++	c.transactionCounter = transactionCounter
++
+ 	return &c, nil
+ }
+ 
+@@ -85,6 +96,7 @@
+ 		span.RecordError(err, trace.WithStackTrace(true))
+ 		return nil, err
+ 	}
++	c.transactionCounter.Add(context, 1)
+ 
+ 	insertId, _ := res.LastInsertId()
+ 	trace.SpanFromContext(context).SetAttributes(attribute.Int64("sql_insert_id", insertId))

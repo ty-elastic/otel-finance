@@ -8,6 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
 	"database/sql"
@@ -73,19 +74,20 @@ func NewTradeService() (*TradeService, error) {
 }
 
 func (c *TradeService) RecordTrade(context context.Context, trade *Trade) (*Trade, error) {
-
 	sqlStatement := `
 		INSERT INTO trades (trade_id, customer_id, symbol, action, shares, share_price)
 		VALUES ($1, $2, $3, $4, $5, $6)
 	`
-
 	// insert trade
-	_, err := c.db.ExecContext(context, sqlStatement, trade.TradeId, trade.CustomerId, trade.Symbol, trade.Action, trade.Shares, trade.SharePrice)
+	res, err := c.db.ExecContext(context, sqlStatement, trade.TradeId, trade.CustomerId, trade.Symbol, trade.Action, trade.Shares, trade.SharePrice)
 	if err != nil {
 		span := trace.SpanFromContext(context)
 		span.RecordError(err, trace.WithStackTrace(true))
 		return nil, err
 	}
+
+	insertId, _ := res.LastInsertId()
+	trace.SpanFromContext(context).SetAttributes(attribute.Int64("sql_insert_id", insertId))
 
 	logger.WithContext(context).Info("trade committed for " + trade.CustomerId)
 

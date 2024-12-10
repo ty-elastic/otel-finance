@@ -4,14 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 func notify(context context.Context, trade *Trade) {
-	fmt.Println("Notifying...")
+	logger.WithContext(context).Info("notifying...")
 
 	jsonTrade, err := json.Marshal(trade)
 	if err != nil {

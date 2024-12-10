@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
 func notify(context context.Context, trade *Trade) {
-	fmt.Println("Notifying...")
+	logger.WithContext(context).Info("notifying...")
 
 	apiUrl := "http://notifier:5000/notify"
 	jsonTrade, err := json.Marshal(trade)

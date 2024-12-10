@@ -85,7 +85,7 @@ class ErrorLatencyRegion extends React.Component {
                             checked={this.state.latency_region_on}
                             onChange={this.handleInputChange}
                             inputProps={{ 'aria-label': 'controlled' }}
-                        />} label="Enable latency" />
+                        />} label="Generate latency" />
                     </FormGroup>
                     {/* <FormControl>
                         <InputLabel id="label_action">Action</InputLabel>

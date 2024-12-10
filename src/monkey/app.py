@@ -129,9 +129,9 @@ def generate_trade_requests():
                 skew_market_factor = 0
 
             if region in canary_per_region:
-                canary = canary_per_region[region]
+                canary = "true"
             else:
-                canary = None
+                canary = "false"
 
             print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region} with latency {latency_amount}, error_model={error_model}, error_db={error_db}, skew_market_factor={skew_market_factor}, canary={canary}")
 
@@ -318,10 +318,10 @@ def skew_pr_symbol_delete(symbol):
         del skew_market_factor_per_symbol[symbol]
     return skew_market_factor_per_symbol
 
-@app.post('/canary/region/<region>/<build>')
-def canary_region(region, build):
+@app.post('/canary/region/<region>')
+def canary_region(region):
     global canary_per_region
-    canary_per_region[region] = build
+    canary_per_region[region] = True
     return canary_per_region    
 @app.delete('/canary/region/<region>')
 def canary_region_delete(region):
