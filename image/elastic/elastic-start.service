@@ -1,0 +1,9 @@
+[Unit]
+Description=Configure Elastic
+After=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/elastic-start.sh
+
+[Install]
+WantedBy=multi-user.target
