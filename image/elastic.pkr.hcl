@@ -74,4 +74,9 @@ build {
             "ELASTIC_ECK_VERSION=${ var.elastic_eck_version }"
         ]
     }
+
+    provisioner "file" {
+      source      = "elastic/elastic-openai.sh"
+      destination = "/usr/local/bin/elastic-openai.sh"
+    }
 }
