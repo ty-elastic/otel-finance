@@ -63,6 +63,9 @@ spec:
       selfSignedCertificate:
         disabled: true
   config:
+    # to support embedded tab browsing from instruqt
+    csp.strict: false
+    csp.warnLegacyBrowsers: false
     # required to allow symbol upload from APM javascript
     server.maxPayload: 4194304
     server.publicBaseUrl: http://localhost:30002
@@ -438,6 +441,7 @@ server {
     proxy_set_header X-Scheme $scheme;
     proxy_set_header Authorization "Basic '${BASE64}'";
     proxy_set_header Accept-Encoding "";
+
     proxy_redirect off;
     proxy_http_version 1.1;
     client_max_body_size 20M;
@@ -499,7 +503,6 @@ sudo openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
 echo "Restart NGINX"
 systemctl enable nginx
 systemctl restart nginx
-
 
 ####################################################################### INGRESS
 
