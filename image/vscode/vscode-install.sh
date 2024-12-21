@@ -25,6 +25,7 @@ apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 curl -fsSL https://code-server.dev/install.sh | sh
 
 WORKSPACE_DIR=/workspace
+echo "WORKSPACE_DIR=$WORKSPACE_DIR" >> /root/.env
 mkdir -p $WORKSPACE_DIR
 
 VSCODE_USER_DATA_DIR=/user-data

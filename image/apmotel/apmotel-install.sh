@@ -2,11 +2,9 @@
 
 export $(cat /root/.env | xargs)
 
-WORKSPACE_DIR=/workspace
 GIT_BRANCH=main
 GIT_URL=https://github.com/ty-elastic/otel-finance.git
 
-mkdir -p $WORKSPACE_DIR
 cd $WORKSPACE_DIR
 git config --global init.defaultBranch $GIT_BRANCH
 git init

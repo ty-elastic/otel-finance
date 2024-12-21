@@ -564,8 +564,3 @@ spec:
 ' > /root/middleware.yaml
 
 envsubst < /root/middleware.yaml | kubectl apply -f -
-
-####################################################################### RUNTIME SERVICE
-
-systemctl daemon-reload
-systemctl enable elastic-start

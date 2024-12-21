@@ -33,7 +33,7 @@ retry_command() {
 
 ####################################################################### CONDITIONS
 
-if [ -z "$INSTRUQT" ]; then
+if [ -z "$_SANDBOX_ID" ]; then
   echo "not running instruqt"
 else
   echo "Wait for the Instruqt host bootstrap to finish"
@@ -55,7 +55,7 @@ retry_command kubectl wait pod -n default -l common.k8s.elastic.co/type --for=co
 
 ####################################################################### ECK
 
-if [ -z "$INSTRUQT" ]; then
+if [ -z "$_SANDBOX_ID" ]; then
   echo "not running instruqt"
 else
   echo 'ELASTIC_APM_SERVER_RUM_ENDPOINT="https://'$HOSTNAME'-8200-'$_SANDBOX_ID'.env.play.instruqt.com"' >> /root/.env
@@ -73,7 +73,7 @@ echo "trial license obtained and applied"
 
 ####################################################################### INGRESS
 
-if [ -z "$INSTRUQT" ]; then
+if [ -z "$_SANDBOX_ID" ]; then
   echo "not running instruqt"
 else
   echo "configure ingress"

@@ -58,11 +58,6 @@ build {
     sources = ["source.googlecompute.elastic"]
 
     provisioner "file" {
-      source = "elastic/elastic-start.service"
-      destination = "/etc/systemd/system/"
-    }
-
-    provisioner "file" {
       source      = "elastic/elastic-start.sh"
       destination = "/usr/local/bin/elastic-start.sh"
     }
