@@ -55,7 +55,9 @@ retry_command kubectl wait pod -n default -l common.k8s.elastic.co/type --for=co
 
 ####################################################################### ECK
 
-if [ -n "$INSTRUQT" ]; then
+if [ -z "$INSTRUQT" ]; then
+  echo "not running instruqt"
+else
   echo 'ELASTIC_APM_SERVER_RUM_ENDPOINT="https://'$HOSTNAME'-8200-'$_SANDBOX_ID'.env.play.instruqt.com"' >> /root/.env
 fi
 
@@ -71,7 +73,9 @@ echo "trial license obtained and applied"
 
 ####################################################################### INGRESS
 
-if [ -n "$INSTRUQT" ]; then
+if [ -z "$INSTRUQT" ]; then
+  echo "not running instruqt"
+else
   echo "configure ingress"
 
   echo '
