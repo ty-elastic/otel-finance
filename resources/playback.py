@@ -331,7 +331,7 @@ def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None
         while group_data_offset < GROUPED_TIME_MINS*60*1e9:
             resources = copy.deepcopy(trimmed_resources)
             group_data_offset, out_data = conform_resources(resources=[resources], ts_offset=group_data_offset)
-            print(group_data_offset)
+            #print(group_data_offset)
             if len(out_data['resourceSpans']) > 0:
                 grouped_data['resourceSpans'] = grouped_data['resourceSpans'] + out_data['resourceSpans']
             if len(out_data['resourceMetrics']) > 0:

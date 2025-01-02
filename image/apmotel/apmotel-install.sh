@@ -1,6 +1,13 @@
+#!/bin/bash
+
 ####################################################################### CODE
 
 export $(cat /root/.env | xargs)
+
+echo 'BACKLOAD_DATA=true' >> /root/.env
+echo 'SOLVE_ALL=false' >> /root/.env
+
+echo "export $(cat /root/.env | xargs)" >> /root/.bashrc
 
 GIT_BRANCH=main
 GIT_URL=https://github.com/ty-elastic/otel-finance.git

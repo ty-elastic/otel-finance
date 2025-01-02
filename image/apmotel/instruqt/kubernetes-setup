@@ -8,12 +8,4 @@ export _SANDBOX_ID=$_SANDBOX_ID
 export SA_LLM_PROXY_BEARER_TOKEN=$SA_LLM_PROXY_BEARER_TOKEN
 /usr/local/bin/elastic-openai.sh
 
-####################################################################### CODE
-
-export $(cat /root/.env | xargs)
-
-cd $WORKSPACE_DIR
-git remote update
-git pull
-docker compose build
-docker compose up -d
+/usr/local/bin/apmotel-install.sh
