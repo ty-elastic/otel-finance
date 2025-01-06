@@ -7,9 +7,6 @@ COPY requirements.txt .
 RUN pip3 install --root-user-action=ignore -r requirements.txt
 
 # add OTel libs
-# ARG OTEL_VERSION
-# ARG OTEL_VERSION_OTLP
-#RUN pip3 install --root-user-action=ignore opentelemetry-distro==${OTEL_VERSION} opentelemetry-instrumentation==${OTEL_VERSION} opentelemetry-exporter-otlp==${OTEL_VERSION_OTLP}
 RUN pip3 install --root-user-action=ignore elastic-opentelemetry
 RUN pip3 install --root-user-action=ignore opentelemetry-processor-baggage
 COPY lib/ .

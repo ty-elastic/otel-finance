@@ -22,13 +22,6 @@ services:
   trader:
     build:
       context: ./src/trader/
-      args:
-        #works
-        OTEL_VERSION: 0.49b2
-        OTEL_VERSION_OTLP: 1.28.2
-        #broken
-        # OTEL_VERSION: 0.50b0
-        # OTEL_VERSION_OTLP: 1.29.0
     restart: on-failure
     healthcheck:
       test: curl --fail http://127.0.0.1:9001/health || exit 1
@@ -49,13 +42,6 @@ services:
   monkey:
     build:
       context: ./src/monkey/
-      args:
-        #works
-        OTEL_VERSION: 0.49b2
-        OTEL_VERSION_OTLP: 1.28.2
-        #broken
-        # OTEL_VERSION: 0.50b0
-        # OTEL_VERSION_OTLP: 1.29.0
     restart: on-failure
     healthcheck:
       test: curl --fail http://127.0.0.1:9002/health || exit 1
