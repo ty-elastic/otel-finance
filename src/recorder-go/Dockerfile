@@ -14,5 +14,7 @@ WORKDIR /usr/src/app/
 
 COPY --from=builder /go/bin/recorder ./
 
+ENV OTEL_SERVICE_NAME="recorder-go"
+
 EXPOSE 9003
 ENTRYPOINT [ "./recorder" ]

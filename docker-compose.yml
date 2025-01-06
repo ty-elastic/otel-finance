@@ -22,6 +22,13 @@ services:
   trader:
     build:
       context: ./src/trader/
+      args:
+        #works
+        OTEL_VERSION: 0.49b2
+        OTEL_VERSION_OTLP: 1.28.2
+        #broken
+        # OTEL_VERSION: 0.50b0
+        # OTEL_VERSION_OTLP: 1.29.0
     restart: on-failure
     healthcheck:
       test: curl --fail http://127.0.0.1:9001/health || exit 1
@@ -33,13 +40,6 @@ services:
       - "9001:9001"
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_SERVICE_NAME: "trader"
-      OTEL_RESOURCE_ATTRIBUTES: "service.version=1.0"
-
-      OTEL_PYTHON_LOG_LEVEL: "info"
-      OTEL_PYTHON_LOG_CORRELATION: "true"
-      OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
-      OTEL_EXPERIMENTAL_RESOURCE_DETECTORS: "process_runtime"
     depends_on:
       router:
         condition: service_healthy
@@ -49,6 +49,13 @@ services:
   monkey:
     build:
       context: ./src/monkey/
+      args:
+        #works
+        OTEL_VERSION: 0.49b2
+        OTEL_VERSION_OTLP: 1.28.2
+        #broken
+        # OTEL_VERSION: 0.50b0
+        # OTEL_VERSION_OTLP: 1.29.0
     restart: on-failure
     healthcheck:
       test: curl --fail http://127.0.0.1:9002/health || exit 1
@@ -60,12 +67,6 @@ services:
       - "9002:9002"
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_SERVICE_NAME: "monkey"
-
-      OTEL_PYTHON_LOG_LEVEL: "info"
-      OTEL_PYTHON_LOG_CORRELATION: "true"
-      OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
-      OTEL_EXPERIMENTAL_RESOURCE_DETECTORS: "process_runtime"
     depends_on:
       trader:
         condition: service_healthy
@@ -87,8 +88,6 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-      OTEL_SERVICE_NAME: "router"
-      OTEL_EXPERIMENTAL_RESOURCE_DETECTORS: "process_runtime"
 
       RECORDER_HOST_1: "recorder-java"
       RECORDER_HOST_2: "recorder-go"
@@ -116,7 +115,6 @@ services:
       start_period: 1m
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_SERVICE_NAME: "recorder-go"
   
       POSTGRES_HOST: "postgresql"
       POSTGRES_PASSWORD: "password"
@@ -186,8 +184,6 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-      OTEL_SERVICE_NAME: "recorder-java"
-      OTEL_EXPERIMENTAL_RESOURCE_DETECTORS: "process_runtime"
 
       POSTGRES_HOST: "postgresql"
       POSTGRES_PASSWORD: "password"
@@ -214,10 +210,6 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4318"
       OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
-      OTEL_SERVICE_NAME: "notifier"
-      OTEL_EXPERIMENTAL_RESOURCE_DETECTORS: "process_runtime"
-      OTEL_DOTNET_AUTO_TRACES_ADDITIONAL_SOURCES: "Notifier"
-      OTEL_DOTNET_AUTO_METRICS_ADDITIONAL_SOURCES: "Notifier"
     depends_on:
       collector:
         condition: service_healthy

@@ -7,6 +7,7 @@ import os
 from threading import Thread
 import concurrent.futures
 
+from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry import trace, baggage, context
 from opentelemetry.metrics import get_meter
 from opentelemetry.processor.baggage import BaggageSpanProcessor, ALLOW_ALL_BAGGAGE_KEYS
@@ -17,13 +18,16 @@ from opentelemetry.processor.logrecord.baggage import BaggageLogRecordProcessor
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
-tracer_provider = trace.get_tracer_provider()
-tracer_provider.add_span_processor(BaggageSpanProcessor(ALLOW_ALL_BAGGAGE_KEYS))
+def init_otel():
+    tracer_provider = TracerProvider()
+    tracer_provider.add_span_processor(BaggageSpanProcessor(ALLOW_ALL_BAGGAGE_KEYS))
 
-if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
-    print("enable otel logging")
-    log_provider = logs.get_logger_provider()
-    log_provider.add_log_record_processor(BaggageLogRecordProcessor(ALLOW_ALL_BAGGAGE_KEYS))
+    if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
+        print("enable otel logging")
+        log_provider = logs.get_logger_provider()
+        log_provider.add_log_record_processor(BaggageLogRecordProcessor(ALLOW_ALL_BAGGAGE_KEYS))
+
+init_otel()
 
 TRADE_TIMEOUT = 5
 S_PER_DAY = 60

@@ -4,7 +4,7 @@
 
 export $(cat /root/.env | xargs)
 
-echo 'BACKLOAD_DATA=true' >> /root/.env
+echo 'BACKLOAD_DATA=false' >> /root/.env
 echo 'SOLVE_ALL=false' >> /root/.env
 
 echo "export $(cat /root/.env | xargs)" >> /root/.bashrc

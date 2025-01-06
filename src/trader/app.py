@@ -8,6 +8,7 @@ import math
 
 import requests
 
+from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry import trace, baggage, context, metrics
 from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
 from opentelemetry.processor.baggage import BaggageSpanProcessor, ALLOW_ALL_BAGGAGE_KEYS
@@ -30,7 +31,7 @@ ATTRIBUTE_PREFIX = "com.example"
 import model
 
 def init_otel():
-    tracer_provider = trace.get_tracer_provider()
+    tracer_provider = TracerProvider()
     tracer_provider.add_span_processor(BaggageSpanProcessor(ALLOW_ALL_BAGGAGE_KEYS))
     tracer = trace.get_tracer("trader")
 
