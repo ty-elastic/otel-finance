@@ -19,7 +19,8 @@ class ErrorLatencyRegion extends React.Component {
         this.state = {
             latency_region_on: false,
             latency_region: 'NA',
-            latency_action: 'any'
+            latency_action: 'any',
+            latency_oneshot: true
         };
 
         this.monkeyState = new MonkeyState(this, 'latency_per_action_per_region');
@@ -49,7 +50,8 @@ class ErrorLatencyRegion extends React.Component {
                     null,
                     {
                         params: {
-                            'latency_action': (this.state.latency_action === 'any') ? null : this.state.latency_action
+                            'latency_action': (this.state.latency_action === 'any') ? null : this.state.latency_action,
+                            'latency_oneshot': this.state.latency_oneshot
                         }
                     }
                 );
@@ -86,6 +88,14 @@ class ErrorLatencyRegion extends React.Component {
                             onChange={this.handleInputChange}
                             inputProps={{ 'aria-label': 'controlled' }}
                         />} label="Generate latency" />
+                    </FormGroup>
+                    <FormGroup>
+                        <FormControlLabel control={<Checkbox
+                            name='latency_oneshot'
+                            checked={this.state.latency_oneshot}
+                            onChange={this.handleInputChange}
+                            inputProps={{ 'aria-label': 'controlled' }}
+                        />} label="Oneshot" />
                     </FormGroup>
                     {/* <FormControl>
                         <InputLabel id="label_action">Action</InputLabel>

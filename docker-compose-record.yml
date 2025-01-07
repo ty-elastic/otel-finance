@@ -1,5 +1,20 @@
 services:
 
+  resources:
+    build:
+      context: ./resources
+    restart: on-failure
+    ports:
+      - "9010:9010"
+    environment:
+      BACKLOAD_DATA: ${BACKLOAD_DATA:-true}
+      SOLVE_ALL: ${SOLVE_ALL:-true}
+      KIBANA_URL: ${KIBANA_URL}
+      ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
+      ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
+      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+      OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM: "http://collector_playback:4318"
+      OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH: "http://collector_playback:4319"
 
   trader:
     build:
@@ -15,12 +30,6 @@ services:
       - "9001:9001"
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_SERVICE_NAME: "trader"
-      OTEL_RESOURCE_ATTRIBUTES: "service.version=1.0"
-
-      OTEL_PYTHON_LOG_LEVEL: "info"
-      OTEL_PYTHON_LOG_CORRELATION: "true"
-      OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
     depends_on:
       router:
         condition: service_healthy
@@ -41,11 +50,6 @@ services:
       - "9002:9002"
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_SERVICE_NAME: "monkey"
-
-      OTEL_PYTHON_LOG_LEVEL: "info"
-      OTEL_PYTHON_LOG_CORRELATION: "true"
-      OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
     depends_on:
       trader:
         condition: service_healthy
@@ -67,7 +71,6 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-      OTEL_SERVICE_NAME: "router"
 
       RECORDER_HOST_1: "recorder-java"
       RECORDER_HOST_2: "recorder-go"
@@ -95,7 +98,6 @@ services:
       start_period: 1m
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
-      OTEL_SERVICE_NAME: "recorder-go"
   
       POSTGRES_HOST: "postgresql"
       POSTGRES_PASSWORD: "password"
@@ -165,7 +167,6 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-      OTEL_SERVICE_NAME: "recorder-java"
 
       POSTGRES_HOST: "postgresql"
       POSTGRES_PASSWORD: "password"
@@ -192,12 +193,52 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4318"
       OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
-      OTEL_SERVICE_NAME: "notifier"
-      OTEL_DOTNET_AUTO_TRACES_ADDITIONAL_SOURCES: "Notifier"
-      OTEL_DOTNET_AUTO_METRICS_ADDITIONAL_SOURCES: "Notifier"
     depends_on:
       collector:
         condition: service_healthy
+
+  frontend:
+    build:
+      context: ./src/frontend/
+      args:
+        ELASTIC_APM_SERVER_RUM_ENDPOINT: ${ELASTIC_APM_SERVER_RUM_ENDPOINT}
+        ELASTIC_APM_SERVER_RUM_CREDENTIALS: ${ELASTIC_APM_SERVER_RUM_CREDENTIALS}
+
+        KIBANA_URL: ${KIBANA_URL}
+        ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
+        ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+    volumes:
+      - ./src/frontend/trader-app/build:/build
+
+  proxy:
+    platform: "linux/amd64"
+    build:
+      context: ./src/proxy/
+    volumes:
+      - ./src/frontend/trader-app/build:/usr/share/nginx/html
+    ports:
+      - '9394:80'
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_SERVICE_NAME: "proxy"
+    depends_on:
+      monkey:
+        condition: service_healthy
+      trader:
+        condition: service_healthy
+      collector:
+        condition: service_healthy
+      frontend:
+        condition: service_completed_successfully
+
+  instruqt_frontend:
+    build:
+      context: ./instruqt_frontend/
+    ports:
+      - '9393:80'
+    depends_on:
+      proxy:
+        condition: service_started
 
   postgresql:
     image: postgres:latest
@@ -218,7 +259,7 @@ services:
     image: docker.elastic.co/beats/elastic-agent:8.16.1
     restart: on-failure
     healthcheck:
-      test: curl --fail http://127.0.0.1:13133/ || exit 1
+      test: curl --fail http://localhost:13133/ || exit 1
       interval: 10s
       timeout: 5s
       retries: 3

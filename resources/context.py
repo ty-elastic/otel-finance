@@ -6,7 +6,7 @@ import json
 INDICES_RESOURCES_PATH = 'context/indices'
 KNOWLEDGE_RESOURCES_PATH = 'context/knowledge'
 
-TIMEOUT = 10
+TIMEOUT = 60
              
 def load_index(parent, index):
 
@@ -92,7 +92,15 @@ def load_elser():
     
 
 def load_knowledge():
-    
+    print(os.environ['KIBANA_URL'])
+
+    resp = requests.get(f"{os.environ['KIBANA_URL']}/internal/observability_ai_assistant/kb/status",
+                                     timeout=TIMEOUT,
+                                     headers={"kbn-xsrf": "reporting"},
+                                     auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']))
+    print(f"setting up knowledgebase: {resp.json()}")
+
+
     resp = requests.post(f"{os.environ['KIBANA_URL']}/internal/observability_ai_assistant/kb/setup",
                                      timeout=TIMEOUT,
                                      headers={"kbn-xsrf": "reporting"},
@@ -110,7 +118,7 @@ def load_knowledge():
                                      auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']))
                 print(f"loading knowledge {filename}: {resp.json()}")  
 
-#load_knowledge()
+load_knowledge()
 
 def load():
     load_elser()

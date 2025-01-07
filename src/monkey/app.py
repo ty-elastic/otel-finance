@@ -8,8 +8,6 @@ from threading import Thread
 import concurrent.futures
 
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry import trace, baggage, context
-from opentelemetry.metrics import get_meter
 from opentelemetry.processor.baggage import BaggageSpanProcessor, ALLOW_ALL_BAGGAGE_KEYS
 
 from opentelemetry import _logs as logs
@@ -55,6 +53,9 @@ db_error_per_region = {}
 model_error_per_region = {}
 skew_market_factor_per_symbol = {}
 
+def conform_request_bool(value):
+    return value.lower() == 'true'
+
 def generate_trade_request(*, customer_id, symbol, day_of_week, region, latency_amount, latency_action, error_model, error_db, error_db_service, skew_market_factor, canary, data_source):
     try:
         trade_response = requests.post(f"http://{os.environ['TRADER_HOST']}:9001/trade/request", 
@@ -99,7 +100,7 @@ def generate_trade_requests():
             if region in latency_per_action_per_region:
                 latency_amount = random.randint(latency_per_action_per_region[region]['amount']-LATENCY_SWING_MS, latency_per_action_per_region[region]['amount']+LATENCY_SWING_MS) / 1000.0
                 latency_action = latency_per_action_per_region[region]['action']
-                if time.time() - latency_per_action_per_region[region]['start'] >= ERROR_TIMEOUT_S:
+                if latency_per_action_per_region[region]['oneshot'] and time.time() - latency_per_action_per_region[region]['start'] >= ERROR_TIMEOUT_S:
                     app.logger.info(f"latency_per_action_per_region timeout")
                     latency_region_delete(region)
             else:
@@ -267,8 +268,10 @@ def tput_symbol_delete(symbol):
 def latency_region(region, amount):
     global latency_per_action_per_region
     latency_action = request.args.get('latency_action', default=None, type=str)
-    latency_per_action_per_region[region] = {'action': latency_action, 'amount': int(amount), 'start': time.time()}
-    high_tput_per_region[region] = HIGH_TPUT_PCT
+    latency_oneshot = request.args.get('latency_oneshot', default=True, type=conform_request_bool)
+    latency_per_action_per_region[region] = {'action': latency_action, 'amount': int(amount), 'start': time.time(), 'oneshot': latency_oneshot}
+    if latency_oneshot:
+        high_tput_per_region[region] = HIGH_TPUT_PCT
     return latency_per_action_per_region    
 @app.delete('/latency/region/<region>')
 def latency_region_delete(region):
