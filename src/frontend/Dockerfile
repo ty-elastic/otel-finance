@@ -6,6 +6,7 @@ ARG KIBANA_URL
 ARG ELASTICSEARCH_USER
 ARG ELASTICSEARCH_PASSWORD
 
+RUN mkdir -p /app
 WORKDIR /app
 
 # Copy package.json and package-lock.json to the working directory
