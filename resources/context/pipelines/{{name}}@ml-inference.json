@@ -1,0 +1,11 @@
+{
+  "description": "Machine Learning Inference pipeline for the '{{name}}' index",
+  "version": 1,
+  "processors": [
+    {
+      "pipeline": {
+        "name": "ml-inference-{{name}}-_elser_model_2_linux-x86_64"
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+    "body": "For ES|QL (Elasticsearch Query Language), use the '*' symbol for wildcards, not '%'",
+    "id": "ES|QL wildcard",
+    "title": "ES|QL wildcard",
+
+    "_extract_binary_content": false,
+    "_reduce_whitespace": true,
+    "_run_ml_inference": true
+}

@@ -1,4 +1,0 @@
-{
-    "description": "Customizable ingest pipeline for the 'search-github' index",
-    "processors": []
-  }

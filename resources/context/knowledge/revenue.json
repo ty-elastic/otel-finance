@@ -1,7 +1,0 @@
-{
-    "text": "i keep my revenue data in an index named metrics-apm.app.trader-default in a field named trading_revenue",
-    "is_correction": false,
-    "public": true,
-    "confidence": "high",
-    "doc_id": "revenue"
-}

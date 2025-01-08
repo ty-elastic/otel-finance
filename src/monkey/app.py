@@ -138,7 +138,7 @@ def generate_trade_requests():
             else:
                 canary = "false"
 
-            print(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region} with latency {latency_amount}, error_model={error_model}, error_db={error_db}, skew_market_factor={skew_market_factor}, canary={canary}")
+            app.logger.info(f"trading {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region} with latency {latency_amount}, error_model={error_model}, error_db={error_db}, skew_market_factor={skew_market_factor}, canary={canary}")
 
             executor.submit(generate_trade_request, customer_id=customer_id, symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week], region=region,
                         latency_amount=latency_amount, latency_action=latency_action, 
@@ -394,7 +394,7 @@ def generate_trades(*, fixed_day_of_week=None, fixed_region = None, fixed_symbol
         if fixed_share_price_min is not None and share_price >= fixed_share_price_min and share_price <= fixed_share_price_max:
             trade_classification = classification
 
-        print(f"training {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region}, classification {trade_classification}")
+        app.logger.info(f"training {symbol} for {customer_id} on {DAYS_OF_WEEK[idx_of_week]} from {region}, classification {trade_classification}")
 
         generate_trade_force(symbol=symbol, day_of_week=DAYS_OF_WEEK[idx_of_week], region=region, customer_id=customer_id,
                              action=action, shares=shares, share_price=share_price, classification=trade_classification,

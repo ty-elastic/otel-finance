@@ -1,0 +1,5 @@
+{
+  "description": "Customizable ingest pipeline for the '{{name}}' index",
+  "version": 1,
+  "processors": []
+}
