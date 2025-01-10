@@ -7,6 +7,8 @@ services:
     ports:
       - "9010:9010"
     environment:
+      BACKLOAD_DATA: true
+      SOLVE_ALL: false
       KIBANA_URL: ${KIBANA_URL}
       ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
       ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
@@ -15,11 +17,17 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH: "http://collector_playback:4319"
     depends_on:
       collector_playback:
-        condition: service_started
+        condition: service_healthy
 
   collector_playback:
     image: docker.elastic.co/beats/elastic-agent:8.16.1
     restart: on-failure
+    healthcheck:
+      test: curl --fail http://localhost:13133/ || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
     ports:
       - "4318:4318"
       - "4319:4319"

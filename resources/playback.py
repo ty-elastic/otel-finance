@@ -62,6 +62,8 @@ def find_trim_points(*, resources, align_to_week=False):
                     for scope_span in scope['spans']:
 
                         if align_to_week:
+                            if 'attributes' not in scope_span:
+                                continue
                             dow = get_day_of_week(scope_span['attributes'])
                             if first_file_ts is None and dow != 'M':
                                 #print("looking for first monday")
@@ -112,6 +114,24 @@ def conform_time(*, parent, key, trim_first_file_ts, trim_last_file_ts, ts_offse
     # else:
     #     print(f"key {key} not found for {type}, {parent}")
     return False, False, last_ts
+
+def update_ids(parent_object, uuids):
+    if 'traceId' in parent_object:
+        if parent_object['traceId'] not in uuids['traceId']:
+            uuids['traceId'][parent_object['traceId']] = os.urandom(16).hex()
+        parent_object['traceId'] = uuids['traceId'][parent_object['traceId']]
+
+    if 'spanId' in parent_object: 
+        if parent_object['spanId'] not in uuids['spanId']:
+            uuids['spanId'][parent_object['spanId']] = os.urandom(8).hex()
+        parent_object['spanId'] = uuids['spanId'][parent_object['spanId']]
+        
+    if 'parentSpanId' in parent_object and parent_object['parentSpanId'] != "":
+        if parent_object['parentSpanId'] not in uuids['spanId']:
+            uuids['spanId'][parent_object['parentSpanId']] = os.urandom(8).hex()
+        parent_object['parentSpanId'] = uuids['spanId'][parent_object['parentSpanId']]
+
+    return parent_object, uuids
 
 def conform_resources(*, resources, trim_first_file_ts=0, trim_last_file_ts=None, ts_offset=0):
     last_ts = ts_offset
@@ -174,6 +194,7 @@ def conform_resources(*, resources, trim_first_file_ts=0, trim_last_file_ts=None
                     for log_record in scope_log['logRecords']:
                         if 'attributes' in log_record:
                             overwrite_datasource(log_record['attributes'])
+                        log_record, uuids = update_ids(log_record, uuids)
                         found1, add_log1, last_ts = conform_time(parent=log_record, key='timeUnixNano',
                                                                 trim_first_file_ts=trim_first_file_ts, 
                                                                 trim_last_file_ts=trim_last_file_ts,
@@ -200,20 +221,8 @@ def conform_resources(*, resources, trim_first_file_ts=0, trim_last_file_ts=None
                     for scope_span in scope['spans']:
                         if 'attributes' in scope_span:
                             overwrite_datasource(scope_span['attributes'])
+                        scope_span, uuids = update_ids(scope_span, uuids)
                         
-                        if scope_span['traceId'] not in uuids['traceId']:
-                            uuids['traceId'][scope_span['traceId']] = os.urandom(16).hex()
-                        scope_span['traceId'] = uuids['traceId'][scope_span['traceId']]
-                            
-                        if scope_span['spanId'] not in uuids['spanId']:
-                            uuids['spanId'][scope_span['spanId']] = os.urandom(8).hex()
-                        scope_span['spanId'] = uuids['spanId'][scope_span['spanId']]
-                            
-                        if 'parentSpanId' in scope_span and scope_span['parentSpanId'] != "":
-                            if scope_span['parentSpanId'] not in uuids['spanId']:
-                                uuids['spanId'][scope_span['parentSpanId']] = os.urandom(8).hex()
-                            scope_span['parentSpanId'] = uuids['spanId'][scope_span['parentSpanId']]
-
                         found1, add_span1, last_ts = conform_time(parent=scope_span, key='startTimeUnixNano', 
                                                                 trim_first_file_ts=trim_first_file_ts, 
                                                                 trim_last_file_ts=trim_last_file_ts,
