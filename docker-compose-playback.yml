@@ -9,6 +9,8 @@ services:
     environment:
       BACKLOAD_DATA: true
       SOLVE_ALL: true
+      ERRORS: true
+
       KIBANA_URL: ${KIBANA_URL}
       ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
       ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
