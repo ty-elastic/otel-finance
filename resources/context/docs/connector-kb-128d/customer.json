@@ -1,0 +1,9 @@
+{
+    "body": "I keep track of customers in my traces and logs with the field 'labels.com_example_customer_id'",
+    "id": "customer",
+    "title": "customer",
+
+    "_extract_binary_content": false,
+    "_reduce_whitespace": true,
+    "_run_ml_inference": true
+}

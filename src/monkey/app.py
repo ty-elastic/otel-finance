@@ -58,6 +58,11 @@ db_error_per_region = {}
 model_error_per_region = {}
 skew_market_factor_per_symbol = {}
 
+def get_customers():
+    customers = []
+    for region in CUSTOMERS_PER_REGION:
+        customers.append(region)
+
 def conform_request_bool(value):
     return value.lower() == 'true'
 
@@ -220,9 +225,9 @@ def test_error():
 def get_state():
     state = {
         'days_of_week': DAYS_OF_WEEK,
-        'customers': CUSTOMERS,
+        'customers': get_customers(),
         'symbols': SYMBOLS,
-        'regions': REGIONS,
+        'regions': list(CUSTOMERS_PER_REGION.keys()),
         
         'latency_per_action_per_region': latency_per_action_per_region,
         'canary_per_region': canary_per_region,
@@ -377,7 +382,7 @@ def generate_trades(*, fixed_day_of_week=None, fixed_region = None, fixed_symbol
         if fixed_day_of_week is not None and DAYS_OF_WEEK.index(fixed_day_of_week) == idx_of_week:
             trade_classification = classification
 
-        region = random.choice(REGIONS)
+        region = random.choice(list(CUSTOMERS_PER_REGION.keys()))
         if fixed_region is not None and fixed_region == region:
             trade_classification = classification
  
@@ -385,7 +390,7 @@ def generate_trades(*, fixed_day_of_week=None, fixed_region = None, fixed_symbol
         if fixed_symbol is not None and fixed_symbol == symbol:
             trade_classification = classification
 
-        customer_id = random.choice(CUSTOMERS)
+        customer_id = random.choice(CUSTOMERS_PER_REGION[region])
         
         action = random.choice(ACTIONS)
         if fixed_action is not None and fixed_action == action:

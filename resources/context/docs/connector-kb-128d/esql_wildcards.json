@@ -1,5 +1,5 @@
 {
-    "body": "For ES|QL (Elasticsearch Query Language), use the '*' symbol for wildcards, not '%'",
+    "body": "When querying for log messages using ES|QL (Elasticsearch Query Language), use the '*' symbol for wildcards, not '%'",
     "id": "ES|QL wildcard",
     "title": "ES|QL wildcard",
 

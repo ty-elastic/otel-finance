@@ -4,7 +4,7 @@
     },
     "issue_comments": [],
     "title": "Max retries exceeded with url",
-    "body": "If you see the error `[WARN] unable to fetch current market data; skipping: HTTPSConnectionPool(host=market.example.com, port=443): Max retries exceeded with url: / (Caused by NameResolutionError(Failed to resolve market.example.com ([Errno -2] Name or service not known)))`, it means that the market.example.com service has not yet been provisioned in this region. Please ask devops to provision it.",
+    "body": "If you see the error `[WARN] unable to fetch current market data; skipping: HTTPSConnectionPool(host=market.{region}.example.com, port=443): Max retries exceeded with url: / (Caused by NameResolutionError(Failed to resolve market.example.com ([Errno -2] Name or service not known)))`, it means that the market.{region}.example.com service has not yet been provisioned in this region. Please ask devops to provision it.",
     "type": "Issue",
     "url": "https://github.com/-/otel-trading/issues/1",
     "number": 1,

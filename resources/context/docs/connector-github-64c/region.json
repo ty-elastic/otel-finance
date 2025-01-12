@@ -3,8 +3,8 @@
         "login": "elk"
     },
     "issue_comments": [],
-    "title": "Setup EMEA",
-    "body": "Setup EMEA region for trading",
+    "title": "Setup LATAM",
+    "body": "Setup LATAM region for trading",
     "type": "Issue",
     "url": "https://github.com/-/otel-trading/issues/3",
     "number": 1,

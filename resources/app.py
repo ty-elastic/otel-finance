@@ -11,6 +11,7 @@ import slo
 import context
 import assistant
 import playback
+import errors
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -49,13 +50,16 @@ def init():
     kibana.load()
     if os.environ['SOLVE_ALL'] == 'true':
         slo.load_all()
-        
+
 def maintenance_loop():
     print("START maintenance_loop")
     aliases_created = False
+    errors_started = False
     while True:
         if not aliases_created:
             aliases_created = alias.load()
+        if os.environ['ERRORS'] == 'true' and not errors_started:
+            errors_started = errors.load()
         time.sleep(10)
 
 def loading():

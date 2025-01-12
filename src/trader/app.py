@@ -158,18 +158,18 @@ def trade_force():
 def trade_request():
     trade_id, customer_id, day_of_week, region, symbol, latency_amount, latency_action, error_model, error_db, error_db_service, skew_market_factor, canary, data_source, classification = decode_common_args()
 
-    action, shares, share_price = run_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 
+    action, shares, share_price = run_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, region=region,
                                                    error=error_model, latency_amount=latency_amount, latency_action=latency_action, skew_market_factor=skew_market_factor)
 
     return trade (region=region, trade_id=trade_id, symbol=symbol, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, canary=canary, action=action, error_db=error_db, error_db_service=error_db_service)
 
 @tracer.start_as_current_span("run_model")
-def run_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency_amount=0.0, latency_action=None, skew_market_factor=0):
+def run_model(*, trade_id, customer_id, day_of_week, region, symbol, error=False, latency_amount=0.0, latency_action=None, skew_market_factor=0):
     current_span = trace.get_current_span()
     
     market_factor, share_price = model.sim_market_data(symbol=symbol, day_of_week=day_of_week, skew_market_factor=skew_market_factor)
     current_span.set_attribute(f"{ATTRIBUTE_PREFIX}.market_factor", market_factor)
     
-    action, shares = model.sim_decide(error=error, latency_amount=latency_amount, latency_action=latency_action, symbol=symbol, market_factor=market_factor)
+    action, shares = model.sim_decide(error=error, region=region, latency_amount=latency_amount, latency_action=latency_action, symbol=symbol, market_factor=market_factor)
 
     return action, shares, share_price
