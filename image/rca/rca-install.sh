@@ -39,6 +39,4 @@ git branch --set-upstream-to origin/$GIT_BRANCH
 
 mkdir -p $WORKSPACE_DIR/logs
 
-echo "cd $WORKSPACE_DIR" >> /root/.bashrc
-
 docker compose -f docker-compose-playback.yml build
