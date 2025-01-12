@@ -8,15 +8,15 @@
     },
     "forkCount": 0,
     "type": "Repository",
-    "nameWithOwner": "ty-elastic/otel-finance",
-    "url": "https://github.com/ty-elastic/otel-finance",
+    "nameWithOwner": "-/otel-trading",
+    "url": "https://github.com/-/otel-trading",
     "isFork": false,
     "createdAt": "2024-09-17T01:21:16Z",
     "defaultBranchRef": {
         "name": "main"
     },
-    "name": "otel-finance",
-    "id": "ty-elastic/otel-finance",
+    "name": "otel-trading",
+    "id": "-/otel-trading",
     "_timestamp": "2024-09-18T03:37:52Z",
     "primaryLanguage": {
         "name": "Python"

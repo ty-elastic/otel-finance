@@ -2,14 +2,10 @@ extensions:
   health_check:
 
 receivers:
-  otlp/apm:
+  otlp/json:
     protocols:
       http:
         endpoint: 0.0.0.0:4318
-  otlp/elasticsearch:
-    protocols:
-      http:
-        endpoint: 0.0.0.0:4319
 
 processors:
   batch:
@@ -51,18 +47,6 @@ exporters:
   debug:
     verbosity: detailed
 
-  elasticsearch:
-    endpoints: ["${ELASTICSEARCH_URL}"]
-    api_key: ${ELASTICSEARCH_APIKEY}
-    mapping:
-      mode: ecs
-    logs_dynamic_index:
-      enabled: true
-    metrics_dynamic_index:
-      enabled: true
-    traces_dynamic_index:
-      enabled: true
-
   otlp/apm: 
     endpoint: "${ELASTIC_APM_SERVER_ENDPOINT}"
     tls:
@@ -71,25 +55,50 @@ exporters:
       # Elastic APM Server secret token
       Authorization: "Bearer ${ELASTIC_APM_SERVER_SECRET}"
 
+# connectors:
+#   routing:
+#     error_mode: ignore
+#     match_once: false
+#     table:
+#       - statement: route() where attributes["exporter"] == "apm"
+#         pipelines: [traces/apm, metrics/apm, logs/apm]
+#       - statement: route() where attributes["exporter"] == "elasticsearch"
+#         pipelines: [logs/elasticsearch]
+
 service:
   extensions: [health_check]
   pipelines:
+    # traces/otlp:
+    #   receivers: [otlp/json]
+    #   processors: [resourcedetection]
+    #   exporters: [routing]
+
+    # metrics/otlp:
+    #   receivers: [otlp/json]
+    #   processors: [resourcedetection]
+    #   exporters: [routing]
+
+    # logs/otlp:
+    #   receivers: [otlp/json]
+    #   processors: [resourcedetection]
+    #   exporters: [routing]
+
     traces/apm:
-      receivers: [otlp/apm]
+      receivers: [otlp/json]
       processors: [resourcedetection, batch]
       exporters: [otlp/apm]
 
     metrics/apm:
-      receivers: [otlp/apm]
+      receivers: [otlp/json]
       processors: [resourcedetection, batch]
       exporters: [otlp/apm]
 
     logs/apm:
-      receivers: [otlp/apm]
+      receivers: [otlp/json]
       processors: [resourcedetection, batch]
       exporters: [otlp/apm]
 
-    logs/elasticsearch:
-      receivers: [otlp/elasticsearch]
-      processors: [resourcedetection]
-      exporters: [elasticsearch]
+    # logs/elasticsearch:
+    #   receivers: [routing]
+    #   processors: [batch]
+    #   exporters: [otlp/apm]

@@ -11,14 +11,16 @@ from elasticsearch import Elasticsearch
 from pathlib import Path
 
 RECORDED_RESOURCES_PATH = 'recorded'
-HOURS_TO_PRELOAD = 1
+
+BACKFILL_MINS = 15
+FUTUREFILL_MINS = 60
 
 MAX_RECORDS_PER_UPLOAD = 50
 MAX_MB_PER_UPLOAD = 4
 UPLOAD_TIMEOUT = 5
 GROUPED_TIME_MINS = 15
 UPLOAD_THREADS = 2
-
+ 
 def delete_all():
     with Elasticsearch(os.environ['ELASTICSEARCH_URL'], basic_auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD'])) as client:
         resp = client.indices.get_data_stream(name="*apm*", expand_wildcards="all")
@@ -131,20 +133,15 @@ def update_ids(parent_object, uuids):
             uuids['spanId'][parent_object['parentSpanId']] = os.urandom(8).hex()
         parent_object['parentSpanId'] = uuids['spanId'][parent_object['parentSpanId']]
 
-    return parent_object, uuids
+    return parent_object
 
-def conform_resources(*, resources, trim_first_file_ts=0, trim_last_file_ts=None, ts_offset=0):
+def conform_resources(*, resources, trim_first_file_ts=0, trim_last_file_ts=None, ts_offset=0, uuids):
     last_ts = ts_offset
 
     out_data = {}
     out_data['resourceSpans'] = []
     out_data['resourceLogs'] = []
     out_data['resourceMetrics'] = []
-    
-    uuids = {
-        'traceId': {},
-        'spanId': {}
-    }
     
     for resource in resources:
 
@@ -194,7 +191,8 @@ def conform_resources(*, resources, trim_first_file_ts=0, trim_last_file_ts=None
                     for log_record in scope_log['logRecords']:
                         if 'attributes' in log_record:
                             overwrite_datasource(log_record['attributes'])
-                        log_record, uuids = update_ids(log_record, uuids)
+                        if uuids is not None:
+                            log_record = update_ids(log_record, uuids)
                         found1, add_log1, last_ts = conform_time(parent=log_record, key='timeUnixNano',
                                                                 trim_first_file_ts=trim_first_file_ts, 
                                                                 trim_last_file_ts=trim_last_file_ts,
@@ -221,7 +219,8 @@ def conform_resources(*, resources, trim_first_file_ts=0, trim_last_file_ts=None
                     for scope_span in scope['spans']:
                         if 'attributes' in scope_span:
                             overwrite_datasource(scope_span['attributes'])
-                        scope_span, uuids = update_ids(scope_span, uuids)
+                        if uuids is not None:
+                            scope_span = update_ids(scope_span, uuids)
                         
                         found1, add_span1, last_ts = conform_time(parent=scope_span, key='startTimeUnixNano', 
                                                                 trim_first_file_ts=trim_first_file_ts, 
@@ -292,32 +291,49 @@ def save_trimmed_file(file, output_path, trim_first_file_ts=None, trim_last_file
         print(f"conforming for file output")
         _, trimmed_resources = conform_resources(resources=resources_file, 
                                                  trim_first_file_ts=trim_first_file_ts, 
-                                                 trim_last_file_ts=trim_last_file_ts)
+                                                 trim_last_file_ts=trim_last_file_ts, uuids=None)
         
         #print(trimmed_resources)
-        with open(os.path.join(output_path, f"{filename}-metrics.json"), 'w') as f:
-            for resource in trimmed_resources['resourceMetrics']:
-                w = {'resourceMetrics': [resource]}
-                json.dump(w, f)
-                f.write('\r\n')
+        # with open(os.path.join(output_path, f"{filename}-metrics.json"), 'w') as f:
+        #     for resource in trimmed_resources['resourceMetrics']:
+        #         w = {'resourceMetrics': [resource]}
+        #         json.dump(w, f)
+        #         f.write('\r\n')
             
-        with open(os.path.join(output_path, f"{filename}-traces.json"), 'w') as f:
+        # with open(os.path.join(output_path, f"{filename}-traces.json"), 'w') as f:
+        #     for resource in trimmed_resources['resourceSpans']:
+        #         w = {'resourceSpans': [resource]}
+        #         json.dump(w, f)
+        #         f.write('\r\n')
+            
+        # with open(os.path.join(output_path, f"{filename}-logs.json"), 'w') as f:
+        #     for resource in trimmed_resources['resourceLogs']:
+        #         w = {'resourceLogs': [resource]}
+        #         json.dump(w, f)
+        #         f.write('\r\n')
+        
+        with open(os.path.join(output_path, f"{filename}-trimmed.json"), 'w') as f:
             for resource in trimmed_resources['resourceSpans']:
                 w = {'resourceSpans': [resource]}
                 json.dump(w, f)
                 f.write('\r\n')
-            
-        with open(os.path.join(output_path, f"{filename}-logs.json"), 'w') as f:
+            for resource in trimmed_resources['resourceMetrics']:
+                w = {'resourceMetrics': [resource]}
+                json.dump(w, f)
+                f.write('\r\n')
             for resource in trimmed_resources['resourceLogs']:
                 w = {'resourceLogs': [resource]}
                 json.dump(w, f)
                 f.write('\r\n')
-        
+
         return trim_first_file_ts, trim_last_file_ts
 
-def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None, trim_last_file_ts=None):
+def load_file(*, file, collector_url, backfill_mins=15, futurefill_mins=120, trim_first_file_ts=None, trim_last_file_ts=None):
     start = time.time()
-    
+
+    if os.path.getsize(file) == 0:
+        return trim_first_file_ts, trim_last_file_ts
+
     with open(file, encoding='utf-8') as f:
         print(f"read {file}")
         resources_file = ndjson.load(f)
@@ -329,42 +345,49 @@ def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None
         print(f"conforming")
         _, trimmed_resources = conform_resources(resources=resources_file, 
                                                  trim_first_file_ts=trim_first_file_ts, 
-                                                 trim_last_file_ts=trim_last_file_ts)
+                                                 trim_last_file_ts=trim_last_file_ts, uuids=None)
         
         
 
-        print('grouping data...')
-        grouped_data = {'resourceSpans': [], 'resourceMetrics': [], 'resourceLogs': []}
-        group_data_offset = 0
-        # mux 1 hour of data in memory
-        while group_data_offset < GROUPED_TIME_MINS*60*1e9:
-            resources = copy.deepcopy(trimmed_resources)
-            group_data_offset, out_data = conform_resources(resources=[resources], ts_offset=group_data_offset)
-            #print(group_data_offset)
-            if len(out_data['resourceSpans']) > 0:
-                grouped_data['resourceSpans'] = grouped_data['resourceSpans'] + out_data['resourceSpans']
-            if len(out_data['resourceMetrics']) > 0:
-                grouped_data['resourceMetrics'] = grouped_data['resourceMetrics'] + out_data['resourceMetrics']
-            if len(out_data['resourceLogs']) > 0:
-                grouped_data['resourceLogs'] = grouped_data['resourceLogs'] + out_data['resourceLogs']
-        #grouped_data = trimmed_resources
-        print("done grouping")
+        # print('grouping data...')
+        # grouped_data = {'resourceSpans': [], 'resourceMetrics': [], 'resourceLogs': []}
+        # group_data_offset = 0
+        # # mux 1 hour of data in memory
+        # while group_data_offset < GROUPED_TIME_MINS*60*1e9:
+        #     resources = copy.deepcopy(trimmed_resources)
+        #     group_data_offset, out_data = conform_resources(resources=[resources], ts_offset=group_data_offset)
+        #     #print(group_data_offset)
+        #     if len(out_data['resourceSpans']) > 0:
+        #         grouped_data['resourceSpans'] = grouped_data['resourceSpans'] + out_data['resourceSpans']
+        #     if len(out_data['resourceMetrics']) > 0:
+        #         grouped_data['resourceMetrics'] = grouped_data['resourceMetrics'] + out_data['resourceMetrics']
+        #     if len(out_data['resourceLogs']) > 0:
+        #         grouped_data['resourceLogs'] = grouped_data['resourceLogs'] + out_data['resourceLogs']
+        # #grouped_data = trimmed_resources
+        # print("done grouping")
         
-        trimmed_resources = None
+        # trimmed_resources = None
         
         # Get the current time
         now = datetime.now(tz=timezone.utc)
         # Subtract one week (7 days)
-        ts_offset = now - timedelta(hours=backfill_hours)
-        
-        now_ns = int(now.timestamp() * 1e9)
+        ts_offset = now - timedelta(minutes=backfill_mins)
         ts_offset_ns = int(ts_offset.timestamp() * 1e9)
         
-        while ts_offset_ns < now_ns:
-            resources = copy.deepcopy(grouped_data)
+        future = now + timedelta(minutes=futurefill_mins)
+        future_ns = int(future.timestamp() * 1e9)
 
-            print(f"> {file} loop {(now_ns - ts_offset_ns)/1e9} / {datetime.fromtimestamp(ts_offset_ns/1e9).strftime('%c')}")
-            ts_offset_ns, out_data = conform_resources(resources=[resources], ts_offset=ts_offset_ns)
+
+        while ts_offset_ns < future_ns:
+            resources = copy.deepcopy(trimmed_resources)
+
+            uuids = {
+                    'traceId': {},
+                    'spanId': {}
+                }
+
+            print(f"> {file} loop {(future_ns - ts_offset_ns)/1e9} / {datetime.fromtimestamp(ts_offset_ns/1e9).strftime('%c')}")
+            ts_offset_ns, out_data = conform_resources(resources=[resources], ts_offset=ts_offset_ns, uuids=uuids)
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=UPLOAD_THREADS) as executor:
                 if len(out_data['resourceSpans']) > 0:
@@ -378,7 +401,7 @@ def load_file(*, file, collector_url, backfill_hours=24, trim_first_file_ts=None
 
             resources = None
             
-        grouped_data = None
+        trimmed_resources = None
         
         end = time.time()
         print(f'duration={end-start}')
@@ -408,7 +431,7 @@ def load(to_file=False):
                     trim_first_file_ts, trim_last_file_ts = save_trimmed_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), output_path=os.path.join(RECORDED_RESOURCES_PATH, "trimmed"), align_to_days=True)
                 else:
                     trim_first_file_ts, trim_last_file_ts = load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "apm", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM'], 
-                        trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_hours=HOURS_TO_PRELOAD)
+                        trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_mins=BACKFILL_MINS, futurefill_mins=FUTUREFILL_MINS)
                 print(f"trim_first_file_ts={trim_first_file_ts}, trim_last_file_ts={trim_last_file_ts}")
 
     if os.path.exists(os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch")):
@@ -419,7 +442,7 @@ def load(to_file=False):
                     save_trimmed_file(file=os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch", file), output_path=os.path.join(RECORDED_RESOURCES_PATH, "trimmed"), trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts)
                 else:
                     load_file(file=os.path.join(RECORDED_RESOURCES_PATH, "elasticsearch", file), collector_url=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH'], 
-                        trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_hours=HOURS_TO_PRELOAD)
+                        trim_first_file_ts=trim_first_file_ts, trim_last_file_ts=trim_last_file_ts, backfill_mins=BACKFILL_MINS, futurefill_mins=FUTUREFILL_MINS)
 
     print('done')
 #load(to_file=False)

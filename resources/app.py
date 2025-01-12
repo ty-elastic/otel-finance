@@ -47,7 +47,9 @@ def init():
     assistant.load()
     context.load()
     kibana.load()
-    
+    if os.environ['SOLVE_ALL'] == 'true':
+        slo.load_all()
+        
 def maintenance_loop():
     print("START maintenance_loop")
     aliases_created = False
@@ -57,14 +59,13 @@ def maintenance_loop():
         time.sleep(10)
 
 def loading():
-    time.sleep(10)
+    #time.sleep(1)
     print("START loading")
     try:
         playback.load()
     except Exception as inst:
         print(inst)
-    if os.environ['SOLVE_ALL'] == 'true':
-        slo.load_all()
+
 
 def start_maintenance_thread():
     thread = threading.Thread(target=maintenance_loop, daemon=False)

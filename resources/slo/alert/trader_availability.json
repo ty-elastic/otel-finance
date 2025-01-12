@@ -4,7 +4,7 @@
     "windows": [
       {
         "id": "b1e58d45-2282-44bd-b8bd-1aacc90788a9",
-        "burnRateThreshold": 1.68,
+        "burnRateThreshold": 0.01,
         "maxBurnRateThreshold": 168,
         "longWindow": {
           "value": 1,
@@ -63,7 +63,7 @@
   },
   "consumer": "slo",
   "schedule": {
-    "interval": "1m"
+    "interval": "10s"
   },
   "tags": [],
   "name": "[Trader] Availability burn rate",

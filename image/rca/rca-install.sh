@@ -41,5 +41,4 @@ mkdir -p $WORKSPACE_DIR/logs
 
 echo "cd $WORKSPACE_DIR" >> /root/.bashrc
 
-docker compose -f docker-compose-playback up -d
-
+docker compose -f docker-compose-playback.yml build

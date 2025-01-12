@@ -19,7 +19,9 @@ function customRouter(req: any) {
     if (req.query.canary === 'true')
       return `http://${process.env.RECORDER_HOST_CANARY}:9003`;
     else {
-      if (getRandomBoolean())
+      if (process.env.RECORDER_HOST_2 == null)
+        return `http://${process.env.RECORDER_HOST_1}:9003`;
+      else if (getRandomBoolean())
         return `http://${process.env.RECORDER_HOST_1}:9003`;
       else
         return `http://${process.env.RECORDER_HOST_2}:9003`;

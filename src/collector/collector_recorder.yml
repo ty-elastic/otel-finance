@@ -58,27 +58,42 @@ receivers:
         field: attributes.span_id
         if: attributes.span_id != nil
 
+processors:
+  resource/elasticsearch:
+    attributes:
+    - key: exporter
+      value: "elasticsearch"
+      action: upsert
+  resource/apm:
+    attributes:
+    - key: exporter
+      value: "apm"
+      action: upsert
+
 exporters:
-  file/apm:
-    path: /recorded/apm.json
-  file/elasticsearch:
-    path: /recorded/elasticsearch.json
+  file:
+    path: /recorded/otlp.json
 
 service:
   extensions: [health_check]
   pipelines:
     traces/fromsdk:
       receivers: [otlp/fromsdk]
-      exporters: [file/apm]
+      processors: [resource/apm]
+      exporters: [file]
 
     metrics/fromsdk:
       receivers: [otlp/fromsdk]
-      exporters: [file/apm]
+      processors: [resource/apm]
+      exporters: [file]
 
     logs/fromsdk:
       receivers: [otlp/fromsdk]
-      exporters: [file/apm]
+      processors: [resource/apm]
+      exporters: [file]
 
     logs/file:
       receivers: [filelog/json]
-      exporters: [file/elasticsearch]
+      processors: [resource/elasticsearch]
+      exporters: [file]
+

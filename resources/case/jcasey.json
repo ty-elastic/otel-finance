@@ -1,0 +1,19 @@
+{
+    "tags": [
+      "user"
+    ],
+    "owner": "observability",
+    "title": "User j.casey is apparently experiencing high latency",
+    "settings": {
+      "syncAlerts": true
+    },
+    "description": "User j.casey is complaining that our trading service is really slow.",
+    "severity": "low",
+    "connector" :
+    {
+      "type": ".none",
+      "fields": null,
+      "id": "none",
+      "name": "none"
+    }
+  }

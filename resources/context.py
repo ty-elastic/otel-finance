@@ -2,6 +2,7 @@ import os
 import requests
 from pathlib import Path
 import json
+import datetime
 
 INDICES_RESOURCES_PATH = 'context/docs'
 KNOWLEDGE_RESOURCES_PATH = 'context/knowledge'
@@ -45,7 +46,10 @@ def load_docs(docs_path, index):
     for file in os.listdir(docs_path):
         if file.endswith(".json"):
             with open(os.path.join(docs_path, file), "rt", encoding='utf8') as f:
-                body = json.load(f)
+                content = f.read()
+                new_content = content.replace('{{@timestamp}}', datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")) # "2024-09-18T02:41:45Z"
+                body = json.loads(new_content)
+
                 filename = Path(file).stem
 
                 resp = requests.put(f"{os.environ['ELASTICSEARCH_URL']}/{index}/_doc/{filename}?pipeline={index}",

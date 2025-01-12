@@ -40,9 +40,14 @@ CONCURRENT_TRADE_REQUESTS = 10
 DAYS_OF_WEEK = ['M', 'Tu', 'W', 'Th', 'F']
 ACTIONS = ['buy', 'sell', 'hold']
 
-CUSTOMERS = ['b.smith', 'l.johnson', 'j.casey', 'l.hall', 'q.bert', 'carol.halley']
-SYMBOLS = ['MOT', 'MSI', 'GOGO', 'INTEQ', 'VID', 'ESTC']
-REGIONS = ['NA', 'LATAM', 'EU', 'EMEA']
+CUSTOMERS_PER_REGION = {
+    'NA': ['b.smith', 'l.johnson'],
+    'LATAM': ['j.casey', 'l.hall'],
+    'EU': ['q.bert', 'carol.halley'],
+    'EMEA': ['mr.t', 'u.hoo']
+}
+
+SYMBOLS = ['ZVZZT', 'ZALM', 'ZYX', 'CBAZ', 'BAA', 'OELK']
 
 latency_per_action_per_region = {}
 canary_per_region = {}
@@ -93,9 +98,9 @@ def generate_trade_requests():
 
             sleep = float(random.randint(NORMAL_TPUT_SLEEP_MS[0], NORMAL_TPUT_SLEEP_MS[1]) / 1000)
             
-            region = next_region if next_region is not None else random.choice(REGIONS)
+            region = next_region if next_region is not None else random.choice(list(CUSTOMERS_PER_REGION.keys()))
             symbol = next_symbol if next_symbol is not None else random.choice(SYMBOLS)
-            customer_id = next_customer if next_customer is not None else random.choice(CUSTOMERS)
+            customer_id = next_customer if next_customer is not None else random.choice(CUSTOMERS_PER_REGION[region])
 
             if region in latency_per_action_per_region:
                 latency_amount = random.randint(latency_per_action_per_region[region]['amount']-LATENCY_SWING_MS, latency_per_action_per_region[region]['amount']+LATENCY_SWING_MS) / 1000.0

@@ -1,0 +1,26 @@
+{
+    "author": {
+        "login": "elk"
+    },
+    "issue_comments": [],
+    "title": "Setup EMEA",
+    "body": "Setup EMEA region for trading",
+    "type": "Issue",
+    "url": "https://github.com/-/otel-trading/issues/3",
+    "number": 1,
+    "createdAt": "{{@timestamp}}",
+    "assignees_list": [
+        {
+            "login": "elk"
+        }
+    ],
+    "labels_field": [],
+    "state": "OPEN",
+    "id": "-/otel-trading/issues/emea",
+    "closedAt": null,
+    "_timestamp": "{{@timestamp}}",
+
+    "_extract_binary_content": false,
+    "_reduce_whitespace": true,
+    "_run_ml_inference": true
+}

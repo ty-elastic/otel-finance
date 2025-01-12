@@ -63,6 +63,9 @@ spec:
       selfSignedCertificate:
         disabled: true
   config:
+    observability:apmEnableContinuousRollups: false
+    observability:apmEnableServiceMetrics: false
+
     # to support embedded tab browsing from instruqt
     csp.strict: false
     csp.warnLegacyBrowsers: false
