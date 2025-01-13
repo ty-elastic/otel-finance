@@ -30,7 +30,7 @@ packer {
   }
 }
 
-source "googlecompute" "vscode" {
+source "googlecompute" "apmotel" {
   project_id = var.project_id
   region     = var.region
   zone       = var.zone
@@ -47,7 +47,7 @@ source "googlecompute" "vscode" {
 }
 
 build {
-    sources = ["source.googlecompute.vscode"]
+    sources = ["source.googlecompute.apmotel"]
 
     provisioner "shell" {
         script = "apmotel/apmotel-install.sh"

@@ -22,12 +22,16 @@ apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 
 ####################################################################### CODE
 
-export $(cat /root/.env | xargs)
+WORKSPACE_DIR=/workspace
+echo "WORKSPACE_DIR=$WORKSPACE_DIR" >> /root/.env
 
+export $(cat /root/.env | xargs)
 echo "export $(cat /root/.env | xargs)" >> /root/.bashrc
 
 GIT_BRANCH=main
 GIT_URL=https://github.com/ty-elastic/otel-finance.git
+
+mkdir -p $WORKSPACE_DIR
 
 cd $WORKSPACE_DIR
 git config --global init.defaultBranch $GIT_BRANCH

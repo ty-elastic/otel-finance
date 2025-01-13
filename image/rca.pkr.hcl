@@ -30,7 +30,7 @@ packer {
   }
 }
 
-source "googlecompute" "vscode" {
+source "googlecompute" "rca" {
   project_id = var.project_id
   region     = var.region
   zone       = var.zone
@@ -47,7 +47,7 @@ source "googlecompute" "vscode" {
 }
 
 build {
-    sources = ["source.googlecompute.vscode"]
+    sources = ["source.googlecompute.rca"]
 
     provisioner "shell" {
         script = "rca/rca-install.sh"
