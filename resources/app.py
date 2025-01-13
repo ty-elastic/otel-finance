@@ -56,7 +56,9 @@ def init():
     space.load_all()
     
     slo.delete_all()
-    playback.delete_all()
+
+    if os.environ['DELETE_DATA'] == 'true':
+        playback.delete_all()
 
     if os.environ['BACKLOAD_DATA'] == 'true':
         start_loading_thread()

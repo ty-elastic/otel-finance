@@ -10,6 +10,7 @@ services:
       BACKLOAD_DATA: true
       SOLVE_ALL: true
       ERRORS: false
+      DELETE_DATA: ${DELETE_DATA:-false}
 
       KIBANA_URL: ${KIBANA_URL}
       ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
