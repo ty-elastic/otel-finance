@@ -10,11 +10,11 @@ export SA_LLM_PROXY_BEARER_TOKEN=$SA_LLM_PROXY_BEARER_TOKEN
 
 ####################################################################### CODE
 
-export $(cat /root/.env | xargs)
+# export $(cat /root/.env | xargs)
 
-cd $WORKSPACE_DIR
-git remote update
-git pull
-docker compose -f docker-compose-playback.yml build
-docker compose -f docker-compose-playback.yml up -d
+# cd $WORKSPACE_DIR
+# git remote update
+# git pull
+# docker compose -f docker-compose-playback.yml build
+# docker compose -f docker-compose-playback.yml up -d
 

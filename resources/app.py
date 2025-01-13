@@ -13,6 +13,7 @@ import assistant
 import playback
 import errors
 import case
+import space
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -41,6 +42,8 @@ def reset():
 
 def init():
     print("resetting initial assets...")
+
+    space.load_all()
     
     slo.delete_all()
     playback.delete_all()
