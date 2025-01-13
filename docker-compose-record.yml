@@ -78,83 +78,83 @@ services:
       #RECORDER_HOST_2: "recorder-go"
       RECORDER_HOST_CANARY: "recorder-go-zero"
     depends_on:
-      recorder-go:
-        condition: service_healthy
+      # recorder-go:
+      #   condition: service_healthy
       recorder-java:
         condition: service_healthy
       collector:
         condition: service_healthy
 
-  recorder-go:
-    build:
-      context: ./src/recorder-go/
-    restart: on-failure
-    volumes:
-      - ./logs:/logs
-    command: ["-logfile=/logs/recorder-go.json"]
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9003/health || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 1m
-    environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+  # recorder-go:
+  #   build:
+  #     context: ./src/recorder-go/
+  #   restart: on-failure
+  #   volumes:
+  #     - ./logs:/logs
+  #   command: ["-logfile=/logs/recorder-go.json"]
+  #   healthcheck:
+  #     test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9003/health || exit 1
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
+  #     start_period: 1m
+  #   environment:
+  #     OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
   
-      POSTGRES_HOST: "postgresql"
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_USER: "admin"
-    depends_on:
-      postgresql:
-        condition: service_healthy
-      collector:
-        condition: service_healthy
-      notifier:
-        condition: service_healthy
+  #     POSTGRES_HOST: "postgresql"
+  #     POSTGRES_PASSWORD: "password"
+  #     POSTGRES_USER: "admin"
+  #   depends_on:
+  #     postgresql:
+  #       condition: service_healthy
+  #     collector:
+  #       condition: service_healthy
+  #     notifier:
+  #       condition: service_healthy
 
-  recorder-go-zero:
-    build:
-      context: ./src/recorder-go-zero/
-    restart: on-failure
-    volumes:
-      - ./logs:/logs
-      - /proc:/host/proc
-    command: ["-logfile=/logs/recorder-go-zero.json"]
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9003/health || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 1m
-    environment:
-      POSTGRES_HOST: "postgresql"
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_USER: "admin"
-    depends_on:
-      postgresql:
-        condition: service_healthy
-      collector:
-        condition: service_healthy
-      notifier:
-        condition: service_healthy
-    pid: "host"
+  # recorder-go-zero:
+  #   build:
+  #     context: ./src/recorder-go-zero/
+  #   restart: on-failure
+  #   volumes:
+  #     - ./logs:/logs
+  #     - /proc:/host/proc
+  #   command: ["-logfile=/logs/recorder-go-zero.json"]
+  #   healthcheck:
+  #     test: wget --no-verbose --tries=1 --spider http://127.0.0.1:9003/health || exit 1
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
+  #     start_period: 1m
+  #   environment:
+  #     POSTGRES_HOST: "postgresql"
+  #     POSTGRES_PASSWORD: "password"
+  #     POSTGRES_USER: "admin"
+  #   depends_on:
+  #     postgresql:
+  #       condition: service_healthy
+  #     collector:
+  #       condition: service_healthy
+  #     notifier:
+  #       condition: service_healthy
+  #   pid: "host"
 
-  recorder-go-zero-ebpf:
-    image: otel/autoinstrumentation-go
-    environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4318"
-      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
-      OTEL_SERVICE_NAME: "recorder-go-zero"
-      OTEL_GO_AUTO_TARGET_EXE: "/recorder-zero"
-      OTEL_PROPAGATORS: "tracecontext,baggage"
-      OTEL_LOG_LEVEL: "debug"
-      OTEL_GO_AUTO_INCLUDE_DB_STATEMENT: "true"
-    volumes:
-      - /proc:/host/proc
-    depends_on:
-      - recorder-go-zero
-    privileged: true
-    pid: "host"
+  # recorder-go-zero-ebpf:
+  #   image: otel/autoinstrumentation-go
+  #   environment:
+  #     OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4318"
+  #     OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+  #     OTEL_SERVICE_NAME: "recorder-go-zero"
+  #     OTEL_GO_AUTO_TARGET_EXE: "/recorder-zero"
+  #     OTEL_PROPAGATORS: "tracecontext,baggage"
+  #     OTEL_LOG_LEVEL: "debug"
+  #     OTEL_GO_AUTO_INCLUDE_DB_STATEMENT: "true"
+  #   volumes:
+  #     - /proc:/host/proc
+  #   depends_on:
+  #     - recorder-go-zero
+  #   privileged: true
+  #   pid: "host"
 
   recorder-java:
     build:

@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, abort
 import logging
 import time
 import threading
@@ -40,6 +40,14 @@ def reset():
     playback.delete_all()
     return {'result': 'success'}
 
+@app.get('/status/playback')
+def status_playback():
+    global aliases_created
+    if aliases_created:
+        return {'result': 'success'}
+    else:
+        abort(404, description="not ready")
+
 def init():
     print("resetting initial assets...")
 
@@ -47,6 +55,9 @@ def init():
     
     slo.delete_all()
     playback.delete_all()
+
+    if os.environ['BACKLOAD_DATA'] == 'true':
+        start_loading_thread()
 
     alias.load()
     assistant.load()
@@ -56,9 +67,11 @@ def init():
     if os.environ['SOLVE_ALL'] == 'true':
         slo.load_all()
 
+aliases_created = False
 def maintenance_loop():
+    global aliases_created
     print("START maintenance_loop")
-    aliases_created = False
+   
     errors_started = False
     while True:
         if not aliases_created:
@@ -87,6 +100,3 @@ def start_loading_thread():
 logging.info("starting up...")
 init()
 start_maintenance_thread()
-
-if os.environ['BACKLOAD_DATA'] == 'true':
-    start_loading_thread()
