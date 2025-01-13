@@ -49,7 +49,7 @@ def init():
     assistant.load()
     context.load()
     kibana.load()
-    case.load()
+    case.load_all()
     if os.environ['SOLVE_ALL'] == 'true':
         slo.load_all()
 

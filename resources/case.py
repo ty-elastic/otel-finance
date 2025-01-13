@@ -50,4 +50,4 @@ def load_all():
             filename = Path(file).stem
             load(filename)
 
-load_all()
+#load_all()
