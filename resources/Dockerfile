@@ -15,6 +15,7 @@ COPY slo slo
 COPY assistant assistant
 COPY recorded recorded
 COPY case case
+COPY space space
 
 ENV PYTHONUNBUFFERED=1
 
