@@ -107,6 +107,22 @@ def load_elser():
     print(resp.json())  
     
 
+def setup_knowledge():
+    print(os.environ['KIBANA_URL'])
+
+    resp = requests.get(f"{os.environ['KIBANA_URL']}/internal/observability_ai_assistant/kb/status",
+                                     timeout=TIMEOUT,
+                                     headers={"kbn-xsrf": "reporting"},
+                                     auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']))
+    print(f"setting up knowledgebase: {resp.json()}")
+
+
+    resp = requests.post(f"{os.environ['KIBANA_URL']}/internal/observability_ai_assistant/kb/setup",
+                                     timeout=TIMEOUT,
+                                     headers={"kbn-xsrf": "reporting"},
+                                     auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']))
+    print(f"setting up knowledgebase: {resp}")
+
 # def load_knowledge():
 #     print(os.environ['KIBANA_URL'])
 
@@ -138,9 +154,9 @@ def load_elser():
 
 def load():
     load_elser()
-    #load_knowledge()
+    setup_knowledge()
     load_indices()
 
 #load_knowledge()
 
-load()
+#load()
