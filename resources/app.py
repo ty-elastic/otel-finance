@@ -50,6 +50,14 @@ def status_playback():
     else:
         abort(404, description="not ready")
 
+@app.get('/status/alerts')
+def status_alert():
+    active = slo.alerts_active()
+    if active:
+        return {'result': 'success'}
+    else:
+        abort(404, description="not ready")
+
 def init():
     print("resetting initial assets...")
 

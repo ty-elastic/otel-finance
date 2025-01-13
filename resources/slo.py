@@ -55,6 +55,18 @@ def alert_exists(name):
     return None
 
 
+def alerts_active():
+    rules = requests.get(f"{os.environ['KIBANA_URL']}/api/alerting/rules/_find",
+                                     timeout=TIMEOUT,
+                                     auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']),
+                                     headers={"kbn-xsrf": "reporting", "Content-Type": "application/json"})
+    for rule in rules.json()['data']:
+        print(rule)
+        if rule['execution_status']['status'] == 'active':
+            print('found active alert')
+            return True
+    return False
+
 def load(slo_name):
     slo_ids = {}
     
