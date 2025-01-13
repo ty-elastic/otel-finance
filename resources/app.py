@@ -15,6 +15,8 @@ import errors
 import case
 import space
 
+aliases_created = False
+
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
@@ -67,7 +69,7 @@ def init():
     if os.environ['SOLVE_ALL'] == 'true':
         slo.load_all()
 
-aliases_created = False
+
 def maintenance_loop():
     global aliases_created
     print("START maintenance_loop")
