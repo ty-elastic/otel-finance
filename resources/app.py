@@ -12,6 +12,7 @@ import context
 import assistant
 import playback
 import errors
+import case
 
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -48,6 +49,7 @@ def init():
     assistant.load()
     context.load()
     kibana.load()
+    case.load()
     if os.environ['SOLVE_ALL'] == 'true':
         slo.load_all()
 
