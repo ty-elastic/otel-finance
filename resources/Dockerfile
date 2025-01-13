@@ -14,6 +14,7 @@ COPY ml ml
 COPY slo slo
 COPY assistant assistant
 COPY recorded recorded
+COPY case case
 
 ENV PYTHONUNBUFFERED=1
 
