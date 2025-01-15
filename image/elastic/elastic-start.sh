@@ -79,8 +79,6 @@ else
   echo "configure ingress"
 
   echo '
-  ---
-
   apiVersion: networking.k8s.io/v1
   kind: Ingress
   metadata:

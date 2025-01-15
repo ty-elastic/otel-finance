@@ -9,13 +9,15 @@ def set_default_dataview(dataview_id):
         "force": True,
         "data_view_id": dataview_id
     }
-    
-    resp = requests.post(f"{os.environ['KIBANA_URL']}/data_views/default",
-                            body=body, timeout=TIMEOUT,
+
+    resp = requests.post(f"{os.environ['KIBANA_URL']}/api/data_views/default",
+                            json=body, timeout=TIMEOUT,
                             auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']), 
                             headers={"kbn-xsrf": "reporting"},
                             params={'compatibilityMode': True})
     print(resp.json())
+
+#set_default_dataview('logs-*')
 
 def load():
 
