@@ -4,6 +4,19 @@ import requests
 KIBANA_RESOURCES_PATH = 'kibana'
 TIMEOUT = 10
 
+def set_default_dataview(dataview_id):
+    body = {
+        "force": True,
+        "data_view_id": dataview_id
+    }
+    
+    resp = requests.post(f"{os.environ['KIBANA_URL']}/data_views/default",
+                            body=body, timeout=TIMEOUT,
+                            auth=(os.environ['ELASTICSEARCH_USER'], os.environ['ELASTICSEARCH_PASSWORD']), 
+                            headers={"kbn-xsrf": "reporting"},
+                            params={'compatibilityMode': True})
+    print(resp.json())
+
 def load():
 
     for file in os.listdir(KIBANA_RESOURCES_PATH):

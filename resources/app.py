@@ -62,6 +62,7 @@ def init():
     print("resetting initial assets...")
 
     space.load_all()
+    kibana.set_default_dataview("logs-*")
     
     slo.delete_all()
 
