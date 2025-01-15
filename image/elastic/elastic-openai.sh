@@ -60,12 +60,12 @@ get_openai_key() {
 
     OPENAI_APIKEY=$(echo $output | jq -r '.key')
 
-    if [ -z "${OPENAI_APIKEY}" ]; then
-        echo "Failed to extract API key from response on attempt $attempt"
-        return 1
-    else
+    if [[ $OPENAI_APIKEY = sk-* ]]; then
         echo "Request successful and API key extracted on attempt $attempt"
         return 0
+    else
+        echo "Failed to extract API key from response on attempt $attempt"
+        return 1
     fi
 }
 retry_command get_openai_key
@@ -83,7 +83,7 @@ if [ -z "${LLM_SKIP_ES_CONNECTION}" ]; then
         "config": {
           "apiProvider":"OpenAI",
           "apiUrl":"https://'"$LLM_PROXY_URL"'/v1/chat/completions",
-          "defaultModel": "gpt-4o"
+          "defaultModel": '$LLM_DEFAULT_MODEL'
         },
         "secrets": {
           "apiKey": "'"$OPENAI_APIKEY"'"
