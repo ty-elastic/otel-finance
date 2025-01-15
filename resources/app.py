@@ -61,16 +61,16 @@ def status_alert():
 def init():
     print("resetting initial assets...")
 
-    space.load_all()
-    kibana.set_default_dataview("logs-*")
-    
-    slo.delete_all()
-
     if os.environ['DELETE_DATA'] == 'true':
         playback.delete_all()
 
     if os.environ['BACKLOAD_DATA'] == 'true':
         start_loading_thread()
+
+    space.load_all()
+    kibana.set_default_dataview("logs-*")
+    
+    slo.delete_all()
 
     alias.load()
     assistant.load()
