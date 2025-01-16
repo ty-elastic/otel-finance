@@ -83,7 +83,7 @@ if [ -z "${LLM_SKIP_ES_CONNECTION}" ]; then
         "config": {
           "apiProvider":"OpenAI",
           "apiUrl":"https://'"$LLM_PROXY_URL"'/v1/chat/completions",
-          "defaultModel": '$LLM_DEFAULT_MODEL'
+          "defaultModel": "'"$LLM_DEFAULT_MODEL"'"
         },
         "secrets": {
           "apiKey": "'"$OPENAI_APIKEY"'"
