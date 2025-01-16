@@ -1,5 +1,5 @@
 {
-    "body": "Log messages can be searched using the index pattern logs-*",
+    "body": "I keep my log messages in an index named 'logs*' in a field named 'message'. the region is in a field named 'labels.cloud_region'.",
     "id": "logs",
     "title": "searching log messages",
 
