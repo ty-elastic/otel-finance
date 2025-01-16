@@ -1,0 +1,9 @@
+{
+    "body": "Log messages can be searched using the index pattern logs-*",
+    "id": "revenue",
+    "title": "revenue",
+
+    "_extract_binary_content": false,
+    "_reduce_whitespace": true,
+    "_run_ml_inference": true
+}
