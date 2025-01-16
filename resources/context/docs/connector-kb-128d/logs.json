@@ -1,7 +1,7 @@
 {
     "body": "Log messages can be searched using the index pattern logs-*",
-    "id": "revenue",
-    "title": "revenue",
+    "id": "logs",
+    "title": "searching log messages",
 
     "_extract_binary_content": false,
     "_reduce_whitespace": true,
