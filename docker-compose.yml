@@ -9,7 +9,8 @@ services:
     environment:
       BACKLOAD_DATA: ${BACKLOAD_DATA:-false}
       SOLVE_ALL: ${SOLVE_ALL:-true}
-      DELETE_DATA: ${DELETE_DATA:-true}
+      DELETE_DATA: ${DELETE_DATA:-false}
+      ERRORS: ${ERRORS:-false}
 
       KIBANA_URL: ${KIBANA_URL}
       ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
