@@ -6,6 +6,7 @@ export $(cat /root/.env | xargs)
 
 echo 'BACKLOAD_DATA=false' >> /root/.env
 echo 'SOLVE_ALL=false' >> /root/.env
+echo 'ERRORS=false' >> /root/.env
 
 echo "export $(cat /root/.env | xargs)" >> /root/.bashrc
 
@@ -25,3 +26,4 @@ mkdir -p $WORKSPACE_DIR/logs
 echo "cd $WORKSPACE_DIR" >> /root/.bashrc
 
 docker compose build
+docker compose pull
