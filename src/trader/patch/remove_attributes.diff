@@ -1,0 +1,26 @@
+71,72c71
+<     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.trade_id", trade_id)
+<     
+---
+> 
+74,75c73
+<     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.customer_id", customer_id)
+<     
+---
+> 
+79,80c77
+<     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.day_of_week", day_of_week)
+<     
+---
+> 
+82d78
+<     set_attribute_and_baggage(f"cloud.region", region)
+85d80
+<     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.symbol", symbol)
+88d82
+<     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.data_source", data_source)
+91,92d84
+<     if classification is not None:
+<         set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.classification", classification)
+95d86
+<     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.canary", canary)
