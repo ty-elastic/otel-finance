@@ -91,7 +91,10 @@ def decode_common_args():
     classification = request.args.get('classification', default=None, type=str)
     if classification is not None:
         set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.classification", classification)
-    
+
+    canary = request.args.get('canary', default="false", type=str)
+    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.canary", canary)
+
     # forced errors
     latency_amount = request.args.get('latency_amount', default=0, type=float)
     latency_action = request.args.get('latency_action', default=None, type=str)
@@ -100,9 +103,6 @@ def decode_common_args():
     error_db_service = request.args.get('error_db_service', default=None, type=str)
 
     skew_market_factor = request.args.get('skew_market_factor', default=0, type=int)
-
-    canary = request.args.get('canary', default="false", type=str)
-    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.canary", canary)
 
     return trade_id, customer_id, day_of_week, region, symbol, latency_amount, latency_action, error_model, error_db, error_db_service, skew_market_factor, canary, data_source, classification
 
