@@ -8,7 +8,6 @@ import math
 
 import requests
 
-from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry import trace, baggage, context, metrics
 from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
 from opentelemetry.processor.baggage import BaggageSpanProcessor, ALLOW_ALL_BAGGAGE_KEYS
@@ -31,14 +30,12 @@ ATTRIBUTE_PREFIX = "com.example"
 import model
 
 def init_otel():
-    tracer_provider = TracerProvider()
-    tracer_provider.add_span_processor(BaggageSpanProcessor(ALLOW_ALL_BAGGAGE_KEYS))
+    trace.get_tracer_provider().add_span_processor(BaggageSpanProcessor(ALLOW_ALL_BAGGAGE_KEYS))
     tracer = trace.get_tracer("trader")
 
     if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
         print("enable otel logging")
-        log_provider = logs.get_logger_provider()
-        log_provider.add_log_record_processor(BaggageLogRecordProcessor(ALLOW_ALL_BAGGAGE_KEYS))
+        logs.get_logger_provider().add_log_record_processor(BaggageLogRecordProcessor(ALLOW_ALL_BAGGAGE_KEYS))
 
     metrics_provider = MeterProvider(metric_readers=[PeriodicExportingMetricReader(OTLPMetricExporter(), export_interval_millis=5000)])  # Export every 5 seconds
     metrics.set_meter_provider(metrics_provider)

@@ -7,7 +7,7 @@ import os
 from threading import Thread
 import concurrent.futures
 
-from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry import trace
 from opentelemetry.processor.baggage import BaggageSpanProcessor, ALLOW_ALL_BAGGAGE_KEYS
 
 from opentelemetry import _logs as logs
@@ -17,13 +17,11 @@ app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
 def init_otel():
-    tracer_provider = TracerProvider()
-    tracer_provider.add_span_processor(BaggageSpanProcessor(ALLOW_ALL_BAGGAGE_KEYS))
+    trace.get_tracer_provider().add_span_processor(BaggageSpanProcessor(ALLOW_ALL_BAGGAGE_KEYS))
 
     if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
         print("enable otel logging")
-        log_provider = logs.get_logger_provider()
-        log_provider.add_log_record_processor(BaggageLogRecordProcessor(ALLOW_ALL_BAGGAGE_KEYS))
+        logs.get_logger_provider().add_log_record_processor(BaggageLogRecordProcessor(ALLOW_ALL_BAGGAGE_KEYS))
 
 init_otel()
 
@@ -55,6 +53,7 @@ high_tput_per_customer = {}
 high_tput_per_symbol = {}
 high_tput_per_region = {}
 db_error_per_region = {}
+db_error_per_customer = {}
 model_error_per_region = {}
 skew_market_factor_per_symbol = {}
 
@@ -111,7 +110,7 @@ def generate_trade_requests():
                 latency_amount = random.randint(latency_per_action_per_region[region]['amount']-LATENCY_SWING_MS, latency_per_action_per_region[region]['amount']+LATENCY_SWING_MS) / 1000.0
                 latency_action = latency_per_action_per_region[region]['action']
                 if latency_per_action_per_region[region]['oneshot'] and time.time() - latency_per_action_per_region[region]['start'] >= ERROR_TIMEOUT_S:
-                    app.logger.info(f"latency_per_action_per_region timeout")
+                    app.logger.info(f"latency_per_action_per_region[{region}] timeout")
                     latency_region_delete(region)
             else:
                 latency_amount = 0
@@ -120,19 +119,28 @@ def generate_trade_requests():
             if region in model_error_per_region:
                 error_model = "true" if random.randint(0, 100) > (100-model_error_per_region[region]['amount']) else "false"
                 if time.time() - model_error_per_region[region]['start'] >= ERROR_TIMEOUT_S:
-                    app.logger.info(f"db_error_per_region timeout")
+                    app.logger.info(f"db_error_per_region[{region}] timeout")
                     err_model_region_delete(region)
             else:
                 error_model = "false"
 
-            if region in db_error_per_region:
+            if customer_id in db_error_per_customer:
+                error_db = "true" if random.randint(0, 100) > (100-db_error_per_customer[customer_id]['amount']) else "false"
+                if 'service' in db_error_per_customer[customer_id]:
+                    error_db_service = db_error_per_customer[customer_id]['service']
+                else:
+                    error_db_service = None
+                if db_error_per_customer[customer_id]['oneshot'] and time.time() - db_error_per_customer[customer_id]['start'] >= ERROR_TIMEOUT_S:
+                    app.logger.info(f"db_error_per_customer[{customer_id}] timeout")
+                    err_db_customer_delete(region)
+            elif region in db_error_per_region:
                 error_db = "true" if random.randint(0, 100) > (100-db_error_per_region[region]['amount']) else "false"
                 if 'service' in db_error_per_region[region]:
                     error_db_service = db_error_per_region[region]['service']
                 else:
                     error_db_service = None
                 if time.time() - db_error_per_region[region]['start'] >= ERROR_TIMEOUT_S:
-                    app.logger.info(f"db_error_per_region timeout")
+                    app.logger.info(f"db_error_per_region[{region}] timeout")
                     err_db_region_delete(region)
             else:
                 error_db = "false"
@@ -204,10 +212,12 @@ def reset_error():
     global latency_per_action_per_region
     global db_error_per_region
     global model_error_per_region
+    global db_error_per_customer
     
     latency_per_action_per_region = {}
     db_error_per_region = {}
     model_error_per_region = {}
+    db_error_per_customer = {}
 
     app.logger.info(f"error reset")
     return None
@@ -235,6 +245,7 @@ def get_state():
         'high_tput_per_symbol': high_tput_per_symbol,
         'high_tput_per_region': high_tput_per_region,
         'db_error_per_region': db_error_per_region,
+        'db_error_per_customer': db_error_per_customer,
         'model_error_per_region': model_error_per_region,
         'skew_market_factor_per_symbol': skew_market_factor_per_symbol
     }
@@ -307,6 +318,24 @@ def err_db_region_delete(region):
     if region in high_tput_per_region:
         del high_tput_per_region[region]
     return db_error_per_region
+
+@app.post('/err/db/customer/<customer>/<amount>')
+def err_db_customer(customer, amount):
+    global db_error_per_customer
+    err_db_service = request.args.get('err_db_service', default=None, type=str)
+    err_db_oneshot = request.args.get('err_db_oneshot', default=True, type=conform_request_bool)
+    db_error_per_customer[customer] = {'service': err_db_service, 'amount': int(amount), 'start': time.time(), 'oneshot': err_db_oneshot}
+    if err_db_oneshot:
+        high_tput_per_customer[customer] = HIGH_TPUT_PCT
+    return db_error_per_customer
+@app.delete('/err/db/customer/<customer>')
+def err_db_customer_delete(customer):
+    global db_error_per_customer
+    if customer in db_error_per_customer:
+        del db_error_per_customer[customer]
+    if customer in high_tput_per_customer:
+        del high_tput_per_customer[customer]
+    return db_error_per_customer
 
 @app.post('/err/model/region/<region>/<amount>')
 def err_model_region(region, amount):

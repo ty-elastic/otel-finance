@@ -9,7 +9,8 @@ services:
     environment:
       BACKLOAD_DATA: true
       SOLVE_ALL: true
-      ERRORS: false
+      ERRORS_LATENCY: false
+      ERRORS_DB: false
       DELETE_DATA: ${DELETE_DATA:-false}
 
       KIBANA_URL: ${KIBANA_URL}

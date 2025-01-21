@@ -1,6 +1,6 @@
 #!/bin/bash
 
-####################################################################### CODE
+####################################################################### ENVs
 
 export $(cat /root/.env | xargs)
 
@@ -8,10 +8,15 @@ echo 'BACKLOAD_DATA=false' >> /root/.env
 echo 'SOLVE_ALL=false' >> /root/.env
 echo 'ERRORS=false' >> /root/.env
 
-echo "export $(cat /root/.env | xargs)" >> /root/.bashrc
+echo 'GIT_BRANCH=main' >> /root/.env
+echo 'GIT_URL=https://github.com/ty-elastic/otel-finance.git' >> /root/.env
 
-GIT_BRANCH=main
-GIT_URL=https://github.com/ty-elastic/otel-finance.git
+echo "export $(cat /root/.env | xargs)" >> /root/.bashrc
+echo "cd $WORKSPACE_DIR" >> /root/.bashrc
+
+####################################################################### CODE
+
+export $(cat /root/.env | xargs)
 
 cd $WORKSPACE_DIR
 git config --global init.defaultBranch $GIT_BRANCH
@@ -22,8 +27,6 @@ git checkout $GIT_BRANCH -f
 git branch --set-upstream-to origin/$GIT_BRANCH
 
 mkdir -p $WORKSPACE_DIR/logs
-
-echo "cd $WORKSPACE_DIR" >> /root/.bashrc
 
 docker compose build
 docker compose pull

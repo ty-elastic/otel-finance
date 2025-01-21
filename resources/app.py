@@ -85,14 +85,14 @@ def maintenance_loop():
     global aliases_created
     print("START maintenance_loop")
    
-    if os.environ['ERRORS'] == 'true':
+    if os.environ['ERRORS_LATENCY'] == 'true' or os.environ['ERRORS_DB'] == 'true':
         errors_started = False
     else:
         errors_started = True
     while True:
         if not aliases_created:
             aliases_created = alias.load()
-        if os.environ['ERRORS'] == 'true' and not errors_started:
+        if (os.environ['ERRORS_LATENCY'] == 'true' or os.environ['ERRORS_DB'] == 'true') and not errors_started:
             errors_started = errors.load()
         time.sleep(1)
 

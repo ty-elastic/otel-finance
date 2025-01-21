@@ -9,9 +9,10 @@ services:
     environment:
       BACKLOAD_DATA: ${BACKLOAD_DATA:-false}
       SOLVE_ALL: ${SOLVE_ALL:-true}
+      ERRORS_LATENCY: ${ERRORS_LATENCY:-false}
+      ERRORS_DB: ${ERRORS_DB:-true}
       DELETE_DATA: ${DELETE_DATA:-false}
-      ERRORS: ${ERRORS:-false}
-
+      
       KIBANA_URL: ${KIBANA_URL}
       ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
       ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
