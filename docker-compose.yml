@@ -37,6 +37,7 @@ services:
       - "9001:9001"
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=production"
     depends_on:
       router:
         condition: service_healthy
@@ -57,6 +58,7 @@ services:
       - "9002:9002"
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=production"
     depends_on:
       trader:
         condition: service_healthy
@@ -78,6 +80,7 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=production"
 
       RECORDER_HOST_1: "recorder-java"
       RECORDER_HOST_2: "recorder-go"
@@ -105,6 +108,7 @@ services:
       start_period: 1m
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=production"
   
       POSTGRES_HOST: "postgresql"
       POSTGRES_PASSWORD: "password"
@@ -150,6 +154,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4318"
       OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
       OTEL_SERVICE_NAME: "recorder-go-zero"
+      OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=production"
       OTEL_GO_AUTO_TARGET_EXE: "/recorder-zero"
       OTEL_PROPAGATORS: "tracecontext,baggage"
       OTEL_LOG_LEVEL: "debug"
@@ -174,6 +179,7 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=production"
 
       POSTGRES_HOST: "postgresql"
       POSTGRES_PASSWORD: "password"
@@ -200,6 +206,7 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4318"
       OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=production"
     depends_on:
       collector:
         condition: service_healthy
@@ -210,6 +217,7 @@ services:
       args:
         ELASTIC_APM_SERVER_RUM_ENDPOINT: ${ELASTIC_APM_SERVER_RUM_ENDPOINT}
         ELASTIC_APM_SERVER_RUM_CREDENTIALS: ${ELASTIC_APM_SERVER_RUM_CREDENTIALS}
+        SERVICE_ENVIRONMENT: "production"
 
         KIBANA_URL: ${KIBANA_URL}
         ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
@@ -228,6 +236,7 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
       OTEL_SERVICE_NAME: "proxy"
+      OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=production"
     depends_on:
       monkey:
         condition: service_healthy

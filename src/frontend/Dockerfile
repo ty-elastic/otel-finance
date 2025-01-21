@@ -2,6 +2,7 @@ FROM node:latest as frontend
 
 ARG ELASTIC_APM_SERVER_RUM_ENDPOINT=""
 ARG ELASTIC_APM_SERVER_RUM_CREDENTIALS=false
+ARG SERVICE_ENVIRONMENT
 ARG KIBANA_URL
 ARG ELASTICSEARCH_USER
 ARG ELASTICSEARCH_PASSWORD
@@ -27,7 +28,7 @@ RUN echo "\
         serverUrl: '${ELASTIC_APM_SERVER_RUM_ENDPOINT}', \n\
         sendCredentials: ${ELASTIC_APM_SERVER_RUM_CREDENTIALS}, \n\
         serviceVersion: '${SERVICE_VERSION}', \n\
-        environment: '' \n\
+        environment: '${SERVICE_ENVIRONMENT}' \n\
     }) \n\
     export default apm; \n\
 " > src/rum.js
