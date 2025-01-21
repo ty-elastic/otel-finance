@@ -54,6 +54,9 @@ cat <<EOT >> $VSCODE_USER_DATA_DIR/Machine/settings.json
 }
 EOT
 
+echo "cd $WORKSPACE_DIR" >> /root/.bash_profile
+echo 'export $(cat /root/.env | xargs)' >> /root/.bash_profile
+
 mkdir -p /$WORKSPACE_DIR/.vscode
 cat <<EOT >> /$WORKSPACE_DIR/.vscode/tasks.json
 {

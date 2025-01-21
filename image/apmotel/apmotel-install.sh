@@ -11,9 +11,6 @@ echo 'ERRORS=false' >> /root/.env
 echo 'GIT_BRANCH=main' >> /root/.env
 echo 'GIT_URL=https://github.com/ty-elastic/otel-finance.git' >> /root/.env
 
-echo "export $(cat /root/.env | xargs)" >> /root/.bashrc
-echo "cd $WORKSPACE_DIR" >> /root/.bashrc
-
 ####################################################################### CODE
 
 export $(cat /root/.env | xargs)
