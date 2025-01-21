@@ -1,26 +1,45 @@
-71,72c71
-<     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.trade_id", trade_id)
-<     
----
-> 
-74,75c73
-<     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.customer_id", customer_id)
-<     
----
-> 
-79,80c77
-<     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.day_of_week", day_of_week)
-<     
----
-> 
-82d78
-<     set_attribute_and_baggage(f"cloud.region", region)
-85d80
-<     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.symbol", symbol)
-88d82
-<     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.data_source", data_source)
-91,92d84
-<     if classification is not None:
-<         set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.classification", classification)
-95d86
-<     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.canary", canary)
+@@ -30,7 +30,6 @@
+ import model
+ 
+ def init_otel():
+-    trace.get_tracer_provider().add_span_processor(BaggageSpanProcessor(ALLOW_ALL_BAGGAGE_KEYS))
+     tracer = trace.get_tracer("trader")
+ 
+     if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
+\ No newline at end of file
+@@ -65,31 +64,22 @@
+     
+ def decode_common_args():
+     trade_id = str(uuid.uuid4())
+-    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.trade_id", trade_id)
+-    
++
+     customer_id = request.args.get('customer_id', default=None, type=str)
+-    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.customer_id", customer_id)
+-    
++
+     day_of_week = request.args.get('day_of_week', default=None, type=str)
+     if day_of_week is None:
+         day_of_week = random.choice(['M', 'Tu', 'W', 'Th', 'F'])
+-    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.day_of_week", day_of_week)
+-    
++
+     region = request.args.get('region', default="NA", type=str)
+-    set_attribute_and_baggage(f"cloud.region", region)
+ 
+     symbol = request.args.get('symbol', default='ESTC', type=str)
+-    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.symbol", symbol)
+ 
+     data_source = request.args.get('data_source', default='monkey', type=str)
+-    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.data_source", data_source)
+ 
+     classification = request.args.get('classification', default=None, type=str)
+-    if classification is not None:
+-        set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.classification", classification)
+ 
+     canary = request.args.get('canary', default="false", type=str)
+-    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.canary", canary)
+ 
+     # forced errors
+     latency_amount = request.args.get('latency_amount', default=0, type=float)
+\ No newline at end of file
