@@ -1,4 +1,13 @@
-@@ -68,31 +68,23 @@
+@@ -30,7 +30,6 @@
+ import model
+ 
+ def init_otel():
+-    trace.get_tracer_provider().add_span_processor(BaggageSpanProcessor(ALLOW_ALL_BAGGAGE_KEYS))
+     tracer = trace.get_tracer("trader")
+ 
+     if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
+\ No newline at end of file
+@@ -65,31 +64,23 @@
      
  def decode_common_args():
      trade_id = str(uuid.uuid4())
