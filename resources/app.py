@@ -92,12 +92,12 @@ def maintenance_loop():
     while True:
         if not aliases_created:
             aliases_created = alias.load()
-        if (os.environ['ERRORS_LATENCY'] == 'true' or os.environ['ERRORS_DB'] == 'true') and not errors_started:
+        if (os.environ['ERRORS_LATENCY'] == 'true' or os.environ['ERRORS_DB'] == 'true'):
             errors_started = errors.load()
         time.sleep(1)
 
-        if errors_started and aliases_created:
-            break
+        # if errors_started and aliases_created:
+        #     break
 
 def loading():
     #time.sleep(1)

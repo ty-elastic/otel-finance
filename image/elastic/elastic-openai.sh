@@ -64,7 +64,7 @@ get_openai_key() {
         echo "Request successful and API key extracted on attempt $attempt"
         return 0
     else
-        echo "Failed to extract API key from response on attempt $attempt"
+        echo "Failed to extract API key from $LLM_PROXY_URL on attempt $attempt: $output"
         return 1
     fi
 }
