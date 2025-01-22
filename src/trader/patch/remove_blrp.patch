@@ -1,0 +1,9 @@
+@@ -35,7 +35,6 @@
+ 
+     if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
+         print("enable otel logging")
+-        logs.get_logger_provider().add_log_record_processor(BaggageLogRecordProcessor(ALLOW_ALL_BAGGAGE_KEYS))
+ 
+     metrics_provider = MeterProvider(metric_readers=[PeriodicExportingMetricReader(OTLPMetricExporter(), export_interval_millis=5000)])  # Export every 5 seconds
+     metrics.set_meter_provider(metrics_provider)
+\ No newline at end of file

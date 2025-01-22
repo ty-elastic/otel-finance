@@ -14,12 +14,12 @@ def create_latency(region, amount):
     except Exception as inst:
         return False
 
-def create_db_errors(customer_id, amount):
+def create_db_errors(customer_id, amount, service):
     try:
         print(f'generating db errors for {customer_id}')
         resp = requests.post(f"http://monkey:9002/err/db/customer/{customer_id}/{amount}",
                                 timeout=TIMEOUT,
-                                params={'latency_oneshot': False})
+                                params={'latency_oneshot': False, 'err_db_service': service})
         print(resp)
         return True
     except Exception as inst:
@@ -34,7 +34,7 @@ def load():
             return result
 
     if os.environ['ERRORS_DB'] == 'true':
-        result = create_db_errors('l.hall', 100)
+        result = create_db_errors('l.hall', 100, 'recorder-java')
         if result is False:
             return result
 
