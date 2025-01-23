@@ -1,5 +1,6 @@
 import requests
 import os
+import base64
 
 TIMEOUT = 1
 
@@ -17,6 +18,9 @@ def create_latency(region, amount):
 def create_db_errors(customer_id, amount, service):
     try:
         print(f'generating db errors for {customer_id}')
+
+        #customer_id_encoded_string = (base64.b64encode(customer_id.encode('utf-8'))).decode('utf-8')
+
         resp = requests.post(f"http://monkey:9002/err/db/customer/{customer_id}/{amount}",
                                 timeout=TIMEOUT,
                                 params={'latency_oneshot': False, 'err_db_service': service})

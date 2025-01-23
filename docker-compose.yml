@@ -10,7 +10,7 @@ services:
       BACKLOAD_DATA: ${BACKLOAD_DATA:-false}
       SOLVE_ALL: ${SOLVE_ALL:-true}
       ERRORS_LATENCY: ${ERRORS_LATENCY:-false}
-      ERRORS_DB: ${ERRORS_DB:-true}
+      ERRORS_DB: ${ERRORS_DB:-false}
       DELETE_DATA: ${DELETE_DATA:-false}
       
       KIBANA_URL: ${KIBANA_URL}

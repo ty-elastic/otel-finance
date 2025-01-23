@@ -4,10 +4,6 @@
 
 export $(cat /root/.env | xargs)
 
-echo 'BACKLOAD_DATA=false' >> /root/.env
-echo 'SOLVE_ALL=false' >> /root/.env
-echo 'ERRORS=false' >> /root/.env
-
 echo 'GIT_BRANCH=main' >> /root/.env
 echo 'GIT_URL=https://github.com/ty-elastic/otel-finance.git' >> /root/.env
 
