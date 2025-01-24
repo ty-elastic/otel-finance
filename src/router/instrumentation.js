@@ -28,12 +28,19 @@
  *      node -r ./start-elastic-sdk.js SCRIPT.js
  */
 
+const os = require('os');
+const path = require('path');
+
+// TODO see isMainThread and module.register usage in require.js
+
 const {
     ElasticNodeSDK,
 } = require('@elastic/opentelemetry-node/sdk');
 
 const { tracing } = require('@opentelemetry/sdk-node');
+
 const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-grpc');
+
 const { ALLOW_ALL_BAGGAGE_KEYS, BaggageSpanProcessor } = require('@opentelemetry/baggage-span-processor');
 
 const spanProcessors = [
