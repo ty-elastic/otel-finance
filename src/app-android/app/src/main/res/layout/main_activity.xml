@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_nostretch"
+    tools:context=".MainActivity">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100sp">
+
+        <TextView
+            android:id="@+id/app_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/app_info"
+            android:textAlignment="center"
+            android:textColor="@color/text_color"
+            android:textSize="40sp" />
+
+        <Button
+            android:id="@+id/request_trade"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/app_info"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="15sp"
+            android:backgroundTint="@color/accent_color"
+            android:text="@string/request_trade"
+            android:textColor="@color/text_color"
+            />
+
+        <Button
+            android:id="@+id/generate_exception"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/request_trade"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="15sp"
+            android:backgroundTint="@color/accent_color"
+            android:text="@string/generate_exception"
+            android:textColor="@color/text_color"
+            />
+    </RelativeLayout>
+
+</RelativeLayout>

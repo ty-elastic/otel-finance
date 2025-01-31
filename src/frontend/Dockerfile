@@ -19,7 +19,7 @@ COPY trader-app/src src
 COPY trader-app/public public
 
 ENV SERVICE_VERSION=1.0.0
-ENV SERVICE_NAME=trader-app
+ENV SERVICE_NAME=trader-app-web
 
 RUN echo "\
     import { init as initApm } from '@elastic/apm-rum' \n\
