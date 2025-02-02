@@ -12,7 +12,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class TradingService(context: Context) {
-    private val log = LoggerFactory.getLogger("Trade")
+    private val log = LoggerFactory.getLogger("Trader")
 
     private val traderService: TraderService by lazy {
         val httpClient = OkHttpClient.Builder().build()

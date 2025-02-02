@@ -102,3 +102,19 @@ if [ -z "${LLM_SKIP_ES_CONNECTION}" ]; then
   retry_command add_connector
 fi
 
+# init knowledgebase
+echo "Initializing knowledgebase"
+init_kb() {
+    local http_status=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$KIBANA_URL_LOCAL/internal/observability_ai_assistant/kb/setup" \
+    -H 'Content-Type: application/json' \
+    --header "kbn-xsrf: true" --header "Authorization: Basic $ELASTICSEARCH_AUTH_BASE64")
+
+    if echo $http_status | grep -q '^2'; then
+        echo "Elastic knowledgebase successfully initialized: $http_status"
+        return 0
+    else
+        echo "Failed to initialize Elastic knowledgebase. HTTP status: $http_status"
+        return 1
+    fi
+}
+retry_command init_kb

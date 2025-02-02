@@ -19,13 +19,29 @@ import java.util.TimerTask
 
 
 class MainApp : Application() {
-    class MyHttpAttributesVisitor : HttpAttributesVisitor {
-        override fun visit(attrsBuilder: AttributesBuilder, request: HttpRequest) {
-            attrsBuilder.put("customer_id", "tbekiares")
+
+
+    companion object {
+        private val log = LoggerFactory.getLogger("Trader")
+        fun findParameterValue(parameterName: String, query: String): String? {
+            return query.split('&').map {
+                val parts = it.split('=')
+                val name = parts.firstOrNull() ?: ""
+                val value = parts.drop(1).firstOrNull() ?: ""
+                Pair(name, value)
+            }.firstOrNull{it.first == parameterName}?.second
         }
     }
 
-    private val log = LoggerFactory.getLogger("MainApp")
+    class MyHttpAttributesVisitor : HttpAttributesVisitor {
+        override fun visit(attrsBuilder: AttributesBuilder, request: HttpRequest) {
+            val customerId = findParameterValue("customer_id", request.url.query) as String
+            log.warn("here")
+            log.warn(customerId)
+
+            attrsBuilder.put("customer_id", customerId);
+        }
+    }
 
     fun handleUncaughtException (thread: Thread , e: Throwable) {}
 
@@ -49,8 +65,6 @@ class MainApp : Application() {
 
         ElasticApmAgent.initialize(this, configuration);
 
-        val apmConfigurationBuilder = ElasticApmConfiguration.builder()
-
         // install logback logging hook
         val sdk = GlobalOpenTelemetry.get()
         OpenTelemetryAppender.install(sdk);
@@ -65,9 +79,6 @@ class MainApp : Application() {
         val timer = Timer()
         timer.schedule(object : TimerTask() {
             override fun run() {
-
-
-                    //runBlocking {
                         try {
 
                             // generate exception 10% of the time
@@ -81,7 +92,6 @@ class MainApp : Application() {
                             val exceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
                             exceptionHandler?.uncaughtException(Thread.currentThread(), exception)
                         }
-                    //}
 
             }
         }, delay.toLong(), period.toLong())
