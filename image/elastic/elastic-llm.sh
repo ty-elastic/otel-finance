@@ -58,9 +58,9 @@ get_openai_key() {
       }
     }")
 
-    OPENAI_APIKEY=$(echo $output | jq -r '.key')
+    LLM_APIKEY=$(echo $output | jq -r '.key')
 
-    if [[ $OPENAI_APIKEY = sk-* ]]; then
+    if [[ $LLM_APIKEY = sk-* ]]; then
         echo "Request successful and API key extracted on attempt $attempt"
         return 0
     else
@@ -70,10 +70,13 @@ get_openai_key() {
 }
 retry_command get_openai_key
 
-echo 'OPENAI_APIKEY="'$OPENAI_APIKEY'"' >> /root/.env
+echo 'LLM_APIKEY="'$LLM_APIKEY'"' >> /root/.env
 
-if [ -z "${LLM_SKIP_ES_CONNECTION}" ]; then
-  echo "Adding OpenAI connector"
+LLM_MODEL="${$1:LLM_DEFAULT_MODEL}" 
+
+if [ "$LLM_MODEL" != "none" ]; then
+  echo "Adding LLM connector"
+
   add_connector() {
       local http_status=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$KIBANA_URL_LOCAL/api/actions/connector" \
       -H 'Content-Type: application/json' \
@@ -83,10 +86,10 @@ if [ -z "${LLM_SKIP_ES_CONNECTION}" ]; then
         "config": {
           "apiProvider":"OpenAI",
           "apiUrl":"https://'"$LLM_PROXY_URL"'/v1/chat/completions",
-          "defaultModel": "'"$LLM_DEFAULT_MODEL"'"
+          "defaultModel": "'"$LLM_MODEL"'"
         },
         "secrets": {
-          "apiKey": "'"$OPENAI_APIKEY"'"
+          "apiKey": "'"$LLM_APIKEY"'"
         },
         "connector_type_id":".gen-ai"
       }')
