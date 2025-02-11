@@ -191,6 +191,8 @@ services:
         condition: service_healthy
       notifier:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
 
   notifier:
     platform: "linux/amd64"
@@ -209,6 +211,8 @@ services:
       OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=production"
     depends_on:
       collector:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
 
   frontend:
@@ -321,3 +325,32 @@ services:
       ELASTIC_APM_SERVER_SECRET: ${ELASTIC_APM_SERVER_SECRET}
       ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
       ELASTICSEARCH_APIKEY: ${ELASTICSEARCH_APIKEY}
+
+  kafka:
+    build:
+      context: ./src/kafka/
+    ports:
+      - "9092:9092"
+    healthcheck:
+      test: /home/appuser/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server localhost:9092 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
+    environment:
+      # Configure listeners for both docker and host communication
+      KAFKA_LISTENERS: CONTROLLER://localhost:9091,HOST://0.0.0.0:9092,DOCKER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,DOCKER://kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT,HOST:PLAINTEXT
+
+      # Settings required for KRaft mode
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9091
+
+      # Listener to use for broker-to-broker communication
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+
+      # Required for a single node cluster
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1

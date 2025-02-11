@@ -54,7 +54,8 @@ get_openai_key() {
         \"workshopId\": \"$WORKSHOP_KEY\",
         \"inviteId\": \"$INSTRUQT_TRACK_INVITE_ID\",
         \"userId\": \"$INSTRUQT_USER_ID\",
-        \"userEmail\": \"$INSTRUQT_USER_EMAIL\"
+        \"userEmail\": \"$INSTRUQT_USER_EMAIL\",
+        \"purpose\": \"workshop\"
       }
     }")
 
