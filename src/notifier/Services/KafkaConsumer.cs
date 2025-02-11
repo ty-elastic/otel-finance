@@ -23,7 +23,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using Confluent.Kafka.Extensions.Diagnostics;
-
+using OpenTelemetry.Context.Propagation;
 
 namespace KafkaApi.Services
 {
@@ -34,9 +34,13 @@ namespace KafkaApi.Services
         private readonly ILogger<KafkaConsumer> _logger;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
+        private BaggagePropagator baggagePropagator;
+
         public KafkaConsumer(IConfiguration configuration, ILogger<KafkaConsumer> logger)
         {
             _logger = logger;
+
+            baggagePropagator = new BaggagePropagator();
 
             var config = new ConsumerConfig();
             configuration.GetSection("Kafka:ConsumerSettings").Bind(config);
@@ -46,8 +50,6 @@ namespace KafkaApi.Services
                 .Build();
             _topic = configuration["Kafka:Topic"];
             _cancellationTokenSource = new CancellationTokenSource();
-
-
         }
 
 
@@ -78,8 +80,20 @@ namespace KafkaApi.Services
                             {
                                 _consumer.ConsumeWithInstrumentation((result) =>
                                 {
-                                    if (result != null)
+                                    if (result != null) {
                                         _logger.LogInformation($"Consumed message '{result.Message.Value}' at: '{result.TopicPartitionOffset}'.");
+
+                                        // for header in result.Message.Headers. {
+                                        //     _logger.LogInformation("{hdrs}", result.Message.Headers.);
+                                        // }
+
+                                        var baggage = result.Message.Headers?.FirstOrDefault(x => x.Key == "baggage");
+                                        if (baggage != null) {
+                                            var val = System.Text.Encoding.UTF8.GetString(baggage.GetValueBytes());
+                                            _logger.LogInformation(val);
+                                        }
+                                    }
+
                                 }, 2000);
                             }
                             catch (ConsumeException e)

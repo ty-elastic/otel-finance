@@ -9,6 +9,7 @@ FROM eclipse-temurin:17
 COPY --from=build /usr/src/app/target/recorder-0.0.1-SNAPSHOT.jar /recorder.jar
 
 COPY lib/ .
+RUN wget -O elastic-otel-javaagent.jar https://repo1.maven.org/maven2/co/elastic/otel/elastic-otel-javaagent/1.2.1/elastic-otel-javaagent-1.2.1.jar 
 
 ENV OTEL_SERVICE_NAME="recorder-java"
 ENV OTEL_EXPERIMENTAL_RESOURCE_DETECTORS="process_runtime"

@@ -152,7 +152,7 @@ exporters:
       insecure: true
     headers:
       # Elastic APM Server secret token
-      Authorization: "Bearer ${ELASTIC_APM_SERVER_SECRET}"
+      Authorization: "ApiKey ${ELASTICSEARCH_APIKEY}"
 
 service:
   extensions: [health_check]

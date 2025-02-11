@@ -1,0 +1,183 @@
+extensions:
+  health_check:
+
+receivers:
+  otlp/fromsdk:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  # Receiver for CPU, Disk, Memory, and Filesystem metrics
+  hostmetrics/system:
+    root_path: /hostfs
+    collection_interval: 30s
+    scrapers:
+      filesystem:
+      memory:
+        metrics:
+          system.memory.utilization:
+            enabled: true
+      process:
+        mute_process_exe_error: true
+        mute_process_io_error: true
+        mute_process_user_error: true
+        metrics:
+          process.threads:
+            enabled: true
+          process.open_file_descriptors:
+            enabled: true
+          process.memory.utilization:
+            enabled: true
+          process.disk.operations:
+            enabled: true
+      network:
+      processes:
+      load:
+
+  filelog/json:
+    # ingest app log (proprietary format)
+    include: [ /logs/*.json ]
+    include_file_name: true
+    operators:
+      # parse JSON logs from app
+      - type: json_parser
+        # conform timestamp
+        timestamp:
+          parse_from: attributes.timestamp
+          layout_type: strptime
+          location: UTC
+          layout: '%Y-%m-%dT%H:%M:%SZ'
+        # conform severity
+        severity:
+          parse_from: attributes.level
+        # conform body
+        body: attributes.message
+        # conform trace meta
+        trace:
+          trace_id:
+            parse_from: attributes.trace_id
+          span_id:
+            parse_from: attributes.span_id
+
+      # default get from servicename filename
+      - type: add
+        field: resource["service.name"]
+        value: 'EXPR(trimSuffix(attributes["log.file.name"], ".json"))'
+      # service.name attribute needs to be on the resource
+      - type: move
+        from: attributes.service_name
+        to: resource["service.name"]
+        if: attributes.service_name != nil
+
+      # clean up raw attributes parsed above
+      - type: remove
+        field: attributes.timestamp
+      - type: remove
+        field: attributes.level
+      - type: remove
+        field: attributes.message
+      - type: remove
+        field: attributes.trace_id
+        if: attributes.trace_id != nil
+      - type: remove
+        field: attributes.span_id
+        if: attributes.span_id != nil
+
+processors:
+  elasticinframetrics:
+  resourcedetection:
+    detectors: ["system"]
+    system:
+      hostname_sources: ["os"]
+      resource_attributes:
+        host.name:
+          enabled: true
+        host.id:
+          enabled: false
+        host.arch:
+          enabled: true
+        host.ip:
+          enabled: true
+        host.mac:
+          enabled: true
+        host.cpu.vendor.id:
+          enabled: true
+        host.cpu.family:
+          enabled: true
+        host.cpu.model.id:
+          enabled: true
+        host.cpu.model.name:
+          enabled: true
+        host.cpu.stepping:
+          enabled: true
+        host.cpu.cache.l2.size:
+          enabled: true
+        os.description:
+          enabled: true
+        os.type:
+          enabled: true
+  attributes/dataset:
+    actions:
+      - key: event.dataset
+        from_attribute: data_stream.dataset
+        action: upsert
+  resource/process:
+    attributes:
+      - key: process.executable.name
+        action: delete
+      - key: process.executable.path
+        action: delete
+
+exporters:
+  debug:
+    verbosity: detailed
+
+  elasticsearch:
+    endpoints: ["${ELASTICSEARCH_URL}"]
+    api_key: ${ELASTICSEARCH_APIKEY}
+    mapping:
+      mode: ecs
+    logs_dynamic_index:
+      enabled: true
+    metrics_dynamic_index:
+      enabled: true
+    traces_dynamic_index:
+      enabled: true
+
+  otlp/apm: 
+    endpoint: "${ELASTIC_APM_SERVER_ENDPOINT}"
+    tls:
+      insecure: true
+    headers:
+      # Elastic APM Server secret token
+      Authorization: "ApiKey ${ELASTICSEARCH_APIKEY}"
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces/fromsdk:
+      receivers: [otlp/fromsdk]
+      processors: [resourcedetection]
+      exporters: [otlp/apm]
+
+    metrics/fromsdk:
+      receivers: [otlp/fromsdk]
+      processors: [resourcedetection]
+      exporters: [otlp/apm]
+
+    logs/fromsdk:
+      receivers: [otlp/fromsdk]
+      processors: [resourcedetection]
+      exporters: [otlp/apm]
+
+    metrics/hostmetrics:
+      receivers: [hostmetrics/system]
+      processors: [elasticinframetrics, resourcedetection, attributes/dataset, resource/process]
+      exporters: [elasticsearch]
+
+    logs/file:
+      receivers: [filelog/json]
+      processors: [resourcedetection]
+      exporters: [elasticsearch]

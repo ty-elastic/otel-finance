@@ -18,7 +18,6 @@ using Confluent.Kafka.Extensions.OpenTelemetry;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-//builder.Services.AddControllers();
 builder.Services.AddHostedService<KafkaConsumer>();   
 builder.Services.AddLogging();
 
@@ -26,10 +25,11 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(traceBuilder =>
     {
         traceBuilder
-            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("kafka-api"))
+            .SetResourceBuilder(ResourceBuilder.CreateDefault())
+            .AddProcessor(new BaggageSpanProcessor.BaggageSpanProcessor())
             .AddAspNetCoreInstrumentation()
             .AddConfluentKafkaInstrumentation()
-            .AddConsoleExporter()
+            //.AddConsoleExporter()
             .AddOtlpExporter();
     });
 

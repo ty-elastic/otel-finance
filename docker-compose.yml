@@ -1,27 +1,27 @@
 services:
 
-  resources:
-    build:
-      context: ./resources
-    restart: on-failure
-    ports:
-      - "9010:9010"
-    environment:
-      BACKLOAD_DATA: ${BACKLOAD_DATA:-false}
-      SOLVE_ALL: ${SOLVE_ALL:-true}
-      ERRORS_LATENCY: ${ERRORS_LATENCY:-false}
-      ERRORS_DB: ${ERRORS_DB:-false}
-      DELETE_DATA: ${DELETE_DATA:-false}
+  # resources:
+  #   build:
+  #     context: ./resources
+  #   restart: on-failure
+  #   ports:
+  #     - "9010:9010"
+  #   environment:
+  #     BACKLOAD_DATA: ${BACKLOAD_DATA:-false}
+  #     SOLVE_ALL: ${SOLVE_ALL:-true}
+  #     ERRORS_LATENCY: ${ERRORS_LATENCY:-false}
+  #     ERRORS_DB: ${ERRORS_DB:-false}
+  #     DELETE_DATA: ${DELETE_DATA:-false}
       
-      KIBANA_URL: ${KIBANA_URL}
-      ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
-      ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
-      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
-      OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM: "http://collector_playback:4318"
-      OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH: "http://collector_playback:4319"
-    depends_on:
-      collector_playback:
-        condition: service_healthy
+  #     KIBANA_URL: ${KIBANA_URL}
+  #     ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
+  #     ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
+  #     ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+  #     OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM: "http://collector_playback:4318"
+  #     OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH: "http://collector_playback:4319"
+  #   depends_on:
+  #     collector_playback:
+  #       condition: service_healthy
 
   trader:
     build:
