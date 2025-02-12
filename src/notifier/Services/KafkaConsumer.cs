@@ -32,24 +32,14 @@ namespace KafkaApi.Services
         private readonly IConsumer<int, string> _consumer;
         private readonly string _topic;
         private readonly ILogger<KafkaConsumer> _logger;
-        private readonly CancellationTokenSource _cancellationTokenSource;
 
-        private BaggagePropagator baggagePropagator;
-
-        public KafkaConsumer(IConfiguration configuration, ILogger<KafkaConsumer> logger)
+        public KafkaConsumer(IConfiguration configuration, ILogger<KafkaConsumer> logger, InstrumentedConsumerBuilder<int, string> consumeBuilder)
         {
             _logger = logger;
 
-            baggagePropagator = new BaggagePropagator();
+            _consumer = consumeBuilder.Build();
 
-            var config = new ConsumerConfig();
-            configuration.GetSection("Kafka:ConsumerSettings").Bind(config);
-
-            _consumer = new ConsumerBuilder<int, string>(config)
-                .SetValueDeserializer(Deserializers.Utf8)
-                .Build();
             _topic = configuration["Kafka:Topic"];
-            _cancellationTokenSource = new CancellationTokenSource();
         }
 
 
@@ -66,60 +56,37 @@ namespace KafkaApi.Services
         {
             await Task.Run(() => 
             {
-                int retryCount = 0;
-                const int maxRetryCount = 5;
-                const int delayMilliseconds = 5000;
-
-                while (retryCount < maxRetryCount && !_cancellationTokenSource.Token.IsCancellationRequested)
+                try
                 {
-                    try
+                    while (true)
                     {
-                        while (!_cancellationTokenSource.Token.IsCancellationRequested)
+                        try
                         {
-                            try
+                            var consumeResult = _consumer.Consume(stoppingToken);
+
+                            if (consumeResult.IsPartitionEOF)
                             {
-                                _consumer.ConsumeWithInstrumentation((result) =>
-                                {
-                                    if (result != null) {
-                                        _logger.LogInformation($"Consumed message '{result.Message.Value}' at: '{result.TopicPartitionOffset}'.");
+                                Console.WriteLine(
+                                    $"Reached end of topic {consumeResult.Topic}, partition {consumeResult.Partition}, offset {consumeResult.Offset}.");
 
-                                        // for header in result.Message.Headers. {
-                                        //     _logger.LogInformation("{hdrs}", result.Message.Headers.);
-                                        // }
-
-                                        var baggage = result.Message.Headers?.FirstOrDefault(x => x.Key == "baggage");
-                                        if (baggage != null) {
-                                            var val = System.Text.Encoding.UTF8.GetString(baggage.GetValueBytes());
-                                            _logger.LogInformation(val);
-                                        }
-                                    }
-
-                                }, 2000);
+                                continue;
                             }
-                            catch (ConsumeException e)
-                            {
-                                _logger.LogError($"Consume error: {e.Error.Reason}");
-                            }
+
+                            Console.WriteLine($"Received message at {consumeResult.TopicPartitionOffset}: {consumeResult.Message.Value}");
+                        }
+                        catch (ConsumeException e)
+                        {
+                            Console.WriteLine($"Consume error: {e.Error.Reason}");
                         }
                     }
-                    catch (KafkaException e)
-                    {
-                        _logger.LogError($"Kafka error: {e.Message}");
-                        retryCount++;
-                        _logger.LogInformation($"Retrying to connect ({retryCount}/{maxRetryCount})...");
-                        Thread.Sleep(delayMilliseconds);
-                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    Console.WriteLine("Closing consumer.");
+                    _consumer.Close();
                 }
 
-                if (retryCount == maxRetryCount)
-                {
-                    _logger.LogError("Failed to connect to Kafka after maximum retry attempts.");
-                }
-                else
-                {
-                    _logger.LogInformation("Kafka consumer has stopped.");
-                }
-            }, _cancellationTokenSource.Token);
+            }, stoppingToken);
         }
     }
 }
