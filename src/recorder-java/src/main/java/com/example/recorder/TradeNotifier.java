@@ -58,8 +58,8 @@ public class TradeNotifier {
     private static final int KAFKA_TIMEOUT_MS = 1000;
     private static final String BOOTSTRAP_SERVER = "kafka:9093";
     private static final String TRANSACTIONAL_ID = "recorder-java";
-    public static final String TOPIC_NAME = "notifications";
-    public static final String GROUP_NAME = "otel-demo";
+    public static final String TOPIC_NAME = "notifications_q";
+    public static final String GROUP_NAME = "recorder-java";
     private static final int KAFKA_NUM_PARITIONS = 1;
 
     private ObjectMapper mapper = new ObjectMapper();

@@ -31,6 +31,13 @@ retry_command() {
     return $exit_code
 }
 
+####################################################################### CERTS
+
+curl -s -o /etc/ssl/certs/sandbox.crt -H "Metadata-Flavor: Google" \
+    "http://metadata.google.internal/computeMetadata/v1/instance/attributes/ssl-certificate"
+curl -s -o /etc/ssl/private/sandbox.key -H "Metadata-Flavor: Google" \
+    "http://metadata.google.internal/computeMetadata/v1/instance/attributes/ssl-certificate-key"
+
 ####################################################################### CONDITIONS
 
 if [ -z "$_SANDBOX_ID" ]; then

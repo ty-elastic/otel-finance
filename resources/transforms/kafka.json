@@ -1,0 +1,208 @@
+{
+    "source": {
+        "index": "traces-*",
+        "query": {
+            "bool": {
+                "filter": {
+                    "bool" : {
+                        "must" : [
+                            {
+                                "exists": {
+                                    "field": "trace.id"
+                                }
+                            },
+                            {
+                                "exists": {
+                                    "field": "span.id"
+                                }
+                            },
+                            {
+                                "exists": {
+                                    "field": "parent.id"
+                                }
+                            },
+                            {
+                                "exists": {
+                                    "field": "service.name"
+                                }
+                            }
+                        ],
+                        "should": [
+                            { 
+                                "bool": {
+                                    "must": [
+                                        {
+                                            "term": {
+                                                "span.type": "messaging"
+                                            }
+                                        },
+                                        {
+                                            "exists": {
+                                                "field": "span.message.queue.name"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            { 
+                                "bool": {
+                                    "must": [
+                                        {
+                                            "term": {
+                                                "transaction.type": "messaging"
+                                            }
+                                        },
+                                        {
+                                            "exists": {
+                                                "field": "transaction.message.queue.name"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ],
+                        "minimum_should_match" : 1
+                    }
+                }
+            }
+        }
+    },
+    "dest": {
+        "index": "kafka-traces"
+    },
+    "sync": {
+        "time": {
+            "field": "@timestamp",
+            "delay": "60s"
+        }
+    },
+    "pivot": {
+        "group_by": {
+            "trace.id": {
+                "terms": {
+                    "field": "trace.id"
+                }
+            }
+        },
+        "aggregations": {
+            "paths": {
+                "scripted_metric": {
+                    "init_script": "state.docs = []",
+                    "map_script": "
+                        Map span = [
+                            '@timestamp':doc['@timestamp'].value,
+                            'service.name':doc['service.name'].value,
+                            'span.id':doc['span.id'].value,
+                            'parent.id':doc['parent.id'].value
+                        ];
+
+                        if (doc['span.message.queue.name'].size() > 0) {
+                            span['message.queue.name'] = doc['span.message.queue.name'].value;
+                            span['kind'] = 'exit';
+                        }
+                        else if (doc['transaction.message.queue.name'].size() > 0) {
+                            span['message.queue.name'] = doc['transaction.message.queue.name'].value;
+                            span['kind'] = 'enter';
+                        }
+                        state.docs.add(span);
+                    ",
+                    "combine_script": "return state.docs;",
+                    "reduce_script": "
+                        boolean attach_to_parent(def states, def child) {
+                            def is_root = true;
+                            for (s in states) {
+                                for (span in s) {
+                                    if (span.containsKey('children') == false) {
+                                        span['children'] = [];
+                                    }
+                                    if (span['span.id'].equals(child['parent.id'])) {
+                                        span['children'].add(child);
+                                        is_root = false;
+                                    }
+                                }
+                            }
+                            return is_root;
+                        } 
+
+                        void build_paths(def path, def node, def out_paths, def out_queues, def starting_time, def enqueue_time, def enqueue_service) {
+                            if (node['kind'].equals('enter')) {
+                                def new_queue_doc = new HashMap();
+                                new_queue_doc['path'] = enqueue_service + ':' + node['service.name'];
+                                new_queue_doc['duration'] = node['@timestamp'].toEpochMilli() - enqueue_time;
+                                out_queues.add(new_queue_doc);
+                            }
+
+                            if (node['children'].size() == 0) {
+                                def new_path = new String();
+                                new_path = path;
+                                if (!new_path.equals('')) {
+                                    new_path += ':';
+                                }
+                                new_path += node['service.name'];
+                                def new_doc = new HashMap();
+                                new_doc['path'] = new_path;
+                                new_doc['duration'] = node['@timestamp'].toEpochMilli() - starting_time;
+                                out_paths.add(new_doc);
+                                return;
+                            }
+
+                            for (child in node['children']) {
+                                def new_path = new String();
+                                new_path = path;
+                                if (node['kind'].equals('exit')) {
+                                    if (!new_path.equals('')) {
+                                        new_path += ':';
+                                    }
+                                    new_path += node['service.name'] + ':' + node['message.queue.name'];
+
+                                    enqueue_time = node['@timestamp'].toEpochMilli();
+                                    enqueue_service = node['service.name'];
+                                }
+                                build_paths(new_path, child, out_paths, out_queues, starting_time, enqueue_time, enqueue_service);
+                            }
+                        }
+
+                        def root;
+                        for (s in states) {
+                            for (span in s) {
+                                def is_root = attach_to_parent(states, span);
+                                if (is_root == true) {
+                                    root = span;
+                                }
+                            }
+                        }
+
+                        def path = '';
+                        def out_paths = [];
+                        def out_queues = [];
+                        def starting_time = root['@timestamp'].toEpochMilli();
+                        build_paths(path, root, out_paths, out_queues, starting_time, 0, '');
+
+                        def out_doc = new HashMap();
+                        out_doc['@timestamp'] = root['@timestamp'];
+
+                        def rand = new Random();
+
+                        def rand_selection = rand.nextInt(out_paths.size());
+                        out_doc['e2e.rand.path'] = out_paths[rand_selection].path;
+                        out_doc['e2e.rand.duration.ms'] = out_paths[rand_selection].duration;
+
+                        for (doc in out_paths) {
+                            out_doc['e2e.sample.' + doc.path] = doc.duration;
+                        }
+
+                        rand_selection = rand.nextInt(out_queues.size());
+                        out_doc['hop.rand.path'] = out_queues[rand_selection].path;
+                        out_doc['hop.rand.duration.ms'] = out_queues[rand_selection].duration;
+
+                        for (doc in out_queues) {
+                            out_doc['hop.sample.' + doc.path] = doc.duration;
+                        }
+
+                        return out_doc;
+                    "
+                }
+            }
+        }
+    }
+}

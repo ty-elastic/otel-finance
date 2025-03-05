@@ -1,27 +1,27 @@
 services:
 
-  # resources:
-  #   build:
-  #     context: ./resources
-  #   restart: on-failure
-  #   ports:
-  #     - "9010:9010"
-  #   environment:
-  #     BACKLOAD_DATA: ${BACKLOAD_DATA:-false}
-  #     SOLVE_ALL: ${SOLVE_ALL:-true}
-  #     ERRORS_LATENCY: ${ERRORS_LATENCY:-false}
-  #     ERRORS_DB: ${ERRORS_DB:-false}
-  #     DELETE_DATA: ${DELETE_DATA:-false}
+  resources:
+    build:
+      context: ./resources
+    restart: on-failure
+    ports:
+      - "9010:9010"
+    environment:
+      BACKLOAD_DATA: ${BACKLOAD_DATA:-false}
+      SOLVE_ALL: ${SOLVE_ALL:-true}
+      ERRORS_LATENCY: ${ERRORS_LATENCY:-false}
+      ERRORS_DB: ${ERRORS_DB:-false}
+      DELETE_DATA: ${DELETE_DATA:-false}
       
-  #     KIBANA_URL: ${KIBANA_URL}
-  #     ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
-  #     ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
-  #     ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
-  #     OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM: "http://collector_playback:4318"
-  #     OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH: "http://collector_playback:4319"
-  #   depends_on:
-  #     collector_playback:
-  #       condition: service_healthy
+      KIBANA_URL: ${KIBANA_URL}
+      ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
+      ELASTICSEARCH_USER: ${ELASTICSEARCH_USER}
+      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+      OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM: "http://collector_playback:4318"
+      OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_ELASTICSEARCH: "http://collector_playback:4319"
+    depends_on:
+      collector_playback:
+        condition: service_healthy
 
   trader:
     build:
@@ -190,6 +190,54 @@ services:
       collector:
         condition: service_healthy
       notifier:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  processor1:
+    build:
+      context: ./src/processor1/
+    restart: on-failure
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=production"
+    depends_on:
+      collector:
+        condition: service_healthy
+      recorder-java:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  processor2:
+    build:
+      context: ./src/processor2/
+    restart: on-failure
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=production"
+    depends_on:
+      collector:
+        condition: service_healthy
+      processor1:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+
+  processor3:
+    build:
+      context: ./src/processor3/
+    restart: on-failure
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://collector:4317"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=production"
+    depends_on:
+      collector:
+        condition: service_healthy
+      recorder-java:
         condition: service_healthy
       kafka:
         condition: service_healthy

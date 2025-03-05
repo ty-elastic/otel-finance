@@ -1,5 +1,4 @@
 using OpenTelemetry;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace BaggageSpanProcessor

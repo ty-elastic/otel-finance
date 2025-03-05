@@ -6,4 +6,4 @@ export _SANDBOX_ID=$_SANDBOX_ID
 
 # setup openai (this needs to be done here because secrets are not available outside of the setup script)
 export SA_LLM_PROXY_BEARER_TOKEN=$SA_LLM_PROXY_BEARER_TOKEN
-/usr/local/bin/elastic-llm.sh
+/usr/local/bin/llm-key.sh

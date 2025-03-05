@@ -71,7 +71,17 @@ build {
     }
 
     provisioner "file" {
-      source      = "elastic/elastic-openai.sh"
-      destination = "/usr/local/bin/elastic-openai.sh"
+      source      = "elastic/elastic-llm.sh"
+      destination = "/usr/local/bin/elastic-llm.sh"
+    }
+
+    provisioner "file" {
+      source      = "elastic/elastic-semantic.sh"
+      destination = "/usr/local/bin/elastic-semantic.sh"
+    }
+  
+    provisioner "file" {
+      source      = "elastic/llm-key.sh"
+      destination = "/usr/local/bin/llm-key.sh"
     }
 }
