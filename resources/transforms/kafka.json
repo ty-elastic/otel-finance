@@ -25,6 +25,11 @@
                                 "exists": {
                                     "field": "service.name"
                                 }
+                            },
+                            {
+                                "exists": {
+                                    "field": "timestamp.us"
+                                }
                             }
                         ],
                         "should": [
@@ -91,11 +96,13 @@
                     "map_script": "
                         Map span = [
                             '@timestamp':doc['@timestamp'].value,
+                            'timestamp.us':doc['timestamp.us'].value,
                             'service.name':doc['service.name'].value,
                             'span.id':doc['span.id'].value,
                             'parent.id':doc['parent.id'].value
                         ];
 
+                        /* bookend queues with exit (enqueue) and enter (dequeue) labels */
                         if (doc['span.message.queue.name'].size() > 0) {
                             span['message.queue.name'] = doc['span.message.queue.name'].value;
                             span['kind'] = 'exit';
@@ -104,19 +111,25 @@
                             span['message.queue.name'] = doc['transaction.message.queue.name'].value;
                             span['kind'] = 'enter';
                         }
+                        /* copy all docs from this shard */
                         state.docs.add(span);
                     ",
                     "combine_script": "return state.docs;",
                     "reduce_script": "
+                        /* build graph */
                         boolean attach_to_parent(def states, def child) {
                             def is_root = true;
+                            /* for all shards */
                             for (s in states) {
+                                /* for all docs in that shard */
                                 for (span in s) {
                                     if (span.containsKey('children') == false) {
                                         span['children'] = [];
                                     }
                                     if (span['span.id'].equals(child['parent.id'])) {
+                                        /* assign child to parent */
                                         span['children'].add(child);
+                                        /* parent found, can't be root */
                                         is_root = false;
                                     }
                                 }
@@ -124,46 +137,56 @@
                             return is_root;
                         } 
 
-                        void build_paths(def path, def node, def out_paths, def out_queues, def starting_time, def enqueue_time, def enqueue_service) {
+                        /* build paths */
+                        void build_paths(def path, def node, def out_paths, def out_queues, def root_time, def enqueue_time, def enqueue_service) {
+                            /* exiting queue, record hop-by-hop metrics */
                             if (node['kind'].equals('enter')) {
                                 def new_queue_doc = new HashMap();
                                 new_queue_doc['path'] = enqueue_service + ':' + node['service.name'];
-                                new_queue_doc['duration'] = node['@timestamp'].toEpochMilli() - enqueue_time;
+                                new_queue_doc['duration.us'] = node['timestamp.us'] - enqueue_time;
                                 out_queues.add(new_queue_doc);
                             }
 
+                            /* leaf node, record e2e metrics */
                             if (node['children'].size() == 0) {
-                                def new_path = new String();
-                                new_path = path;
+                                def new_path = path;
                                 if (!new_path.equals('')) {
                                     new_path += ':';
                                 }
                                 new_path += node['service.name'];
-                                def new_doc = new HashMap();
-                                new_doc['path'] = new_path;
-                                new_doc['duration'] = node['@timestamp'].toEpochMilli() - starting_time;
-                                out_paths.add(new_doc);
+
+                                def new_path_doc = new HashMap();
+                                new_path_doc['path'] = new_path;
+                                new_path_doc['duration.us'] = node['timestamp.us'] - root_time;
+                                out_paths.add(new_path_doc);
+                                /* done */
                                 return;
                             }
 
+                            /* middle node, build path */
                             for (child in node['children']) {
-                                def new_path = new String();
-                                new_path = path;
+                                def new_path = path;
+                                /* entering queue */
                                 if (node['kind'].equals('exit')) {
                                     if (!new_path.equals('')) {
                                         new_path += ':';
                                     }
                                     new_path += node['service.name'] + ':' + node['message.queue.name'];
 
-                                    enqueue_time = node['@timestamp'].toEpochMilli();
+                                    /* entering queue, record time for hop-by-hop metrics */
+                                    enqueue_time = node['timestamp.us'];
                                     enqueue_service = node['service.name'];
                                 }
-                                build_paths(new_path, child, out_paths, out_queues, starting_time, enqueue_time, enqueue_service);
+                                /* recurse down this path */
+                                build_paths(new_path, child, out_paths, out_queues, root_time, enqueue_time, enqueue_service);
                             }
                         }
 
+                        /* build graph */
                         def root;
+                        /* for all shards */
                         for (s in states) {
+                            /* for all docs in that shard */
                             for (span in s) {
                                 def is_root = attach_to_parent(states, span);
                                 if (is_root == true) {
@@ -172,31 +195,37 @@
                             }
                         }
 
+                        /* build paths */
                         def path = '';
                         def out_paths = [];
                         def out_queues = [];
-                        def starting_time = root['@timestamp'].toEpochMilli();
-                        build_paths(path, root, out_paths, out_queues, starting_time, 0, '');
+                        def root_time = root['timestamp.us'];
+                        build_paths(path, root, out_paths, out_queues, root_time, 0, '');
 
+                        /* output doc */
                         def out_doc = new HashMap();
                         out_doc['@timestamp'] = root['@timestamp'];
 
                         def rand = new Random();
 
+                        /* randomly feature 1 e2e metric */
                         def rand_selection = rand.nextInt(out_paths.size());
                         out_doc['e2e.rand.path'] = out_paths[rand_selection].path;
-                        out_doc['e2e.rand.duration.ms'] = out_paths[rand_selection].duration;
+                        out_doc['e2e.rand.duration.us'] = out_paths[rand_selection]['duration.us'];
 
+                        /* record all e2e samples */
                         for (doc in out_paths) {
-                            out_doc['e2e.sample.' + doc.path] = doc.duration;
+                            out_doc['e2e.sample.' + doc.path] = doc['duration.us'];
                         }
 
+                        /* randomly feature 1 hop-by-hop metric */
                         rand_selection = rand.nextInt(out_queues.size());
                         out_doc['hop.rand.path'] = out_queues[rand_selection].path;
-                        out_doc['hop.rand.duration.ms'] = out_queues[rand_selection].duration;
+                        out_doc['hop.rand.duration.us'] = out_queues[rand_selection]['duration.us'];
 
+                        /* record all hop-by-hop samples */
                         for (doc in out_queues) {
-                            out_doc['hop.sample.' + doc.path] = doc.duration;
+                            out_doc['hop.sample.' + doc.path] = doc['duration.us'];
                         }
 
                         return out_doc;
