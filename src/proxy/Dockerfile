@@ -2,6 +2,8 @@ ARG NGINX_VERSION=1.26.0
 
 FROM nginx:${NGINX_VERSION}
 
+COPY nginx.conf /etc/nginx/nginx.conf
+
 ARG OTEL_MODULE_VERSION=1.1.0
 RUN apt-get update ; apt-get install unzip
 ADD https://github.com/open-telemetry/opentelemetry-cpp-contrib/releases/download/webserver/v${OTEL_MODULE_VERSION}/opentelemetry-webserver-sdk-x64-linux.tgz /opt/opentelemetry-webserver-sdk-x64-linux.tgz

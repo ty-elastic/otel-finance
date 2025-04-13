@@ -141,18 +141,13 @@ exporters:
       mode: ecs
     logs_dynamic_index:
       enabled: true
-    metrics_dynamic_index:
-      enabled: true
-    traces_dynamic_index:
-      enabled: true
 
   otlp/apm: 
     endpoint: "${ELASTIC_APM_SERVER_ENDPOINT}"
+    headers:
+      Authorization: "ApiKey ${ELASTICSEARCH_APIKEY}"
     tls:
       insecure: true
-    headers:
-      # Elastic APM Server secret token
-      Authorization: "ApiKey ${ELASTICSEARCH_APIKEY}"
 
 service:
   extensions: [health_check]
@@ -160,7 +155,7 @@ service:
     traces/fromsdk:
       receivers: [otlp/fromsdk]
       processors: [resourcedetection]
-      exporters: [otlp/apm]
+      exporters: [debug, otlp/apm]
 
     metrics/fromsdk:
       receivers: [otlp/fromsdk]
@@ -170,7 +165,7 @@ service:
     logs/fromsdk:
       receivers: [otlp/fromsdk]
       processors: [resourcedetection]
-      exporters: [otlp/apm]
+      exporters: [elasticsearch]
 
     metrics/hostmetrics:
       receivers: [hostmetrics/system]

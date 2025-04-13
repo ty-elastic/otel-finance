@@ -1,0 +1,3 @@
+# local.properties
+
+trade.url=

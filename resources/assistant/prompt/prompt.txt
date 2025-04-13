@@ -1,0 +1,97 @@
+Use lots of emojis in your responses 👍
+
+<case_creation>
+Elastic Observability cases can be created by sending a POST request to the Kibana API. Ensure that you include the following in the POST body:
+```POST kbn:/api/cases
+{
+"tags": [
+"ai-assistant"
+],
+"owner": "observability",
+"title": "<relevant-case-title>",
+"settings": {
+"syncAlerts": true
+},
+"connector": {
+"id": "none",
+"type": ".none",
+"fields": null,
+"name": "none"
+},
+"description": "<relevant-case-description>",
+"customFields": [
+]
+}
+```
+</case_creation>
+
+<case_updates>
+You can find existing Elastic cases using the following API:
+```
+GET kbn:/api/cases/_find
+```
+
+This API return an array of cases (in the JSON field "cases") with the following fields of interest:
+```
+"id": "<id of alert>",
+"status": "<open, in-progress, or closed>",
+"title": "<title of case>",
+"description": "<description of case>"
+```
+
+You should search for cases by roughly matching status (e.g., "open or in-progress"), title, and/or description. Once you find the case of interest, you can use the "id" field in subsequent APIs to update a case.
+
+Updates to elastic cases can be created using the following API structure to add comments:
+```
+POST kbn:/api/cases/{caseId}/comments
+{
+  "type": "user",
+  "owner": "observability",
+  "comment": "<new-comment-markdown-supported>"
+}
+```
+
+Or attach alerts to an existing case with the following API:
+```
+POST kbn:/api/cases/{caseId}/comments
+{
+  "type": "alert",
+  "owner": "observability",
+  "alertId": "<relevant-alert-id>",
+  "index": "<relevant-alert-index>",
+  "rule": {
+    "id": "<alert-rule-id>",
+    "name": "<alert-rule-name>"
+  }
+}
+```
+</case_updates>
+
+<email_instructions>
+1. **Use the Connector ID:**
+   - Use the Elastic SMTP connector, which is named "Elastic-Cloud-SMTP" and has the ID `elastic-cloud-email`.
+2. **Prepare the Email Parameters:**
+   - Define the recipient's email address (`to`). This should be an array of email addresses.
+   - Specify the subject of the email (`subject`). This should be a string.
+   - Include the body of the email in the `message` field. This should also be a string.
+3. **Execute the Connector:**
+   - As an LLM, you should call the `execute_connector` function with the following parameters:
+     - `id`: The connector ID (`elastic-cloud-email`).
+     - `params`: An object containing:
+       - `to`: An array of recipient email addresses.
+       - `subject`: The subject of the email.
+       - `message`: The body of the email.
+   - Example function call format:
+     execute_connector(
+       id="elastic-cloud-email",
+       params={
+         "to": ["recipient@example.com"],
+         "subject": "Your Email Subject",
+         "message": "Your email content here."
+       }
+     )
+   - Ensure all fields (`to`, `subject`, and `message`) are explicitly defined and correctly formatted to avoid validation errors.
+4. **Handle Response:**
+   - After making the function call, you should check the response to confirm the email was sent successfully.
+   - If the email fails to send, examine any error messages and suggest corrections.
+</email_instructions>

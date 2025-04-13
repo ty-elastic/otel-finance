@@ -156,14 +156,14 @@ public class TradeNotifier {
         props.put(AdminClientConfig.CLIENT_ID_CONFIG, "client-" + UUID.randomUUID());
         try (Admin admin = Admin.create(props)) {
             // delete topics if present
-            try {
-                admin.deleteTopics(Arrays.asList(topicNames)).all().get();
-            } catch (ExecutionException e) {
-                if (!(e.getCause() instanceof UnknownTopicOrPartitionException)) {
-                    throw e;
-                }
-                log.warn("Topics deletion error: {}", e.getCause());
-            }
+            // try {
+            //     admin.deleteTopics(Arrays.asList(topicNames)).all().get();
+            // } catch (ExecutionException e) {
+            //     if (!(e.getCause() instanceof UnknownTopicOrPartitionException)) {
+            //         throw e;
+            //     }
+            //     log.warn("Topics deletion error: {}", e.getCause());
+            // }
             log.info("Deleted topics: {}", Arrays.toString(topicNames));
             // create topics in a retry loop
             while (true) {
@@ -181,7 +181,8 @@ public class TradeNotifier {
                         throw e;
                     }
                     log.warn("Waiting for topics metadata cleanup");
-                    TimeUnit.MILLISECONDS.sleep(1_000);
+                    break;
+                    //TimeUnit.MILLISECONDS.sleep(1_000);
                 }
             }
         } catch (Throwable e) {
