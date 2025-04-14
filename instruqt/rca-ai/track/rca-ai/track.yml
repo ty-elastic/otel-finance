@@ -1,0 +1,33 @@
+slug: rca-ai
+id: hydnpoctzk6j
+title: AI-Assisted Root Cause Analysis with Elastic
+teaser: Use Elastic AI to perform Root Cause Analysis (RCA) of the same problem from
+  multiple perspectives
+description: Explore this 15 minute lab and use Elastic's machine learning and AI
+  technologies to perform Root Cause Analysis (RCA) of a customer-reported issue.
+  Combine clues from traces and logs at scale with Elastic's AI Assistant to come
+  to a faster resolution.
+icon: ""
+tags:
+- ssg
+owner: elastic-pmm
+developers:
+- tyrone.bekiares@elastic.co
+- amanda.saavedra@elastic.co
+show_timer: true
+idle_timeout: 900
+timelimit: 3600
+sandbox_preset: sa-rca-ai-8-17-0
+lab_config:
+  extend_ttl: 900
+  sidebar_enabled: true
+  feedback_recap_enabled: true
+  feedback_tab_enabled: false
+  loadingMessages:
+  - Setting up your Elastic experience...
+  theme:
+    name: modern-dark
+  override_challenge_layout: false
+  hideStopButton: false
+checksum: "4548701396840965344"
+enhanced_loading: false
