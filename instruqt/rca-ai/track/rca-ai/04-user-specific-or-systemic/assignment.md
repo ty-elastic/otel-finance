@@ -1,6 +1,6 @@
 ---
 slug: user-specific-or-systemic
-id: 1nk7xfdfkrxx
+id: hb1i6oxnw8hl
 type: challenge
 title: User-specific or systemic?
 teaser: Determining the scope of the issue
@@ -9,7 +9,7 @@ notes:
   contents: In this section, we will use Elastic's APM tools to determine if this
     is a user-specific or systemic problem
 tabs:
-- id: oowcjucdllyt
+- id: lhxuu8czvalt
   title: Elasticsearch
   type: service
   hostname: kubernetes-vm

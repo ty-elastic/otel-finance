@@ -1,6 +1,6 @@
 ---
 slug: case-closed
-id: g3ftbxiyac4r
+id: heccmqn8rmto
 type: challenge
 title: Case closed
 teaser: Let's update our ticket and close the case
@@ -9,7 +9,7 @@ notes:
   contents: In this section, we will close the case and look back at our efforts to
     RCA this issue
 tabs:
-- id: x7ceenzgntm4
+- id: uc8ugwvayd2z
   title: Elasticsearch
   type: service
   hostname: kubernetes-vm

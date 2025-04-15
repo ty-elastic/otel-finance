@@ -1,6 +1,6 @@
 ---
 slug: we-have-a-problem
-id: t2imi2ajf7dk
+id: pdus4mddmhsh
 type: challenge
 title: We have a problem
 notes:
@@ -8,7 +8,7 @@ notes:
   contents: In this section, we will leverage Elastic's integration with external
     ticket management systems to organize and record our analysis efforts
 tabs:
-- id: ujv6xa8nlqxx
+- id: x4vvhqg9s6nt
   title: Elasticsearch
   type: service
   hostname: kubernetes-vm

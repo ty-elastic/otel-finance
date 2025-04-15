@@ -1,6 +1,6 @@
 ---
 slug: ai-for-the-win
-id: rrfhy75xrwyr
+id: bkovj8jvb7bn
 type: challenge
 title: AI for the Win
 teaser: Let's leverage Elastic AI to its fullest to RCA this issue
@@ -9,7 +9,7 @@ notes:
   contents: In this section, we will leverage Elastic's groundbreaking AI Assistant
     technology to help lead us to the Root Cause of the issue
 tabs:
-- id: lwathf2pcsck
+- id: wadbixehczms
   title: Elasticsearch
   type: service
   hostname: kubernetes-vm

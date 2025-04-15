@@ -1,6 +1,6 @@
 ---
 slug: getting-our-bearings
-id: s4xdjzaiupch
+id: fotbfggvgo1e
 type: challenge
 title: Getting our bearings
 notes:
@@ -10,7 +10,7 @@ notes:
 
     In the background we are creating a whole Elasticsearch cluster just for you, loading some data and setting up some challenges. This process will take 2 - 3 minutes to complete before you get started. Once we're ready to go, click Start in the bottom right to head to the introduction.
 tabs:
-- id: hxjostup7jv2
+- id: jgvdkaspoqqe
   title: Elasticsearch
   type: service
   hostname: kubernetes-vm

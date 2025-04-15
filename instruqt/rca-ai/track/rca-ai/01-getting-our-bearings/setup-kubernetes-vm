@@ -6,6 +6,8 @@ export $(curl http://kubernetes-vm:9000/env | xargs)
 
 ####################################################################### ELASTIC CONFIG
 
+/opt/workshops/elastic-view.sh -v oblt
+
 /opt/workshops/elastic-llm.sh -m gpt-4o -k true -p true
 
 ####################################################################### SERVICES

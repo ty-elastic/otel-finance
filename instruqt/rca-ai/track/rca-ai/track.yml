@@ -1,5 +1,5 @@
-slug: otel-200-rca
-id: hmsxst5ihw2v
+slug: rca-ai
+id: hydnpoctzk6j
 title: AI-Assisted Root Cause Analysis with Elastic
 teaser: Use Elastic AI to perform Root Cause Analysis (RCA) of the same problem from
   multiple perspectives
@@ -10,13 +10,13 @@ description: Explore this 15 minute lab and use Elastic's machine learning and A
 icon: ""
 tags:
 - ssg
-owner: elastic
+owner: elastic-pmm
 developers:
 - tyrone.bekiares@elastic.co
 show_timer: true
 idle_timeout: 900
 timelimit: 3600
-sandbox_preset: managed-elastic-8-18-0-test
+sandbox_preset: managed-elastic-8-18-0
 lab_config:
   extend_ttl: 900
   sidebar_enabled: true
@@ -28,5 +28,5 @@ lab_config:
     name: modern-dark
   override_challenge_layout: false
   hideStopButton: false
-checksum: "2958532028874188646"
+checksum: "9358355479828651674"
 enhanced_loading: false

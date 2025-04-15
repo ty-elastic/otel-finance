@@ -1,6 +1,6 @@
 ---
 slug: lets-investigate
-id: 6kzybalgtcfi
+id: 5hkcabau1qrd
 type: challenge
 title: Let's investigate
 notes:
@@ -8,7 +8,7 @@ notes:
   contents: In this section, we will leverage OpenTelemetry's support for contextual
     metadata to quickly search our traces and logs for clues
 tabs:
-- id: bs0xvlxui3c0
+- id: 5vnbmy5jegwd
   title: Elasticsearch
   type: service
   hostname: kubernetes-vm
@@ -50,7 +50,7 @@ We know the problem is real, but we are still searching for clues as to why it's
 
 Logs tend to carry more verbose errors and warnings, but that same verbosity also makes them difficult to search and make actionable. Fortunately, because OpenTelemetry makes it trivial to add common contextual metadata across traces and logs, our logs are also nicely adorned with the same customer id metadata (no complex and fragile regex required!).
 
-1. Navigate to the "hamburger" menu in the upper-left, select `Analytics` / `Discover`
+1. Select `Discover` from the Observability navigation menu on the left-hand side
 2. Copy
     ```kql
     labels.com_example_customer_id : j.casey
