@@ -1,36 +1,7 @@
 #!/bin/bash
 
-####################################################################### STARTUP
-
-# Function to retry a command with exponential backoff
-retry_command() {
-    local max_attempts=240
-    local timeout=1
-    local attempt=1
-    local exit_code=0
-
-    while [ $attempt -le $max_attempts ]
-    do
-        "$@"
-        exit_code=$?
-
-        if [ $exit_code -eq 0 ]; then
-            break
-        fi
-
-        echo "Attempt $attempt failed! Retrying in $timeout seconds..."
-        sleep $timeout
-        attempt=$(( attempt + 1 ))
-        #timeout=$(( timeout + 1 ))
-    done
-
-    if [ $exit_code -ne 0 ]; then
-        echo "Command $@ failed after $attempt attempts!"
-    fi
-
-    return $exit_code
-}
+source /opt/workshops/elastic-retry.sh
 
 echo "Wait for alert to fire"
 # Wait for the Kubernetes API server to become available
-retry_command curl --silent --fail --output /dev/null http://localhost:9010/status/alerts
+retry_command_lin curl --silent --fail --output /dev/null http://localhost:9010/status/alerts

@@ -1,6 +1,6 @@
 ---
 slug: lets-investigate
-id: dzureb95fhfx
+id: 6kzybalgtcfi
 type: challenge
 title: Let's investigate
 notes:
@@ -8,7 +8,7 @@ notes:
   contents: In this section, we will leverage OpenTelemetry's support for contextual
     metadata to quickly search our traces and logs for clues
 tabs:
-- id: 0hqurpaug5k5
+- id: bs0xvlxui3c0
   title: Elasticsearch
   type: service
   hostname: kubernetes-vm

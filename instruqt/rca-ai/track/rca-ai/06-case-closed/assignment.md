@@ -1,6 +1,6 @@
 ---
 slug: case-closed
-id: mux2mmhba4cv
+id: g3ftbxiyac4r
 type: challenge
 title: Case closed
 teaser: Let's update our ticket and close the case
@@ -9,7 +9,7 @@ notes:
   contents: In this section, we will close the case and look back at our efforts to
     RCA this issue
 tabs:
-- id: nvhlakx6fags
+- id: x7ceenzgntm4
   title: Elasticsearch
   type: service
   hostname: kubernetes-vm
@@ -29,13 +29,15 @@ Let's recap what we did to RCA this issue all while staying in a single observab
 
 All that remains is for us to update the active Case with our findings. Let's take advantage of how easy it is to update tickets without ever leaving Elastic:
 
-1. Click on `User j.casey is apparently experiencing high latency`
-2. In the text box at the bottom, type the following:
+1. Close the "AI Assistant" flyout if it is still open
+2. Click on `User j.casey is apparently experiencing high latency`
+3. Note the summary of our work with the Elastic AI Assistant which was automatically appended to the case (and think about the value of capturing and sharing this information)
+4. In the text box at the bottom, type the following:
     ```
     j.casey is in the LATAM region, which is currently being deployed. Access to LATAM should have been blocked while it is being setup, but apparently that was missed. Recommend blocking further trades in LATAM until DevOps closes the ticket to deploy the region.
     ```
-3. Click 'Add comment`
-4. Click `Close case`
+5. Click 'Add comment`
+6. Click `Close case`
 
 ![case-closed.png](../assets/case-closed.png)
 

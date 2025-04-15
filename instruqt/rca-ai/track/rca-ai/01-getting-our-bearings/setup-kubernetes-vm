@@ -1,36 +1,275 @@
 #!/bin/bash
 
-####################################################################### STARTUP
+source /opt/workshops/elastic-retry.sh
 
-# Function to retry a command with exponential backoff
-retry_command() {
-    local max_attempts=240
-    local timeout=1
-    local attempt=1
-    local exit_code=0
+export $(curl http://kubernetes-vm:9000/env | xargs)
 
-    while [ $attempt -le $max_attempts ]
-    do
-        "$@"
-        exit_code=$?
+####################################################################### ELASTIC CONFIG
 
-        if [ $exit_code -eq 0 ]; then
-            break
-        fi
+/opt/workshops/elastic-llm.sh -m gpt-4o -k true -p true
 
-        echo "Attempt $attempt failed! Retrying in $timeout seconds..."
-        sleep $timeout
-        attempt=$(( attempt + 1 ))
-        #timeout=$(( timeout + 1 ))
-    done
+####################################################################### SERVICES
 
-    if [ $exit_code -ne 0 ]; then
-        echo "Command $@ failed after $attempt attempts!"
-    fi
+kubectl create namespace rcaai
 
-    return $exit_code
-}
+echo '
+elasticsearch-url='$ELASTICSEARCH_URL'
+elasticsearch-user='$ELASTICSEARCH_USER'
+elasticsearch-password='$ELASTICSEARCH_PASSWORD'
+elasticsearch-apikey='$ELASTICSEARCH_APIKEY'
+apmserver-endpoint='$ELASTIC_APM_SERVER_ENDPOINT'
+apmserver-secret='$ELASTIC_APM_SERVER_SECRET'
+kibana-url='$KIBANA_URL'
+' > ./rcaai-secrets.yaml
+kubectl create secret generic elastic-environment -n rcaai --from-env-file=./rcaai-secrets.yaml
+
+echo '
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: rcaai
+data:
+  config.yaml: |-
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+
+    receivers:
+      otlp/json:
+        protocols:
+          http:
+            endpoint: 0.0.0.0:4318
+
+    processors:
+      batch:
+        send_batch_size: 1000
+        send_batch_max_size: 1000
+      resourcedetection:
+        detectors: ["system"]
+        system:
+          hostname_sources: ["os"]
+          resource_attributes:
+            host.name:
+              enabled: true
+            host.id:
+              enabled: false
+            host.arch:
+              enabled: true
+            host.ip:
+              enabled: true
+            host.mac:
+              enabled: true
+            host.cpu.vendor.id:
+              enabled: true
+            host.cpu.family:
+              enabled: true
+            host.cpu.model.id:
+              enabled: true
+            host.cpu.model.name:
+              enabled: true
+            host.cpu.stepping:
+              enabled: true
+            host.cpu.cache.l2.size:
+              enabled: true
+            os.description:
+              enabled: true
+            os.type:
+              enabled: true
+
+    exporters:
+      otlp/apm: 
+        endpoint: "${ELASTIC_APM_SERVER_ENDPOINT}"
+        tls:
+          insecure: true
+        headers:
+          # Elastic APM Server secret token
+          Authorization: "Bearer ${ELASTIC_APM_SERVER_SECRET}"
+
+    service:
+      extensions: [health_check]
+      pipelines:
+        traces/apm:
+          receivers: [otlp/json]
+          processors: [resourcedetection, batch]
+          exporters: [otlp/apm]
+
+        metrics/apm:
+          receivers: [otlp/json]
+          processors: [resourcedetection, batch]
+          exporters: [otlp/apm]
+
+        logs/apm:
+          receivers: [otlp/json]
+          processors: [resourcedetection, batch]
+          exporters: [otlp/apm]
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: rcaai
+    service: collector-playback
+  name: collector-playback
+  namespace: rcaai
+spec:
+  selector:
+    matchLabels:
+      app: rcaai
+      service: collector-playback
+  template:
+    metadata:
+      labels:
+        app: rcaai
+        service: collector-playback
+    spec:
+      containers:
+      - name: collector-playback
+        image: otel/opentelemetry-collector-contrib:0.123.0
+        #imagePullPolicy: Never
+        command:
+          - "/otelcol-contrib"
+          - "--config=/etc/otelcol-contrib/config.yaml"
+        ports:
+          - containerPort: 4318
+          - containerPort: 13133
+        env:
+          - name: ELASTIC_APM_SERVER_ENDPOINT
+            valueFrom:
+              secretKeyRef:
+                name: elastic-environment
+                key: apmserver-endpoint
+          - name: ELASTIC_APM_SERVER_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: elastic-environment
+                key: apmserver-secret
+        volumeMounts:
+        - mountPath: /etc/otelcol-contrib/config.yaml
+          name: data
+          subPath: config.yaml
+          readOnly: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: data
+        configMap:
+          name: otel-collector-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: rcaai
+    service: collector-playback
+  name: collector-playback
+  namespace: rcaai
+spec:
+  ports:
+    - name: json
+      port: 4318
+      targetPort: 4318
+    - name: hc
+      port: 13133
+      targetPort: 13133
+  selector:
+    app: rcaai
+    service: collector-playback
+---
+' > ./rcaai-collector.yaml
+kubectl apply -f ./rcaai-collector.yaml
+
+echo '
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rcaai
+    service: resources
+  name: resources
+  namespace: rcaai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rcaai
+      service: resources
+  template:
+    metadata:
+      labels:
+        app: rcaai
+        service: resources
+    spec:
+      initContainers:
+      - name: init-curl
+        image: curlimages/curl
+        command: ["sh", "-c", "until curl --fail http://collector-playback:13133; do echo waiting for collector; sleep 2; done"]
+      containers:
+      - name: resources
+        image: us-central1-docker.pkg.dev/elastic-sa/tbekiares/resources:rca-ai-v1
+        #imagePullPolicy: Never
+        ports:
+          - containerPort: 9010
+        env:
+          - name: BACKLOAD_DATA
+            value: "true"
+          - name: SOLVE_ALL
+            value: "true"
+          - name: ERRORS
+            value: "false"
+          - name: DELETE_DATA
+            value: "false"
+
+          - name: ELASTICSEARCH_USER
+            valueFrom:
+              secretKeyRef:
+                name: elastic-environment
+                key: elasticsearch-user
+          - name: ELASTICSEARCH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: elastic-environment
+                key: elasticsearch-password
+          - name: ELASTICSEARCH_URL
+            valueFrom:
+              secretKeyRef:
+                name: elastic-environment
+                key: elasticsearch-url
+          - name: KIBANA_URL
+            valueFrom:
+              secretKeyRef:
+                name: elastic-environment
+                key: kibana-url
+
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT_PLAYBACK_APM
+            value: "http://collector-playback:4318"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: rcaai
+    service: resources
+  name: resources
+  namespace: rcaai
+spec:
+  ports:
+    - name: resources
+      port: 9010
+      targetPort: 9010
+  type: LoadBalancer
+  selector:
+    app: rcaai
+    service: resources
+---
+' > ./rcaai-apps.yaml
+kubectl apply -f ./rcaai-apps.yaml
+
+####################################################################### WAIT
 
 echo "Wait for APM data to flow"
 # Wait for the Kubernetes API server to become available
-retry_command curl --silent --fail --output /dev/null http://localhost:9010/status/playback
+retry_command_lin curl --silent --fail --output /dev/null http://localhost:9010/status/playback
