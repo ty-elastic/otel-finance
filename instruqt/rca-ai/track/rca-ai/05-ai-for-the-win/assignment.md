@@ -102,10 +102,6 @@ Our conversation with the AI Assistant contains a lot of details relevant to our
     can you summarize this discussion and append it to the open case for j.casey?
     ```
 
-6. Close the "AI Assistant" flyout by clicking on the "X" in the upper-right corner
-
-![assistant-3.png](../assets/assistant-3.png)
-
 Between surfacing contextually relevant logs, GitHub issues, and business KPIs, the Elastic AI Assistant was able to lead us to definitely Root Cause this problem. Furthermore, it gave us the confidence that, while not ideal, the issue is limited in scope and effect. Finally, it summarized our work and automatically updated the open ticket to ensure everyone can learn from this experience.
 
 Its greatest superpower is being able to surface the right information at the right time to answer the questions posed by your SREs, whether seasoned or new to the job.

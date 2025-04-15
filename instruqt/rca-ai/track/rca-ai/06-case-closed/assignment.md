@@ -29,7 +29,7 @@ Let's recap what we did to RCA this issue all while staying in a single observab
 
 All that remains is for us to update the active Case with our findings. Let's take advantage of how easy it is to update tickets without ever leaving Elastic:
 
-1. Close the "AI Assistant" flyout if it is still open
+1. Close the "AI Assistant" flyout on the right-hand side if it is still open by clicking on the "X" in the upper-right corner
 2. Click on `User j.casey is apparently experiencing high latency`
 3. Note the summary of our work with the Elastic AI Assistant which was automatically appended to the case (and think about the value of capturing and sharing this information)
 4. In the text box at the bottom, type the following:
